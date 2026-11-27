@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Input, Label, TextArea, TextField, Description } from 'heroui-native';
-import { Check, ClipboardPaste, Link2, Sparkles, X } from 'lucide-react-native';
+import { Check, ClipboardPaste, Link2, Sparkles, X } from '@/components/ui/icons';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import Animated, { ReduceMotion, ZoomIn } from 'react-native-reanimated';

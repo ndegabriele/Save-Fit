@@ -1,5 +1,5 @@
 import { cn } from 'heroui-native';
-import { Minus, Plus } from 'lucide-react-native';
+import { Minus, Plus } from '@/components/ui/icons';
 import { View } from 'react-native';
 import { AppText } from './text';
 import { RoundButton } from './round-button';

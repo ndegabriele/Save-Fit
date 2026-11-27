@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Input, Label, TextField } from 'heroui-native';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react-native';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Trash2 } from '@/components/ui/icons';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';

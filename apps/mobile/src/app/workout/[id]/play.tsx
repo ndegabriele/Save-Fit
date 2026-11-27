@@ -2,7 +2,7 @@ import { grid } from '@/lib/grid';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
-import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from 'lucide-react-native';
+import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from '@/components/ui/icons';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, Keyframe, ReduceMotion, ZoomIn } from 'react-native-reanimated';

@@ -1,0 +1,101 @@
+/**
+ * Save Fit's icon set: Phosphor, exported under the names the app already uses.
+ * Rendered with weight="fill" by <Icon> (solid, chunky); line glyphs in LINE_ICONS use "bold".
+ */
+import type { Icon as PhosphorIcon } from 'phosphor-react-native';
+export type AppIcon = PhosphorIcon;
+
+export {
+  Warning as AlertTriangle,
+  ArrowDown,
+  ArrowsLeftRight as ArrowLeftRight,
+  ArrowRight,
+  ArrowUp,
+  Check,
+  CaretLeft as ChevronLeft,
+  CaretRight as ChevronRight,
+  CaretDoubleRight as ChevronsRight,
+  FilmSlate as Clapperboard,
+  ClipboardText as ClipboardPaste,
+  Copy,
+  Barbell as Dumbbell,
+  ArrowSquareOut as ExternalLink,
+  Fire as Flame,
+  Heart,
+  House,
+  Info,
+  Key as KeyRound,
+  Stack as Layers,
+  Lightbulb,
+  Link as Link2,
+  ListNumbers as ListOrdered,
+  ArrowsOut as Maximize2,
+  Minus,
+  Moon,
+  DotsThree as MoreHorizontal,
+  Pause,
+  PencilSimple as Pencil,
+  Play,
+  Plus,
+  ArrowClockwise as RefreshCw,
+  Repeat,
+  ArrowCounterClockwise as RotateCcw,
+  HardDrives as Server,
+  SlidersHorizontal as Settings2,
+  ShieldCheck,
+  SkipBack,
+  SkipForward,
+  Sparkle as Sparkles,
+  Timer,
+  Trash as Trash2,
+  Trophy,
+  Vibrate,
+  VideoCamera as Video,
+  SpeakerHigh as Volume2,
+  X,
+  Lightning as Zap,
+} from 'phosphor-react-native';
+
+import {
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  ArrowDown,
+  ArrowRight,
+  ArrowsLeftRight,
+  ArrowsOut,
+  ArrowUp,
+  CaretDoubleRight,
+  CaretLeft,
+  CaretRight,
+  Check,
+  DotsThree,
+  Link,
+  Minus,
+  Plus,
+  Repeat,
+  X,
+} from 'phosphor-react-native';
+
+/**
+ * Line glyphs. Phosphor's "fill" draws these inside a solid box, so they use "bold" instead:
+ * the same chunky weight, without the box.
+ */
+export const LINE_ICONS = new Set<PhosphorIcon>([
+  ArrowClockwise,
+  ArrowCounterClockwise,
+  ArrowDown,
+  ArrowRight,
+  ArrowsLeftRight,
+  ArrowsOut,
+  ArrowUp,
+  CaretDoubleRight,
+  CaretLeft,
+  CaretRight,
+  Check,
+  DotsThree,
+  Link,
+  Minus,
+  Plus,
+  Repeat,
+  X,
+]);

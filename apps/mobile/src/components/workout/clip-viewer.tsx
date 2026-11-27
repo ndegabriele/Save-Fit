@@ -1,4 +1,4 @@
-import { Maximize2 } from 'lucide-react-native';
+import { Maximize2 } from '@/components/ui/icons';
 import { useState } from 'react';
 import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, Keyframe } from 'react-native-reanimated';

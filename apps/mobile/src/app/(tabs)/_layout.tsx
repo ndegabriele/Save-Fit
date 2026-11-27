@@ -1,7 +1,7 @@
 import type { BottomTabBarProps } from 'expo-router/tabs';
 import { Tabs, useRouter } from 'expo-router';
 import { cn } from 'heroui-native';
-import { House, Plus, Settings2 } from 'lucide-react-native';
+import { House, Plus, Settings2 } from '@/components/ui/icons';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui/icon';

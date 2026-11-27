@@ -1,6 +1,6 @@
 import { useIsFocused, useRouter } from 'expo-router';
 import { cn } from 'heroui-native';
-import { Layers, Link2 } from 'lucide-react-native';
+import { Layers, Link2 } from '@/components/ui/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import Animated from 'react-native-reanimated';

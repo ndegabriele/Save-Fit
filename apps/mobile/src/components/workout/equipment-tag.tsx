@@ -1,5 +1,5 @@
 import { cn } from 'heroui-native';
-import { Dumbbell } from 'lucide-react-native';
+import { Dumbbell } from '@/components/ui/icons';
 import { View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { AppText } from '@/components/ui/text';

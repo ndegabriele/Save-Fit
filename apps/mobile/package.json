@@ -36,7 +36,7 @@
     "expo-system-ui": "~58.0.6",
     "expo-video": "~58.0.14",
     "heroui-native": "^1.1.1",
-    "lucide-react-native": "^1.82.0",
+    "phosphor-react-native": "^3.0.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.0",

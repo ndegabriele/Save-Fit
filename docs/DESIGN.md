@@ -16,7 +16,7 @@ HeroUI's semantic tokens are re-skinned rather than replaced:
 
 - **Radius**: `--radius: 0.75rem` (rounder than stock HeroUI). Cards use 28–30 px, buttons and pills are fully round.
 - **Type**: Bricolage Grotesque ExtraBold for headings and big numbers (`hero`, `display`, `title`, `number` variants of `AppText`), Inter for everything people read.
-- Icons: Lucide, 2.2 stroke, coloured from tokens through `<Icon color="token">`.
+- Icons: Phosphor, filled weight (chunky and solid), exported under app names from `src/components/ui/icons.ts` and coloured from tokens through `<Icon color="token">`. Line glyphs (X, +, ✓, arrows, carets, dots) use Phosphor's bold weight, because its fill boxes them (see `LINE_ICONS`).
 
 ## 4px grid
 

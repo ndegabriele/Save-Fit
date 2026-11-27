@@ -1,5 +1,5 @@
 import { Button } from 'heroui-native';
-import { Clapperboard, X } from 'lucide-react-native';
+import { Clapperboard, X } from '@/components/ui/icons';
 import { useState } from 'react';
 import { View } from 'react-native';
 import Animated, { FadeOut, LinearTransition } from 'react-native-reanimated';

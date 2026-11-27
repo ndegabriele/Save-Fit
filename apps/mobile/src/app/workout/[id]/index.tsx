@@ -17,7 +17,7 @@ import {
   Repeat,
   Timer,
   Trash2,
-} from 'lucide-react-native';
+} from '@/components/ui/icons';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui/icon';
@@ -69,7 +69,8 @@ export default function WorkoutDetail() {
               <AppText variant="hero">{workout.title}</AppText>
               <CreatorRow creators={workout.creators} size={36} className="mt-1" />
             </View>
-            <Thumb uri={workout.source?.thumbnailUrl} category={workout.category} size={84} />
+            {/* Only a real thumbnail earns this spot; the category glyph said nothing the pills don't. */}
+            {workout.source?.thumbnailUrl ? <Thumb uri={workout.source.thumbnailUrl} category={workout.category} size={84} /> : null}
           </View>
         </View>
 

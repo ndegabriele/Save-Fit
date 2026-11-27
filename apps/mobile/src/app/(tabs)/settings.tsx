@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Button, Input, ListGroup, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
-import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, Vibrate, Video, Volume2 } from 'lucide-react-native';
+import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, Vibrate, Video, Volume2 } from '@/components/ui/icons';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';

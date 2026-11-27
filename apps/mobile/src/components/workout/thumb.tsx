@@ -1,13 +1,13 @@
 import { grid } from '@/lib/grid';
 import { Image } from 'expo-image';
 import { cn } from 'heroui-native';
-import { Dumbbell, Flame, Heart, Layers, Sparkles, Zap, type LucideIcon } from 'lucide-react-native';
+import { Dumbbell, Flame, Heart, Layers, Sparkles, Zap, type AppIcon } from '@/components/ui/icons';
 import { View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { mediaUrl } from '@/lib/api';
 import type { Category } from '@/lib/types';
 
-const CAT_ICON: Record<Category, LucideIcon> = {
+const CAT_ICON: Record<Category, AppIcon> = {
   strength: Dumbbell,
   hiit: Flame,
   cardio: Heart,

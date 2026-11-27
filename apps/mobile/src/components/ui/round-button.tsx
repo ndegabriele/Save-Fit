@@ -1,6 +1,6 @@
 import { grid } from '@/lib/grid';
 import { cn } from 'heroui-native';
-import type { LucideIcon } from 'lucide-react-native';
+import type { AppIcon } from '@/components/ui/icons';
 import { View } from 'react-native';
 import { Icon } from './icon';
 import { Tappable } from './tappable';
@@ -16,7 +16,7 @@ const TONE: Record<Tone, { bg: string; fg: string }> = {
 };
 
 export interface RoundButtonProps {
-  icon: LucideIcon;
+  icon: AppIcon;
   onPress?: () => void;
   size?: number;
   tone?: Tone;

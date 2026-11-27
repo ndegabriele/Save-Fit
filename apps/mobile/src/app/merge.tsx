@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Button, cn, Input, Label, TextField } from 'heroui-native';
-import { ArrowRight, Check, X } from 'lucide-react-native';
+import { ArrowRight, Check, X } from '@/components/ui/icons';
 import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import Animated, { LinearTransition, ReduceMotion, ZoomIn } from 'react-native-reanimated';

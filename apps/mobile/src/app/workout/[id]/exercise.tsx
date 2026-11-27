@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Input, Label, ListGroup, Switch, Tabs, TextArea, TextField, Description } from 'heroui-native';
-import { ArrowLeftRight, Trash2, X } from 'lucide-react-native';
+import { ArrowLeftRight, Trash2, X } from '@/components/ui/icons';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

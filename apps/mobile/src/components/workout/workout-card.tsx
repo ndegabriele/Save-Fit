@@ -1,5 +1,5 @@
 import { cn } from 'heroui-native';
-import { AlertTriangle, Play, RotateCcw } from 'lucide-react-native';
+import { AlertTriangle, Play, RotateCcw } from '@/components/ui/icons';
 import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
