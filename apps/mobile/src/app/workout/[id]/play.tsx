@@ -3,7 +3,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
 import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from '@/components/ui/icons';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, Keyframe, ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -121,7 +121,17 @@ function Player() {
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
-  const timer = (size: number) =>
+  // Large rings: the side pill sits outside the circle, bottom-aligned, in the corner on its own side.
+  // (Outside the pressable, which clips its overflow.)
+  const timer = (size: number) => (
+    <View style={{ width: size, height: size }}>
+      {timerBody(size)}
+      {side && !small(size) && !isRest ? (
+        <SidePill side={side} className={cn('absolute bottom-0', side.startsWith('Left') ? '-left-2' : '-right-2')} />
+      ) : null}
+    </View>
+  );
+  const timerBody = (size: number) =>
     isReps && step?.kind === 'work' ? (
       <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
         {small(size) ? (
@@ -136,18 +146,13 @@ function Player() {
         ) : (
           // Large: a ring like the timed moves, with a yellow sweep that goes round once a minute as you work.
           <ProgressRing size={size} stroke={16} progress={(p.repElapsed % 60) / 60} color="accent" stepMs={120}>
-            {/* The pill flanks the whole stack, so it sits at the circle's vertical centre. */}
-            <Flanked side={side}>
-              <View className="items-center">
-                <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
-                  {step.reps}
-                </AppText>
-                <DiscLabel size={size} text="reps" />
-                <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
-                  {clock(p.repElapsed)}
-                </AppText>
-              </View>
-            </Flanked>
+            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+              {step.reps}
+            </AppText>
+            <DiscLabel size={size} text="reps" />
+            <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
+              {clock(p.repElapsed)}
+            </AppText>
           </ProgressRing>
         )}
       </Tappable>
@@ -166,7 +171,6 @@ function Player() {
           <DiscLabel
             size={size}
             text={p.paused ? 'Paused' : isCountdown ? 'Get ready' : isRest ? 'Breathe' : 'Work'}
-            side={isRest || small(size) ? null : side}
             tight={false}
           />
         </ProgressRing>
@@ -467,9 +471,8 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
 
 /**
  * The word under the big number ("reps", "Breathe"), sized with the disc and tucked up close to it.
- * On a timed move the side pill flanks the word (the clock is too wide to flank).
  */
-function DiscLabel({ size, text, side = null, tight = true }: { size: number; text: string; side?: string | null; tight?: boolean }) {
+function DiscLabel({ size, text, tight = true }: { size: number; text: string; tight?: boolean }) {
   const compact = size < 160;
   const fontSize = compact ? 12 : grid(size * 0.086);
   return (
@@ -477,33 +480,9 @@ function DiscLabel({ size, text, side = null, tight = true }: { size: number; te
       // Pull the label up into the number's line box (its bottom is empty space under the digits).
       style={{ marginTop: tight ? -grid(size * (compact ? 0.08 : 0.06)) : -grid(size * 0.02) }}
     >
-      <Flanked side={side}>
-        <AppText variant="headline" className="text-white" style={{ fontSize, lineHeight: grid(fontSize * 1.2) }}>
-          {text}
-        </AppText>
-      </Flanked>
-    </View>
-  );
-}
-
-/**
- * Puts the side pill on the matching side of its content (Left on the left, Right on the right),
- * with an invisible twin on the other side so the content stays centred.
- */
-function Flanked({ side, children }: { side: string | null; children: ReactNode }) {
-  if (!side) return <>{children}</>;
-  const left = side.startsWith('Left');
-  const pill = <SidePill side={side} />;
-  const ghost = (
-    <View style={{ opacity: 0 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <SidePill side={side} />
-    </View>
-  );
-  return (
-    <View className="flex-row items-center gap-3">
-      {left ? pill : ghost}
-      {children}
-      {left ? ghost : pill}
+      <AppText variant="headline" className="text-white" style={{ fontSize, lineHeight: grid(fontSize * 1.2) }}>
+        {text}
+      </AppText>
     </View>
   );
 }
