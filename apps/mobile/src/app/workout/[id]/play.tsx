@@ -123,53 +123,44 @@ function Player() {
   const small = (size: number) => size < 160;
   const timer = (size: number) =>
     isReps && step?.kind === 'work' ? (
-              <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
-                {/* Compact: a lighter rounded square with big white reps. Large: the round dial. */}
-                <View
-                  className={cn('items-center justify-center', small(size) ? 'rounded-3xl bg-default' : 'rounded-full bg-surface')}
-                  style={{ width: size, height: size }}
-                >
-                  <AppText
-                    variant="number"
-                    className={small(size) ? 'text-white' : undefined}
-                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
-                  >
-                    {step.reps}
-                  </AppText>
-                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? '-mt-2 text-[12px] leading-[16px] text-white' : 'text-muted'}>
-                    {small(size) && side ? `reps · ${side[0]}` : 'reps'}
-                  </AppText>
-                  {small(size) ? null : side ? <SideChip label={side} /> : null}
-                  {small(size) ? null : (
-                    <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
-                      {clock(p.repElapsed)}
-                    </AppText>
-                  )}
-                </View>
-              </Tappable>
-            ) : (
-              <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
-                <ProgressRing
-                  size={size}
-                  stroke={small(size) ? 8 : 16}
-                  progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0}
-                  color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
-                  stepMs={120}
-                >
-                  <AppText variant="number" style={{ fontSize: grid(size * 0.3), lineHeight: grid(size * 0.34), fontVariant: ['tabular-nums'] }}>
-                    {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
-                  </AppText>
-                  {side && !p.paused && !small(size) ? (
-                    <SideChip label={side} />
-                  ) : (
-                    <AppText variant="label" className={cn('text-muted', small(size) && 'hidden')}>
-                      {p.paused ? 'Paused · tap to resume' : isCountdown ? 'Tap to start now' : isRest ? 'Breathe' : 'Tap to pause'}
-                    </AppText>
-                  )}
-                </ProgressRing>
-              </Tappable>
-            )
-;
+      <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
+        {/* Same layout at every size: compact is a lighter rounded square, large is the round disc. */}
+        <View
+          className={cn('items-center justify-center', small(size) ? 'rounded-3xl bg-default' : 'rounded-full bg-surface')}
+          style={{ width: size, height: size }}
+        >
+          <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+            {step.reps}
+          </AppText>
+          <DiscLabel size={size} text="reps" side={side} />
+          {small(size) ? null : (
+            <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
+              {clock(p.repElapsed)}
+            </AppText>
+          )}
+        </View>
+      </Tappable>
+    ) : (
+      <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
+        <ProgressRing
+          size={size}
+          stroke={small(size) ? 8 : 16}
+          progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0}
+          color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
+          stepMs={120}
+        >
+          <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.3), lineHeight: grid(size * 0.36), fontVariant: ['tabular-nums'] }}>
+            {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
+          </AppText>
+          <DiscLabel
+            size={size}
+            text={p.paused ? 'Paused' : isCountdown ? 'Get ready' : isRest ? 'Breathe' : 'Work'}
+            side={isRest ? null : side}
+            tight={false}
+          />
+        </ProgressRing>
+      </Tappable>
+    );
 
   const mainButton = (size: number, iconSize: number) =>
     isReps ? (
@@ -463,13 +454,29 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
   );
 }
 
-/** "Left side" / "Right side", shown inside the timer circle. */
-function SideChip({ label }: { label: string }) {
+/**
+ * The word under the big number ("reps", "Breathe"), sized with the disc and tucked up close to it.
+ * A left/right side sits inline beside it as a small badge, not stacked underneath.
+ */
+function DiscLabel({ size, text, side, tight = true }: { size: number; text: string; side: string | null; tight?: boolean }) {
+  const compact = size < 160;
+  const fontSize = compact ? 12 : grid(size * 0.086);
   return (
-    <View className="mt-1 rounded-full bg-accent/15 px-3 py-1">
-      <AppText variant="label" className="text-[12px] leading-[16px] text-accent">
-        {label}
+    <View
+      className="flex-row items-center gap-2"
+      // Pull the label up into the number's line box (its bottom is empty space under the digits).
+      style={{ marginTop: tight ? -grid(size * (compact ? 0.08 : 0.06)) : -grid(size * 0.02) }}
+    >
+      <AppText variant="headline" className="text-white" style={{ fontSize, lineHeight: grid(fontSize * 1.2) }}>
+        {text}
       </AppText>
+      {side ? (
+        <View className={cn('rounded-full bg-accent', compact ? 'px-1' : 'px-2 py-1')}>
+          <AppText variant="label" className="font-semibold uppercase text-accent-foreground" style={{ fontSize: compact ? 10 : 12, lineHeight: compact ? 12 : 16 }}>
+            {compact ? side[0] : side.replace(' side', '')}
+          </AppText>
+        </View>
+      ) : null}
     </View>
   );
 }
