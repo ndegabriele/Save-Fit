@@ -132,11 +132,11 @@ function Player() {
                   <AppText
                     variant="number"
                     className={small(size) ? 'text-white' : undefined}
-                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.42) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
+                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
                   >
                     {step.reps}
                   </AppText>
-                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? '-mt-1 text-[12px] leading-[16px] text-white' : 'text-muted'}>
+                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? '-mt-2 text-[12px] leading-[16px] text-white' : 'text-muted'}>
                     {small(size) && side ? `reps · ${side[0]}` : 'reps'}
                   </AppText>
                   {small(size) ? null : side ? <SideChip label={side} /> : null}
@@ -414,12 +414,12 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
         <Tappable onPress={p.goNow} feedback="firm" accessibilityLabel={`Starting in ${n}. Tap to start now`} scale={0.98}>
           <ProgressRing size={size} stroke={16} progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0} color="accent" stepMs={120}>
             <Animated.View key={n} entering={countIn}>
-              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.42), fontVariant: ['tabular-nums'] }}>
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56), fontVariant: ['tabular-nums'] }}>
                 {n}
               </AppText>
             </Animated.View>
             {p.paused ? (
-              <AppText variant="label" className="-mt-3 text-muted">
+              <AppText variant="label" className="-mt-4 text-muted">
                 Paused
               </AppText>
             ) : null}
