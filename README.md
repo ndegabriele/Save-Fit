@@ -44,7 +44,7 @@ Instagram sometimes needs a logged-in session to download: export cookies to a f
 cd apps/mobile
 npm install
 cp .env.example .env      # set EXPO_PUBLIC_API_URL=http://<your computer's LAN IP>:8787
-npx expo start
+npm start                 # opens in Expo Go
 ```
 
 Scan the QR code with Expo Go. Everything works in Expo Go **except the share sheet**, which needs native code; paste links in the app instead. You can also set the server address in **Settings → Server**.
