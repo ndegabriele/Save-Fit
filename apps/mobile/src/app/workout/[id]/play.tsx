@@ -259,7 +259,7 @@ function Player() {
               <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
                 {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
               </AppText>
-              <AppText variant="display" numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.75} className="text-[28px] leading-[32px]">
+              <AppText variant="display" numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.75} className="text-[24px] leading-[28px]">
                 {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
               </AppText>
               {meta ? (
