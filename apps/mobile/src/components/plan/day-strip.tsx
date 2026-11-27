@@ -50,7 +50,8 @@ export function DayStrip({
               <AppText variant="headline" className={on ? 'text-accent-foreground' : undefined}>
                 {chip.day}
               </AppText>
-              <View className={cn('mt-1 size-2 rounded-full', planned.has(key) ? (on ? 'bg-accent-foreground' : 'bg-accent') : 'bg-transparent')} />
+              {/* The dot sits on its own at the bottom so the day and date stay centred as one group. */}
+              <View className={cn('absolute bottom-1 size-2 rounded-full', planned.has(key) ? (on ? 'bg-accent-foreground' : 'bg-accent') : 'bg-transparent')} />
             </View>
           </Tappable>
         );
