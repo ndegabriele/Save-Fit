@@ -9,7 +9,7 @@ import { mediaUrl } from '@/lib/api';
  * Loops one segment of the coach's video (clip.start → clip.end), muted.
  * Lets people glance at the form while they move.
  */
-export function VideoClip({ uri, clip, paused, height, width, className }: { uri: string; clip: { start: number; end: number } | null | undefined; paused: boolean; height: number; width?: number; className?: string }) {
+export function VideoClip({ uri, clip, paused, height, width, className }: { uri: string; clip: { start: number; end: number } | null | undefined; paused: boolean; height?: number; width?: number; className?: string }) {
   const src = mediaUrl(uri);
   const player = useVideoPlayer(src ? { uri: src } : null, (p) => {
     p.muted = true;

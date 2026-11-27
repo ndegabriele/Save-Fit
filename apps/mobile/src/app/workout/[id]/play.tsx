@@ -2,9 +2,9 @@ import { grid } from '@/lib/grid';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
-import { Check, ChevronsRight, Info, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from 'lucide-react-native';
+import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -16,7 +16,7 @@ import { RoundButton } from '@/components/ui/round-button';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { ExerciseDetails } from '@/components/workout/exercise-details';
-import { ClipViewer } from '@/components/workout/clip-viewer';
+import { VideoClip } from '@/components/workout/video-clip';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
@@ -48,6 +48,15 @@ function Player() {
   const p = usePlayer(workout, settings.countdownSec);
   const [howTo, setHowTo] = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
+  // 0 = video view, 1 = controls view. Remembered across exercises.
+  const [view, setView] = useState(0);
+  const viewRef = useRef(0);
+  viewRef.current = view;
+  const pager = useRef<ScrollViewInstance>(null);
+  const goToView = (i: number) => {
+    setView(i);
+    pager.current?.scrollTo({ x: i * width, animated: true });
+  };
 
   // Start straight away with the get-ready countdown.
   useEffect(() => {
@@ -74,13 +83,80 @@ function Player() {
   const exercise = step?.kind === 'work' ? step.exercise : step?.next ?? null;
   const source = step?.block.source ?? workout.source;
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
-  const ringSize = grid(Math.min(width - 96, video ? height * 0.26 : height * 0.34, 300));
+  // Sized so the whole controls view fits on one screen, no scrolling.
+  const ringSize = grid(Math.min(width - 96, video ? height * 0.26 : height * 0.3, 280));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
   const isRest = step?.kind === 'rest';
   const isReps = step?.kind === 'work' && step.mode === 'reps';
   const isCountdown = p.phase === 'countdown';
+
+  const meta =
+    step?.kind === 'work'
+      ? [
+          step.sets > 1 ? `Set ${step.set} of ${step.sets}` : null,
+          step.rounds > 1 ? `Round ${step.round} of ${step.rounds}` : null,
+          step.side ? `${step.side === 'left' ? 'Left' : 'Right'} side` : null,
+          step.exercise.load,
+        ]
+          .filter(Boolean)
+          .join('  ·  ')
+      : '';
+
+  // Same timer and buttons in both views, just at different sizes.
+  const small = (size: number) => size < 160;
+  const timer = (size: number) =>
+    isReps && step?.kind === 'work' ? (
+              <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
+                <View className="items-center justify-center rounded-full bg-surface" style={{ width: size, height: size }}>
+                  <AppText variant="number" style={{ fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}>
+                    {step.reps}
+                  </AppText>
+                  <AppText variant={small(size) ? 'caption' : 'headline'} className="text-muted">
+                    {step.side ? (small(size) ? 'each side' : 'reps this side') : 'reps'}
+                  </AppText>
+                  {small(size) ? null : (
+                    <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
+                      {clock(p.repElapsed)}
+                    </AppText>
+                  )}
+                </View>
+              </Tappable>
+            ) : (
+              <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
+                <ProgressRing
+                  size={size}
+                  stroke={small(size) ? 8 : 16}
+                  progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0}
+                  color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
+                  stepMs={120}
+                >
+                  <AppText variant="number" style={{ fontSize: grid(size * 0.3), lineHeight: grid(size * 0.34), fontVariant: ['tabular-nums'] }}>
+                    {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
+                  </AppText>
+                  <AppText variant="label" className={cn('text-muted', small(size) && 'hidden')}>
+                    {p.paused ? 'Paused · tap to resume' : isCountdown ? 'Tap to start now' : isRest ? 'Breathe' : 'Tap to pause'}
+                  </AppText>
+                </ProgressRing>
+              </Tappable>
+            )
+;
+
+  const mainButton = (size: number, iconSize: number) =>
+    isReps ? (
+      <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise">
+        <View className="items-center justify-center rounded-full bg-accent" style={{ width: size, height: size }}>
+          <Icon icon={Check} size={iconSize} color="accent-foreground" strokeWidth={3} />
+        </View>
+      </Tappable>
+    ) : (
+      <Tappable onPress={p.togglePause} feedback="firm" accessibilityLabel={p.paused ? 'Resume' : 'Pause'}>
+        <View className="items-center justify-center rounded-full bg-accent" style={{ width: size, height: size }}>
+          <Icon icon={p.paused ? Play : Pause} size={iconSize} color="accent-foreground" strokeWidth={2.6} />
+        </View>
+      </Tappable>
+    );
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6, paddingBottom: Math.max(insets.bottom, 16) }}>
@@ -105,116 +181,132 @@ function Player() {
         <View className="h-full rounded-full bg-accent" style={{ width: `${Math.round(progress * 100)}%` }} />
       </View>
 
-      <ScrollView className="flex-1" contentContainerClassName="flex-grow items-center px-5 pt-5" showsVerticalScrollIndicator={false}>
+      {/* Two views of the same exercise, swipe between them. Controls work the same in both. */}
+      {video ? (
+        <View className="mt-3 flex-row justify-center gap-2" accessibilityRole="tablist">
+          {(['Video', 'Controls'] as const).map((label, i) => (
+            <Tappable key={label} onPress={() => goToView(i)} feedback="select" accessibilityLabel={`${label} view`}>
+              <View className={cn('h-2 rounded-full', view === i ? 'w-8 bg-foreground' : 'w-2 bg-foreground/30')} />
+            </Tappable>
+          ))}
+        </View>
+      ) : null}
+
+      <ScrollView
+        ref={pager}
+        horizontal
+        pagingEnabled
+        scrollEnabled={Boolean(video)}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => setView(Math.round(e.nativeEvent.contentOffset.x / width))}
+        onScroll={(e) => {
+          const next = Math.round(e.nativeEvent.contentOffset.x / width);
+          if (next !== viewRef.current) setView(next);
+        }}
+        scrollEventThrottle={64}
+        className="flex-1"
+      >
         {video ? (
-          <View className="mb-4 items-center">
-            <ClipViewer uri={video} clip={exercise?.clip} paused={p.paused} thumbHeight={Math.min(height * 0.24, 224)} />
+          // VIDEO VIEW: the coach's clip fills the screen, compact controls in a tile underneath.
+          <View style={{ width }} className="flex-1 gap-3 px-4 pt-3">
+            <View className="flex-1 overflow-hidden rounded-[32px] bg-surface">
+              <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 0} className="flex-1 rounded-[32px]" />
+            </View>
+            <View className="gap-4 rounded-[32px] bg-surface p-4">
+              <View className="flex-row items-center gap-4">
+                <View className="flex-1 gap-1">
+                  <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
+                    {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
+                  </AppText>
+                  <AppText variant="title" numberOfLines={2}>
+                    {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
+                  </AppText>
+                  {meta ? (
+                    <AppText variant="caption" numberOfLines={1}>
+                      {meta}
+                    </AppText>
+                  ) : null}
+                </View>
+                {timer(88)}
+              </View>
+              <View className="flex-row items-center justify-between px-4">
+                <RoundButton icon={SkipBack} label="Previous" tone="ghost" size={56} onPress={p.prev} />
+                {mainButton(72, 32)}
+                <RoundButton icon={SkipForward} label="Next" tone="ghost" size={56} onPress={p.next} />
+              </View>
+            </View>
           </View>
         ) : null}
 
-        {/* Title */}
-        <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="w-full items-center gap-2">
-          <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
-            {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
-          </AppText>
-          <AppText variant="display" className="text-center text-[36px] leading-[40px]">
-            {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
-          </AppText>
-          {step?.kind === 'work' ? (
-            <AppText variant="body" className="text-center text-muted">
-              {[
-                step.sets > 1 ? `Set ${step.set} of ${step.sets}` : null,
-                step.rounds > 1 ? `Round ${step.round} of ${step.rounds}` : null,
-                step.side ? `${step.side === 'left' ? 'Left' : 'Right'} side` : null,
-                step.exercise.load,
-              ]
-                .filter(Boolean)
-                .join('  ·  ')}
+        {/* CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail bottom left. */}
+        <View style={{ width }} className="flex-1">
+        <View className="flex-1 items-center justify-center px-5" style={{ paddingBottom: video ? 112 : 0 }}>
+          {/* Title */}
+          <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="w-full items-center gap-2">
+            <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
+              {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
             </AppText>
-          ) : null}
-        </Animated.View>
+            <AppText variant="display" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8} className="text-center text-[28px] leading-[32px]">
+              {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
+            </AppText>
+            {meta ? (
+              <AppText variant="label" numberOfLines={1} className="text-center text-muted">
+                {meta}
+              </AppText>
+            ) : null}
+          </Animated.View>
 
-        {/* Timer / reps */}
-        <View className="my-6 items-center justify-center">
-          {isReps && step?.kind === 'work' ? (
-            <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
-              <View className="items-center justify-center rounded-full bg-surface" style={{ width: ringSize, height: ringSize }}>
-                <AppText variant="number" style={{ fontSize: grid(ringSize * 0.42), lineHeight: grid(ringSize * 0.46) }}>
-                  {step.reps}
-                </AppText>
-                <AppText variant="headline" className="text-muted">
-                  {step.side ? 'reps this side' : 'reps'}
-                </AppText>
-                <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
-                  {clock(p.repElapsed)}
+          {/* Timer / reps */}
+          <View className="my-4 items-center justify-center">
+            {timer(ringSize)}
+          </View>
+
+          {/* Cues / rest actions */}
+          {isRest ? (
+            <View className="flex-row gap-3">
+              <Pillbutton icon={Plus} label="15 s" onPress={() => p.addTime(15)} />
+              <Pillbutton icon={ChevronsRight} label="Skip rest" onPress={p.next} />
+            </View>
+          ) : exercise?.cues.length ? (
+            <View className="h-10 flex-row justify-center gap-2 overflow-hidden">
+              {exercise.cues.slice(0, 2).map((c) => (
+                <View key={c} className="rounded-full bg-default px-4 py-2">
+                  <AppText variant="label">{c}</AppText>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {exercise && (exercise.steps.length > 0 || exercise.cues.length > 0) ? (
+            <Tappable onPress={() => setHowTo(true)} className="mt-2" accessibilityLabel="How to do this exercise">
+              <View className="flex-row items-center gap-2 px-3 py-2">
+                <Icon icon={Info} size={20} color="muted" />
+                <AppText variant="label" className="text-muted">
+                  How to do it
                 </AppText>
               </View>
             </Tappable>
-          ) : (
-            <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
-              <ProgressRing
-                size={ringSize}
-                stroke={16}
-                progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0}
-                color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
-                stepMs={120}
-              >
-                <AppText variant="number" style={{ fontSize: grid(ringSize * 0.3), lineHeight: grid(ringSize * 0.34), fontVariant: ['tabular-nums'] }}>
-                  {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
-                </AppText>
-                <AppText variant="label" className="text-muted">
-                  {p.paused ? 'Paused · tap to resume' : isCountdown ? 'Tap to start now' : isRest ? 'Breathe' : 'Tap to pause'}
-                </AppText>
-              </ProgressRing>
-            </Tappable>
-          )}
+          ) : null}
         </View>
 
-        {/* Cues / rest actions */}
-        {isRest ? (
-          <View className="flex-row gap-3">
-            <Pillbutton icon={Plus} label="15 s" onPress={() => p.addTime(15)} />
-            <Pillbutton icon={ChevronsRight} label="Skip rest" onPress={p.next} />
-          </View>
-        ) : exercise?.cues.length ? (
-          <View className="flex-row flex-wrap justify-center gap-2">
-            {exercise.cues.slice(0, 3).map((c) => (
-              <View key={c} className="rounded-full bg-default px-4 py-2">
-                <AppText variant="label">{c}</AppText>
-              </View>
-            ))}
-          </View>
-        ) : null}
-        {exercise && (exercise.steps.length > 0 || exercise.cues.length > 0) ? (
-          <Tappable onPress={() => setHowTo(true)} className="mt-4" accessibilityLabel="How to do this exercise">
-            <View className="flex-row items-center gap-2 px-3 py-2">
-              <Icon icon={Info} size={20} color="muted" />
-              <AppText variant="label" className="text-muted">
-                How to do it
-              </AppText>
-            </View>
-          </Tappable>
-        ) : null}
-      </ScrollView>
+        {/* Big controls: easy to hit mid-set, sweaty hands, from a distance. */}
+        <View className="flex-row items-center justify-between px-8 pt-2">
+          <RoundButton icon={SkipBack} label="Previous" tone="ghost" size={72} onPress={p.prev} />
+          {mainButton(104, 44)}
+          <RoundButton icon={SkipForward} label="Next" tone="ghost" size={72} onPress={p.next} />
+        </View>
 
-      {/* Big controls: easy to hit mid-set, sweaty hands, from a distance. */}
-      <View className="flex-row items-center justify-between px-8 pt-2">
-        <RoundButton icon={SkipBack} label="Previous" tone="ghost" size={72} onPress={p.prev} />
-        {isReps ? (
-          <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise">
-            <View className="size-[104px] items-center justify-center rounded-full bg-accent">
-              <Icon icon={Check} size={44} color="accent-foreground" strokeWidth={3} />
-            </View>
-          </Tappable>
-        ) : (
-          <Tappable onPress={p.togglePause} feedback="firm" accessibilityLabel={p.paused ? 'Resume' : 'Pause'}>
-            <View className="size-[104px] items-center justify-center rounded-full bg-accent">
-              <Icon icon={p.paused ? Play : Pause} size={44} color="accent-foreground" strokeWidth={2.6} />
-            </View>
-          </Tappable>
-        )}
-        <RoundButton icon={SkipForward} label="Next" tone="ghost" size={72} onPress={p.next} />
-      </View>
+          {video ? (
+            <Tappable onPress={() => goToView(0)} accessibilityLabel="Show the coach’s video" className="absolute bottom-[124px] left-6">
+              <View>
+                <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 1} height={96} width={56} className="rounded-[16px] border-2 border-foreground/20" />
+                <View className="absolute bottom-1 right-1 size-6 items-center justify-center rounded-full bg-black/60">
+                  <Icon icon={Maximize2} size={12} color="#FFFFFF" />
+                </View>
+              </View>
+            </Tappable>
+          ) : null}
+        </View>
+      </ScrollView>
 
       <Dialog isOpen={howTo} onOpenChange={setHowTo}>
         <Dialog.Portal>
