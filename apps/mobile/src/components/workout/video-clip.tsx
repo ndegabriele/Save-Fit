@@ -1,6 +1,7 @@
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect } from 'react';
+import { cn } from 'heroui-native';
 import { View } from 'react-native';
 import { mediaUrl } from '@/lib/api';
 
@@ -8,7 +9,7 @@ import { mediaUrl } from '@/lib/api';
  * Loops one segment of the coach's video (clip.start → clip.end), muted.
  * Lets people glance at the form while they move.
  */
-export function VideoClip({ uri, clip, paused, height }: { uri: string; clip: { start: number; end: number } | null | undefined; paused: boolean; height: number }) {
+export function VideoClip({ uri, clip, paused, height, width, className }: { uri: string; clip: { start: number; end: number } | null | undefined; paused: boolean; height: number; width?: number; className?: string }) {
   const src = mediaUrl(uri);
   const player = useVideoPlayer(src ? { uri: src } : null, (p) => {
     p.muted = true;
@@ -37,7 +38,7 @@ export function VideoClip({ uri, clip, paused, height }: { uri: string; clip: { 
   });
 
   return (
-    <View className="overflow-hidden rounded-[28px] bg-surface-secondary" style={{ height }}>
+    <View className={cn('overflow-hidden rounded-[28px] bg-surface-secondary', className)} style={{ height, width }}>
       <VideoView player={player} style={{ width: '100%', height: '100%' }} contentFit="cover" nativeControls={false} />
     </View>
   );

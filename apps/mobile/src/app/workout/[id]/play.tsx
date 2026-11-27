@@ -16,7 +16,7 @@ import { RoundButton } from '@/components/ui/round-button';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { ExerciseDetails } from '@/components/workout/exercise-details';
-import { VideoClip } from '@/components/workout/video-clip';
+import { ClipViewer } from '@/components/workout/clip-viewer';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
@@ -107,8 +107,8 @@ function Player() {
 
       <ScrollView className="flex-1" contentContainerClassName="flex-grow items-center px-5 pt-5" showsVerticalScrollIndicator={false}>
         {video ? (
-          <View className="mb-4 w-full">
-            <VideoClip uri={video} clip={exercise?.clip} paused={p.paused} height={grid(height * 0.24)} />
+          <View className="mb-4 items-center">
+            <ClipViewer uri={video} clip={exercise?.clip} paused={p.paused} thumbHeight={Math.min(height * 0.24, 224)} />
           </View>
         ) : null}
 
