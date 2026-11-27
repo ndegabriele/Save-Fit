@@ -1,0 +1,174 @@
+/*
+ * Save Fit design tokens.
+ * HeroUI Native supplies the component styles; this file only re-skins its
+ * semantic tokens (background, surface, accent ...) and adds the few tokens
+ * Save Fit needs on top (display font, category pastels, player palette).
+ * Anything custom we build must use these tokens so it reads as HeroUI.
+ */
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'heroui-native/styles';
+
+@source './node_modules/heroui-native/lib';
+@source './src';
+
+@theme {
+  --font-display: 'Bricolage-ExtraBold';
+  --font-display-semibold: 'Bricolage-SemiBold';
+}
+
+@theme inline static {
+  --color-lime: var(--lime);
+  --color-lime-foreground: var(--lime-foreground);
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-violet-soft: var(--violet-soft);
+
+  --color-cat-strength: var(--cat-strength);
+  --color-cat-strength-ink: var(--cat-strength-ink);
+  --color-cat-hiit: var(--cat-hiit);
+  --color-cat-hiit-ink: var(--cat-hiit-ink);
+  --color-cat-cardio: var(--cat-cardio);
+  --color-cat-cardio-ink: var(--cat-cardio-ink);
+  --color-cat-mobility: var(--cat-mobility);
+  --color-cat-mobility-ink: var(--cat-mobility-ink);
+  --color-cat-core: var(--cat-core);
+  --color-cat-core-ink: var(--cat-core-ink);
+  --color-cat-mixed: var(--cat-mixed);
+  --color-cat-mixed-ink: var(--cat-mixed-ink);
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      /* Rounder than stock HeroUI: friendlier, more "playful premium". */
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+
+      --background: oklch(97.4% 0.004 286);
+      --foreground: oklch(19% 0.008 286);
+
+      --surface: oklch(100% 0 0);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(95.6% 0.004 286);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(93% 0.005 286);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(100% 0 0);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(54% 0.014 286);
+
+      --default: oklch(94% 0.004 286);
+      --default-foreground: var(--foreground);
+
+      /* Accent = electric lime with ink text, as in the reference shots. */
+      --accent: oklch(89% 0.2 126);
+      --accent-foreground: oklch(19% 0.03 126);
+
+      --lime: oklch(89% 0.2 126);
+      --lime-foreground: oklch(19% 0.03 126);
+      --violet: oklch(62% 0.2 292);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(93% 0.05 292);
+
+      --success: oklch(72% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(80% 0.16 75);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(64% 0.22 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(100% 0 0);
+      --segment-foreground: var(--foreground);
+      --border: oklch(91% 0.005 286);
+      --separator: oklch(86% 0.005 286);
+      --focus: var(--violet);
+      --link: var(--violet);
+
+      /* Category pastels (card fills) and inks (big numbers / text on them). */
+      --cat-strength: oklch(93.5% 0.045 305);
+      --cat-strength-ink: oklch(72% 0.13 305);
+      --cat-hiit: oklch(93% 0.05 40);
+      --cat-hiit-ink: oklch(70% 0.16 40);
+      --cat-cardio: oklch(95.5% 0.07 95);
+      --cat-cardio-ink: oklch(84% 0.15 95);
+      --cat-mobility: oklch(95% 0.045 160);
+      --cat-mobility-ink: oklch(78% 0.12 160);
+      --cat-core: oklch(94% 0.04 235);
+      --cat-core-ink: oklch(72% 0.12 235);
+      --cat-mixed: oklch(95% 0.07 128);
+      --cat-mixed-ink: oklch(80% 0.19 128);
+    }
+
+    @variant dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+
+      --background: oklch(14.5% 0.004 286);
+      --foreground: oklch(98.5% 0 0);
+
+      --surface: oklch(20% 0.005 286);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(24% 0.005 286);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(28% 0.005 286);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(21% 0.005 286);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(70% 0.012 286);
+
+      --default: oklch(26% 0.005 286);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(89% 0.2 126);
+      --accent-foreground: oklch(19% 0.03 126);
+
+      --lime: oklch(89% 0.2 126);
+      --lime-foreground: oklch(19% 0.03 126);
+      --violet: oklch(70% 0.17 292);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(30% 0.08 292);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(34% 0.006 286);
+      --segment-foreground: var(--foreground);
+      --border: oklch(27% 0.005 286);
+      --separator: oklch(36% 0.005 286);
+      --focus: var(--violet);
+      --link: var(--violet);
+
+      --cat-strength: oklch(30% 0.07 305);
+      --cat-strength-ink: oklch(72% 0.14 305);
+      --cat-hiit: oklch(30% 0.07 40);
+      --cat-hiit-ink: oklch(74% 0.15 40);
+      --cat-cardio: oklch(31% 0.06 95);
+      --cat-cardio-ink: oklch(84% 0.15 95);
+      --cat-mobility: oklch(30% 0.05 160);
+      --cat-mobility-ink: oklch(78% 0.13 160);
+      --cat-core: oklch(30% 0.05 235);
+      --cat-core-ink: oklch(74% 0.12 235);
+      --cat-mixed: oklch(30% 0.07 128);
+      --cat-mixed-ink: oklch(86% 0.19 128);
+    }
+  }
+}
