@@ -116,7 +116,7 @@ export function CoachTile({ creators, onMedia, inkClass, size = 96 }: { creators
   return (
     <View className="items-center gap-2" style={{ width: size }} accessible accessibilityLabel={`By ${creators.map((c) => c.name || c.handle).join(', ')}`}>
       <View
-        className={cn('items-center justify-center overflow-hidden rounded-[24px]', onMedia ? 'border-2 border-white/30' : 'bg-white/60 dark:bg-white/10', !src && onMedia && 'bg-black/35')}
+        className={cn('items-center justify-center overflow-hidden rounded-full', onMedia ? 'border-2 border-white/30' : 'bg-white/60 dark:bg-white/10', !src && onMedia && 'bg-black/35')}
         style={{ width: size, height: size }}
       >
         {src ? (
@@ -126,14 +126,15 @@ export function CoachTile({ creators, onMedia, inkClass, size = 96 }: { creators
             {initials(first)}
           </AppText>
         )}
-        {extra > 0 ? (
-          <View className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-1">
-            <AppText variant="label" className="text-[12px] text-white">
-              +{extra}
-            </AppText>
-          </View>
-        ) : null}
       </View>
+      {extra > 0 ? (
+        // Outside the round photo so the circle doesn't clip it.
+        <View className="absolute right-0 rounded-full border-2 border-background bg-foreground px-2 py-1" style={{ top: size - 28 }}>
+          <AppText variant="label" className="text-[12px] text-background">
+            +{extra}
+          </AppText>
+        </View>
+      ) : null}
       <AppText variant="label" numberOfLines={1} className={cn('text-center text-[12px]', onMedia ? 'text-white' : 'text-foreground/70')}>
         {name}
       </AppText>

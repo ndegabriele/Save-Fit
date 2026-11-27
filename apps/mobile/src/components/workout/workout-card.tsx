@@ -49,11 +49,11 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
       >
         {media ? (
           <>
-            {/* The coach's video frame fills the tile; a scrim keeps the text readable. */}
-            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+            {/* The coach's video frame fills the tile, blurred and darkened so busy frames never fight the text. */}
+            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} blurRadius={24} />
             <LinearGradient
-              colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.8)']}
-              locations={[0, 0.32, 0.55, 1]}
+              colors={['rgba(0,0,0,0.72)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
+              locations={[0, 0.45, 0.62, 1]}
               style={StyleSheet.absoluteFill}
             />
           </>
@@ -75,6 +75,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
                 variant="number"
                 className={cn('text-[84px] leading-[84px]', media ? 'text-accent' : CATEGORY_INK[workout.category])}
                 accessibilityLabel={`${minutes} minutes`}
+               
               >
                 {String(minutes).padStart(2, '0')}′
               </AppText>
