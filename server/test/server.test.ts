@@ -54,3 +54,16 @@ test('isHandle keeps usernames and drops numeric/channel ids', async () => {
   assert.equal(isHandle('UCabcdefghijklmnopqrstuv'), false);
   assert.equal(isHandle('Has Spaces'), false);
 });
+
+test('parseWorkout accepts JSON with prose around it and fills defaults', async () => {
+  const { parseWorkout } = await import('../src/convert.ts');
+  const json = {
+    isWorkout: true, title: 'Legs', summary: 'Quick legs.', category: 'strength', difficulty: 'beginner',
+    blocks: [{ title: 'Main', kind: 'main', rounds: 3, restBetweenRoundsSec: 60, exercises: [{ name: 'Squat', mode: 'reps', reps: 10, sets: 1, restSec: 30, perSide: false }] }],
+  };
+  const ok = parseWorkout(`Here you go:\n${JSON.stringify(json)}\n`);
+  assert.equal(ok.ok, true);
+  if (ok.ok) assert.deepEqual(ok.workout.blocks[0]!.exercises[0]!.steps, []);
+  const bad = parseWorkout('{"isWorkout": true}');
+  assert.equal(bad.ok, false);
+});

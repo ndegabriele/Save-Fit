@@ -84,11 +84,13 @@ async function runJob(id: string) {
     await setStage('structuring');
     const result = await convertToWorkout(media, dir, job.text, job.url, keys.get(id));
     if (!result.isWorkout) throw new Error(result.notWorkoutReason || "This post doesn't look like a workout.");
-    const avatarFile = job.url ? await fetchAvatar(detectPlatform(job.url), media.handle ?? result.creatorHandle, dir) : null;
+    const avatarFile = job.url ? await fetchAvatar(detectPlatform(job.url), media.handle ?? result.creatorHandle ?? null, dir) : null;
     await save({ ...(jobs.get(id) as Job), status: 'done', stage: 'done', workout: toDraft(result, media, job, avatarFile) });
     console.log(`[job ${id}] done: ${result.title}`);
   } catch (e) {
     let error = e instanceof Error ? e.message : String(e);
+    // API errors arrive as '400 {"type":"error","error":{...,"message":"..."}}': show just the message.
+    error = error.match(/"message":"((?:[^"\\]|\\.)*)"/)?.[1] ?? error;
     if (/authentication|invalid x-api-key|401/i.test(error)) error = 'Your Claude API key was rejected. Check it in Settings → AI account.';
     else if (/credit balance|billing/i.test(error)) error = 'Your Anthropic account is out of credit. Add credit at console.anthropic.com.';
     console.error(`[job ${id}] failed: ${error}`);

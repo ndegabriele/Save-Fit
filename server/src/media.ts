@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { assertPublicUrl, safeFetch } from './net.ts';
 
@@ -20,6 +20,7 @@ export interface Media {
 
 const YTDLP = process.env.YTDLP_PATH || 'yt-dlp';
 const MAX_FRAMES = Number(process.env.MAX_FRAMES || 24);
+const MAX_ITEMS = Number(process.env.MAX_CAROUSEL_ITEMS || 8);
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
 
 export function detectPlatform(url: string): Platform {
@@ -63,9 +64,11 @@ export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetchin
   onStage('fetching');
 
   const cookieArgs = process.env.YTDLP_COOKIES ? ['--cookies', process.env.YTDLP_COOKIES] : [];
+  // Carousels (several videos in one post) come back as a playlist: keep up to MAX_ITEMS items.
   const dl = await run(YTDLP, [
     ...cookieArgs,
-    '--no-playlist',
+    '--yes-playlist',
+    '--playlist-items', `1-${MAX_ITEMS}`,
     '--no-progress',
     '--print-json',
     '-f', 'b[ext=mp4][height<=720]/bv*[height<=720]+ba/b',
@@ -73,31 +76,48 @@ export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetchin
     '--max-filesize', '150M',
     '--write-thumbnail', '--convert-thumbnails', 'jpg',
     '--write-subs', '--write-auto-subs', '--sub-langs', 'en.*,en', '--sub-format', 'vtt',
-    '-o', path.join(dir, 'video.%(ext)s'),
+    '-o', path.join(dir, 'item_%(playlist_index)s.%(ext)s'),
     url,
-  ], 180_000);
+  ], 300_000);
 
-  if (dl.code === 0) {
-    const info = JSON.parse(dl.stdout.trim().split('\n').pop() || '{}') as Record<string, unknown>;
-    const files = await readdir(dir);
-    const video = files.find((f) => f.startsWith('video.') && f.endsWith('.mp4')) ?? null;
-    const thumb = files.find((f) => f.endsWith('.jpg')) ?? null;
-    const subFile = files.find((f) => f.endsWith('.vtt'));
-    const subtitles = subFile ? vttToText(await readFile(path.join(dir, subFile), 'utf8')) : null;
-    const duration = typeof info.duration === 'number' ? info.duration : null;
+  const infos = dl.stdout
+    .trim()
+    .split('\n')
+    .flatMap((l) => {
+      try {
+        return [JSON.parse(l) as Record<string, unknown>];
+      } catch {
+        return [];
+      }
+    });
+  const files = (await readdir(dir)).sort();
+  const items = files.filter((f) => f.startsWith('item_') && f.endsWith('.mp4'));
+
+  if (dl.code === 0 || items.length) {
+    const info = infos[0] ?? {};
+    const thumbs = files.filter((f) => f.startsWith('item_') && f.endsWith('.jpg'));
+    const subtitles = (
+      await Promise.all(files.filter((f) => f.endsWith('.vtt')).map(async (f) => vttToText(await readFile(path.join(dir, f), 'utf8'))))
+    ).join(' ') || null;
     onStage('watching');
+    // One continuous video, so exercise clips and frame timestamps work the same for carousels.
+    const video = items.length ? await joinVideos(items.map((f) => path.join(dir, f)), dir) : null;
+    const duration = video ? await probeDuration(path.join(dir, video)) : sumDurations(infos);
     const frames = video ? await extractFrames(path.join(dir, video), duration, dir) : [];
+    // Photo-only carousels: use each item's image as a frame.
+    if (!frames.length) for (const t of thumbs.slice(0, MAX_FRAMES)) frames.push({ file: t, t: 0 });
     const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim() : null);
+    const pick = (k: string) => infos.map((i) => str(i[k])).find(Boolean) ?? null;
     return {
       platform,
-      title: str(info.title),
-      caption: str(info.description),
-      uploader: str(info.uploader) ?? str(info.channel) ?? str(info.creator),
+      title: pick('title'),
+      caption: pick('description'),
+      uploader: pick('uploader') ?? pick('channel') ?? pick('creator'),
       // uploader_id is a username on some platforms and a number on others; keep real handles only.
       handle: [info.uploader_id, info.channel, info.uploader].map(str).find((h) => h && isHandle(h)) ?? null,
       duration,
       videoFile: video,
-      thumbnailFile: thumb,
+      thumbnailFile: thumbs[0] ?? null,
       subtitles,
       frames,
     };
@@ -183,6 +203,42 @@ export async function fetchAvatar(platform: Platform, handle: string | null, dir
   } catch {
     return null;
   }
+}
+
+function sumDurations(infos: Record<string, unknown>[]): number | null {
+  const total = infos.reduce((a, i) => a + (typeof i.duration === 'number' ? i.duration : 0), 0);
+  return total > 0 ? total : null;
+}
+
+async function probeDuration(file: string): Promise<number | null> {
+  const r = await run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', file], 30_000);
+  const d = Number(r.stdout.trim());
+  return r.code === 0 && d > 0 ? d : null;
+}
+
+/**
+ * One item: rename to video.mp4. Several (a carousel): scale/pad to one 720x1280 portrait
+ * canvas and concatenate. Audio is dropped because items may not all have it.
+ */
+export async function joinVideos(files: string[], dir: string): Promise<string | null> {
+  const out = path.join(dir, 'video.mp4');
+  if (files.length === 1) {
+    await rename(files[0]!, out);
+    return 'video.mp4';
+  }
+  const filters = files.map((_, i) => `[${i}:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30[v${i}]`);
+  const concat = `${files.map((_, i) => `[v${i}]`).join('')}concat=n=${files.length}:v=1:a=0[v]`;
+  const r = await run('ffmpeg', [
+    '-y', '-loglevel', 'error',
+    ...files.flatMap((f) => ['-i', f]),
+    '-filter_complex', [...filters, concat].join(';'),
+    '-map', '[v]', '-an', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-movflags', '+faststart',
+    out,
+  ], 300_000);
+  if (r.code === 0) return 'video.mp4';
+  console.warn(`[media] joining carousel failed: ${r.stderr.slice(-300)}`);
+  await rename(files[0]!, out);
+  return 'video.mp4';
 }
 
 /** Evenly spaced, downscaled frames with their timestamps, for Claude to "watch" the video. */

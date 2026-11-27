@@ -82,7 +82,7 @@ export async function ping(base: string): Promise<boolean> {
 /** Media paths from the server are relative; make them absolute. */
 export function mediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  if (/^https?:\/\//.test(path)) return path;
+  if (/^(https?|data|file):/.test(path)) return path;
   return `${apiUrl()}${path.startsWith('/') ? '' : '/'}${path}`;
 }
 

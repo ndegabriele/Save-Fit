@@ -1,20 +1,21 @@
 import { cn } from 'heroui-native';
 import { AlertTriangle, Play, RotateCcw } from 'lucide-react-native';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { CreatorRow } from '@/components/ui/avatar';
+import { CreatorChip } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
-import { STAGE_COPY, type ImportStage } from '@/lib/api';
+import { mediaUrl, STAGE_COPY, type ImportStage } from '@/lib/api';
 import { CATEGORY_LABEL, DIFFICULTY_LABEL, creatorLine, plural } from '@/lib/format';
 import { EASE_IN_OUT } from '@/lib/motion';
 import { exerciseCount, workoutMinutes } from '@/lib/sequence';
 import { CATEGORY_BG, CATEGORY_BORDER, CATEGORY_INK } from '@/lib/theme';
 import type { Workout } from '@/lib/types';
 import { Pill } from './category-pill';
-import { Thumb } from './thumb';
 
 export interface WorkoutCardProps {
   workout: Workout;
@@ -30,6 +31,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
   if (workout.status === 'failed') return <FailedCard workout={workout} onPress={onPress} onRetry={onRetry} />;
 
   const minutes = workoutMinutes(workout);
+  const media = mediaUrl(workout.source?.thumbnailUrl ?? workout.blocks.find((b) => b.source?.thumbnailUrl)?.source?.thumbnailUrl);
   const selecting = selectedIndex !== undefined;
   const selected = selectedIndex !== null && selectedIndex !== undefined;
 
@@ -38,48 +40,58 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
     <Tappable onPress={onPress} accessibilityLabel={`${workout.title} by ${creatorLine(workout.creators)}`}>
       <View
         className={cn(
-          'overflow-hidden rounded-[32px] p-5',
+          'overflow-hidden rounded-[32px]',
           CATEGORY_BG[workout.category],
           selected && cn('border-4', CATEGORY_BORDER[workout.category]),
           selecting && !selected && 'opacity-80',
         )}
-        style={{ minHeight: 236 }}
+        style={{ minHeight: 256 }}
       >
-        <View className="flex-row gap-4">
-          <View className="flex-1 gap-2">
-            <Pill label={CATEGORY_LABEL[workout.category]} />
-            <AppText variant="display" numberOfLines={3}>
-              {workout.title}
-            </AppText>
-            <CreatorRow creators={workout.creators} className="mt-1" />
+        {media ? (
+          <>
+            {/* The coach's video frame fills the tile; a scrim keeps the text readable. */}
+            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+            <LinearGradient
+              colors={['rgba(0,0,0,0.55)', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.8)']}
+              locations={[0, 0.32, 0.55, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+          </>
+        ) : null}
+        <View className="flex-1 p-5">
+          <View className="flex-row items-start justify-between gap-3">
+            <Pill label={CATEGORY_LABEL[workout.category]} inverted={Boolean(media)} className={media ? 'bg-black/35' : undefined} />
+            <CreatorChip creators={workout.creators} onMedia={Boolean(media)} />
           </View>
-          <Thumb uri={workout.source?.thumbnailUrl} category={workout.category} />
-        </View>
+          <AppText variant="display" numberOfLines={3} className={cn('mt-3', media && 'text-white')}>
+            {workout.title}
+          </AppText>
 
-        <View className="mt-auto flex-row items-end justify-between pt-2">
-          <View>
-            <AppText
-              variant="number"
-              className={cn('text-[84px] leading-[84px]', CATEGORY_INK[workout.category])}
-              accessibilityLabel={`${minutes} minutes`}
-            >
-              {String(minutes).padStart(2, '0')}′
-            </AppText>
-            <AppText variant="caption" className="text-foreground/55">
-              {plural(exerciseCount(workout), 'exercise')} · {DIFFICULTY_LABEL[workout.difficulty]}
-            </AppText>
-          </View>
-          {selecting ? (
-            <View className={cn('size-14 items-center justify-center rounded-full', selected ? 'bg-foreground' : cn('border-2 opacity-40', CATEGORY_BORDER[workout.category]))}>
-              {selected ? (
-                <AppText variant="title" className="text-background">
-                  {selectedIndex + 1}
-                </AppText>
-              ) : null}
+          <View className="mt-auto flex-row items-end justify-between pt-4">
+            <View>
+              <AppText
+                variant="number"
+                className={cn('text-[84px] leading-[84px]', media ? 'text-accent' : CATEGORY_INK[workout.category])}
+                accessibilityLabel={`${minutes} minutes`}
+              >
+                {String(minutes).padStart(2, '0')}′
+              </AppText>
+              <AppText variant="caption" className={media ? 'text-white/80' : 'text-foreground/55'}>
+                {plural(exerciseCount(workout), 'exercise')} · {DIFFICULTY_LABEL[workout.difficulty]}
+              </AppText>
             </View>
-          ) : (
-            <View className="size-14" />
-          )}
+            {selecting ? (
+              <View className={cn('size-14 items-center justify-center rounded-full', selected ? 'bg-foreground' : cn('border-2 opacity-40', media ? 'border-white' : CATEGORY_BORDER[workout.category]))}>
+                {selected ? (
+                  <AppText variant="title" className="text-background">
+                    {selectedIndex + 1}
+                  </AppText>
+                ) : null}
+              </View>
+            ) : (
+              <View className="size-14" />
+            )}
+          </View>
         </View>
       </View>
     </Tappable>

@@ -1,9 +1,30 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Media } from './media.ts';
+import { z } from 'zod';
 import { WorkoutSchema, type ClaudeWorkout } from './schema.ts';
+
+const JSON_INSTRUCTIONS = `
+
+Answer with one JSON object and nothing else (no prose, no code fences). It must match this JSON Schema exactly, using null for unknown nullable fields:
+${JSON.stringify(z.toJSONSchema(WorkoutSchema))}`;
+
+/** Pulls the JSON object out of Claude's reply and validates it. */
+export function parseWorkout(text: string): { ok: true; workout: ClaudeWorkout } | { ok: false; error: string } {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) return { ok: false, error: 'no JSON object found' };
+  let data: unknown;
+  try {
+    data = JSON.parse(text.slice(start, end + 1));
+  } catch (e) {
+    return { ok: false, error: `invalid JSON (${(e as Error).message})` };
+  }
+  const parsed = WorkoutSchema.safeParse(data);
+  if (parsed.success) return { ok: true, workout: parsed.data };
+  return { ok: false, error: z.prettifyError(parsed.error).slice(0, 1500) };
+}
 
 /**
  * Each request uses the caller's own key (sent by the app, kept only in memory for the job).
@@ -63,20 +84,31 @@ export async function convertToWorkout(media: Media, dir: string, extraText: str
   }
   content.push({ type: 'text', text: 'Turn this into a structured workout.' });
 
-  const response = await client.beta.messages.parse({
-    model: MODEL,
-    max_tokens: 16000,
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    thinking: { type: 'adaptive' },
-    system: SYSTEM_PROMPT,
-    output_config: { effort: EFFORT, format: betaZodOutputFormat(WorkoutSchema) },
-    messages: [{ role: 'user', content }],
-  });
-
-  if (response.stop_reason === 'refusal') throw new Error('The AI declined to process this post.');
-  if (response.stop_reason === 'max_tokens') throw new Error('The workout was too long to process in one go.');
-  const parsed = response.parsed_output;
-  if (!parsed) throw new Error('The AI returned an unreadable answer. Try again.');
-  return parsed;
+  // No constrained decoding: the workout schema is too big for a strict JSON grammar
+  // ("compiled grammar is too large"). Claude writes JSON against the schema in the
+  // system prompt, we validate it with Zod, and ask once for a fix if it doesn't match.
+  const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: 'user', content }];
+  let lastError = '';
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await client.beta.messages.create({
+      model: MODEL,
+      max_tokens: 16000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      thinking: { type: 'adaptive' },
+      system: SYSTEM_PROMPT + JSON_INSTRUCTIONS,
+      output_config: { effort: EFFORT },
+      messages,
+    });
+    if (response.stop_reason === 'refusal') throw new Error('The AI declined to process this post.');
+    if (response.stop_reason === 'max_tokens') throw new Error('The workout was too long to process in one go.');
+    const text = response.content.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n');
+    const result = parseWorkout(text);
+    if (result.ok) return result.workout;
+    lastError = result.error;
+    messages.push({ role: 'assistant', content: response.content as Anthropic.Beta.BetaContentBlockParam[] });
+    messages.push({ role: 'user', content: `That JSON doesn't match the schema: ${result.error}\nReply with the complete corrected JSON only.` });
+  }
+  console.warn(`[convert] invalid JSON after retry: ${lastError.slice(0, 300)}`);
+  throw new Error('The AI returned an unreadable answer. Try again.');
 }

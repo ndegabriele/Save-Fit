@@ -72,3 +72,31 @@ export function CreatorRow({ creators, size = 32, className }: { creators: Creat
     </View>
   );
 }
+
+/**
+ * Compact coach badge for the top-right of a workout tile: avatar(s) + first name.
+ * `onMedia` switches to a frosted dark style for tiles with a photo/video background.
+ */
+export function CreatorChip({ creators, onMedia, className }: { creators: Creator[]; onMedia?: boolean; className?: string }) {
+  if (!creators.length) return null;
+  const first = creators[0]!;
+  const name = first.name || first.handle?.replace(/^@/, '') || 'Coach';
+  const extra = creators.length - 1;
+  return (
+    <View
+      className={cn('max-w-[176px] flex-row items-center gap-2 rounded-full py-1 pl-1 pr-3', onMedia ? 'bg-black/35' : 'bg-white/70 dark:bg-white/10', className)}
+      accessible
+      accessibilityLabel={`By ${creators.map((c) => c.name || c.handle).join(', ')}`}
+    >
+      <View className="flex-row">
+        {creators.slice(0, 3).map((c, i) => (
+          <CreatorAvatar key={(c.handle || c.name) + i} creator={c} size={32} className={cn(onMedia && 'border-black/20', i > 0 && '-ml-3')} />
+        ))}
+      </View>
+      <AppText variant="label" numberOfLines={1} className={cn('shrink', onMedia ? 'text-white' : 'text-foreground')}>
+        {name}
+        {extra > 0 ? ` +${extra}` : ''}
+      </AppText>
+    </View>
+  );
+}
