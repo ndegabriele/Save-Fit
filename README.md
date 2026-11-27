@@ -29,11 +29,12 @@ Needs Node 22+, `ffmpeg` and `yt-dlp` (`brew install ffmpeg yt-dlp`, or `pip ins
 ```bash
 cd server
 npm install
-cp .env.example .env      # add your ANTHROPIC_API_KEY
 npm run dev               # http://0.0.0.0:8787
 ```
 
-Or with Docker: `docker build -t save-fit-server server && docker run -p 8787:8787 --env-file server/.env -v savefit:/data save-fit-server`.
+Or with Docker: `docker build -t save-fit-server server && docker run -p 8787:8787 -v savefit:/data save-fit-server`.
+
+No API key goes on the server. **Temporary:** each user adds their own Claude API key in the app under **Settings → AI account**. The key is kept in the phone's secure storage (Keychain / Keystore) and sent with each import as the `X-Anthropic-Key` header. The server holds it in memory only for that import, and never writes it to disk or logs it. Setting `ANTHROPIC_API_KEY` in `server/.env` is still supported as a shared fallback.
 
 Instagram sometimes needs a logged-in session to download: export cookies to a file and set `YTDLP_COOKIES`. When the download fails anyway, the server falls back to the post's caption and thumbnail.
 

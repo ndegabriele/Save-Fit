@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import type { WorkoutDraft } from './normalize';
+import { loadAiKey } from './ai-key';
 import { useStore } from './store';
 
 export type ImportStage = 'queued' | 'fetching' | 'reading' | 'watching' | 'structuring' | 'done' | 'failed';
@@ -44,9 +45,25 @@ async function json<T>(res: Response): Promise<T> {
 export async function startImport(input: { url?: string | null; text?: string | null }): Promise<ImportJob> {
   const base = apiUrl();
   if (!base) throw new Error('No server configured. Add the server address in Settings.');
+  const key = await loadAiKey();
+  if (!key) throw new Error('Add your Claude API key in Settings → AI account first.');
   return json<ImportJob>(
-    await fetch(`${base}/v1/imports`, { method: 'POST', headers: headers(), body: JSON.stringify(input) }),
+    await fetch(`${base}/v1/imports`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key }, body: JSON.stringify(input) }),
   );
+}
+
+/** Asks the server to verify a key with Anthropic. Returns an error message, or null when it works. */
+export async function checkAiKey(key: string): Promise<string | null> {
+  const base = apiUrl();
+  if (!base) return 'Add the server address below first.';
+  try {
+    const res = await fetch(`${base}/v1/check-key`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key } });
+    if (res.ok) return null;
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    return body.error ?? `Server error (${res.status})`;
+  } catch {
+    return 'Can’t reach the server.';
+  }
 }
 
 export async function getImport(jobId: string): Promise<ImportJob> {

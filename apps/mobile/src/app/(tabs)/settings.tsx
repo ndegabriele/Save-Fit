@@ -1,13 +1,14 @@
 import Constants from 'expo-constants';
 import { Button, Input, ListGroup, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
-import { Moon, RefreshCw, Server, Timer, Vibrate, Video, Volume2 } from 'lucide-react-native';
+import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, Vibrate, Video, Volume2 } from 'lucide-react-native';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
 import { Stepper } from '@/components/ui/stepper';
 import { AppText } from '@/components/ui/text';
-import { apiUrl, ping } from '@/lib/api';
+import { maskKey, setAiKey, useAiKey } from '@/lib/ai-key';
+import { apiUrl, checkAiKey, ping } from '@/lib/api';
 import { IS_EXPO_GO } from '@/lib/share-intent';
 import { useStore, type Settings } from '@/lib/store';
 
@@ -86,6 +87,8 @@ export default function SettingsScreen() {
           </Tabs>
         </Section>
 
+        <AiAccount />
+
         <Section title="Server">
           <TextField>
             <Label>Server address</Label>
@@ -118,6 +121,93 @@ export default function SettingsScreen() {
         </AppText>
       </ScrollView>
     </Screen>
+  );
+}
+
+/**
+ * TEMPORARY: bring-your-own Claude key until Save Fit has real accounts.
+ * The key stays in the phone's secure storage and is sent only to your Save Fit server with each import.
+ */
+function AiAccount() {
+  const key = useAiKey();
+  const { toast } = useToast();
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const save = async () => {
+    const value = draft.trim();
+    if (!/^sk-ant-/.test(value)) return setError('Claude API keys start with “sk-ant-”.');
+    setChecking(true);
+    setError(null);
+    const problem = await checkAiKey(value);
+    setChecking(false);
+    // Unreachable server: keep the key anyway, it will be checked on the first import.
+    if (problem && !/reach|server address/i.test(problem)) return setError(problem);
+    await setAiKey(value);
+    setDraft('');
+    toast.show({ variant: 'success', label: 'Claude key saved', description: problem ? 'Saved, but not checked yet: ' + problem : 'Imports will use your own Claude account.' });
+  };
+
+  return (
+    <Section title="AI account">
+      <View className="gap-3 rounded-[24px] border border-dashed border-warning/60 bg-warning-soft p-4">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Icon icon={KeyRound} size={18} />
+            <AppText variant="headline">Your Claude key</AppText>
+          </View>
+          <View className="rounded-full bg-warning px-2.5 py-1">
+            <AppText variant="label" className="text-[11px] uppercase tracking-wider text-warning-foreground">
+              Temporary
+            </AppText>
+          </View>
+        </View>
+        <AppText variant="caption" className="text-foreground/70">
+          Until Save Fit has its own accounts, imports run on your personal Claude API key. Create one at console.anthropic.com → API keys. It is stored only in this phone’s secure storage, sent to your server with each import, and never saved there.
+        </AppText>
+        {key ? (
+          <View className="flex-row items-center gap-3 rounded-2xl bg-surface p-3">
+            <Icon icon={ShieldCheck} size={20} color="success" />
+            <AppText variant="label" className="flex-1" numberOfLines={1}>
+              {maskKey(key)}
+            </AppText>
+            <Button
+              size="sm"
+              variant="danger-soft"
+              onPress={async () => {
+                await setAiKey(null);
+                toast.show({ variant: 'default', label: 'Key removed from this phone' });
+              }}
+            >
+              <Icon icon={Trash2} size={16} color="danger" />
+              <Button.Label>Remove</Button.Label>
+            </Button>
+          </View>
+        ) : (
+          <>
+            <TextField isInvalid={Boolean(error)}>
+              <Input
+                value={draft}
+                onChangeText={(t) => {
+                  setDraft(t);
+                  setError(null);
+                }}
+                placeholder="sk-ant-…"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry
+                textContentType="password"
+              />
+              {error ? <Description className="text-danger">{error}</Description> : null}
+            </TextField>
+            <Button onPress={save} isDisabled={checking || !draft.trim()}>
+              <Button.Label>{checking ? 'Checking…' : 'Check & save key'}</Button.Label>
+            </Button>
+          </>
+        )}
+      </View>
+    </Section>
   );
 }
 

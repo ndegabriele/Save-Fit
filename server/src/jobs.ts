@@ -46,8 +46,12 @@ export async function getJob(id: string): Promise<Job | undefined> {
   }
 }
 
-export async function createJob(url: string | null, text: string | null): Promise<Job> {
+/** Callers' API keys, in memory only: never written to job.json or logged, dropped when the job ends. */
+const keys = new Map<string, string>();
+
+export async function createJob(url: string | null, text: string | null, apiKey: string | null = null): Promise<Job> {
   const job: Job = { id: randomUUID(), status: 'pending', stage: 'queued', url, text, createdAt: Date.now() };
+  if (apiKey) keys.set(job.id, apiKey);
   await save(job);
   queue.push(job.id);
   void pump();
@@ -78,16 +82,19 @@ async function runJob(id: string) {
       media = { platform: 'other', title: null, caption: null, uploader: null, handle: null, duration: null, videoFile: null, thumbnailFile: null, subtitles: null, frames: [] };
     }
     await setStage('structuring');
-    const result = await convertToWorkout(media, dir, job.text, job.url);
+    const result = await convertToWorkout(media, dir, job.text, job.url, keys.get(id));
     if (!result.isWorkout) throw new Error(result.notWorkoutReason || "This post doesn't look like a workout.");
     const avatarFile = job.url ? await fetchAvatar(detectPlatform(job.url), media.handle ?? result.creatorHandle, dir) : null;
     await save({ ...(jobs.get(id) as Job), status: 'done', stage: 'done', workout: toDraft(result, media, job, avatarFile) });
     console.log(`[job ${id}] done: ${result.title}`);
   } catch (e) {
     let error = e instanceof Error ? e.message : String(e);
-    if (/authentication|api[_ ]?key|401/i.test(error)) error = 'The server is missing a valid Claude API key (ANTHROPIC_API_KEY).';
+    if (/authentication|invalid x-api-key|401/i.test(error)) error = 'Your Claude API key was rejected. Check it in Settings → AI account.';
+    else if (/credit balance|billing/i.test(error)) error = 'Your Anthropic account is out of credit. Add credit at console.anthropic.com.';
     console.error(`[job ${id}] failed: ${error}`);
     await save({ ...(jobs.get(id) as Job), status: 'failed', stage: 'failed', error });
+  } finally {
+    keys.delete(id);
   }
 }
 

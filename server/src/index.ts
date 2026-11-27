@@ -6,6 +6,7 @@ import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
+import { checkKey } from './convert.ts';
 import { createJob, DATA_DIR, getJob } from './jobs.ts';
 
 const app = new Hono();
@@ -32,8 +33,23 @@ app.post('/v1/imports', async (c) => {
   const { url, text } = parsed.data;
   if (!url && !text?.trim()) return c.json({ error: 'Send a link or some text.' }, 400);
   if (url && !/^https?:/i.test(url)) return c.json({ error: 'Only http(s) links are supported.' }, 400);
-  const job = await createJob(url ?? null, text?.trim() || null);
+  const apiKey = userKey(c.req.header('X-Anthropic-Key'));
+  if (!apiKey && !process.env.ANTHROPIC_API_KEY) return c.json({ error: 'Add your Claude API key in Settings → AI account.' }, 400);
+  const job = await createJob(url ?? null, text?.trim() || null, apiKey);
   return c.json(publicJob(job), 202);
+});
+
+// Checks a user's key without storing it.
+app.post('/v1/check-key', async (c) => {
+  const apiKey = userKey(c.req.header('X-Anthropic-Key'));
+  if (!apiKey) return c.json({ error: 'No key sent.' }, 400);
+  try {
+    await checkKey(apiKey);
+    return c.json({ ok: true });
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    return c.json({ error: status === 401 ? 'That key was rejected by Anthropic.' : 'Couldn’t check the key right now.' }, status === 401 ? 401 : 502);
+  }
 });
 
 app.get('/v1/imports/:id', async (c) => {
@@ -41,6 +57,11 @@ app.get('/v1/imports/:id', async (c) => {
   if (!job) return c.json({ error: 'Import not found' }, 404);
   return c.json(publicJob(job));
 });
+
+function userKey(raw: string | undefined): string | null {
+  const key = raw?.trim();
+  return key && /^sk-ant-[\w-]{20,300}$/.test(key) ? key : null;
+}
 
 const TYPES: Record<string, string> = { '.mp4': 'video/mp4', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' };
 

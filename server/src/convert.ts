@@ -5,8 +5,22 @@ import path from 'node:path';
 import type { Media } from './media.ts';
 import { WorkoutSchema, type ClaudeWorkout } from './schema.ts';
 
-const client = new Anthropic();
-const MODEL = process.env.CLAUDE_MODEL || 'claude-opus-5-5';
+/**
+ * Each request uses the caller's own key (sent by the app, kept only in memory for the job).
+ * ANTHROPIC_API_KEY in .env is an optional fallback for a self-hosted server.
+ */
+export function claudeClient(apiKey?: string | null): Anthropic {
+  const key = apiKey || process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('No Claude API key. Add yours in the app: Settings → AI account.');
+  return new Anthropic({ apiKey: key });
+}
+
+/** Cheap check that a key works (no tokens used). */
+export async function checkKey(apiKey: string): Promise<void> {
+  await claudeClient(apiKey).models.retrieve(MODEL);
+}
+
+export const MODEL = process.env.CLAUDE_MODEL || 'claude-opus-5-5';
 const EFFORT = (process.env.CLAUDE_EFFORT || 'medium') as 'low' | 'medium' | 'high';
 
 export const SYSTEM_PROMPT = `You are an experienced strength & conditioning coach. You turn social-media workout posts (Instagram reels, TikToks, Shorts) into clear, structured workouts that someone can follow on their phone with a timer.
@@ -24,7 +38,8 @@ How to structure it:
 - Credit the creator (creatorName, creatorHandle) from the metadata or what the video shows.
 - If the post isn't a workout at all, set isWorkout = false, explain briefly in notWorkoutReason, and return empty blocks.`;
 
-export async function convertToWorkout(media: Media, dir: string, extraText: string | null, sourceUrl: string | null): Promise<ClaudeWorkout> {
+export async function convertToWorkout(media: Media, dir: string, extraText: string | null, sourceUrl: string | null, apiKey?: string | null): Promise<ClaudeWorkout> {
+  const client = claudeClient(apiKey);
   const content: Anthropic.Beta.BetaContentBlockParam[] = [];
 
   const meta = [
