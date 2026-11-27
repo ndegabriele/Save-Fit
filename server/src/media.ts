@@ -1,6 +1,7 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { assertPublicUrl, safeFetch } from './net.ts';
 
 export type Platform = 'instagram' | 'tiktok' | 'youtube' | 'other';
 
@@ -56,6 +57,7 @@ function run(cmd: string, args: string[], timeoutMs = 120_000): Promise<{ code: 
 
 /** Downloads the post with yt-dlp; falls back to Open Graph tags (caption + thumbnail) if that fails. */
 export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetching' | 'watching') => void): Promise<Media> {
+  await assertPublicUrl(url);
   await mkdir(dir, { recursive: true });
   const platform = detectPlatform(url);
   onStage('fetching');
@@ -105,7 +107,7 @@ export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetchin
 }
 
 async function fetchOpenGraph(url: string, dir: string, platform: Platform): Promise<Media> {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' }, redirect: 'follow' });
+  const res = await safeFetch(url, { headers: { 'User-Agent': UA, Accept: 'text/html' } });
   if (!res.ok) throw new Error(`Couldn't open the link (${res.status}). Is the post public?`);
   const html = await res.text();
   const meta = (prop: string) =>
@@ -119,7 +121,9 @@ async function fetchOpenGraph(url: string, dir: string, platform: Platform): Pro
   const image = decode(meta('og:image'));
   if (image) {
     try {
-      const img = await fetch(image, { headers: { 'User-Agent': UA } });
+      const img = await safeFetch(image, { headers: { 'User-Agent': UA } });
+      // Only keep real images, never arbitrary responses.
+      if (!img.headers.get('content-type')?.startsWith('image/')) throw new Error('not an image');
       if (img.ok) {
         await writeFile(path.join(dir, 'thumb.jpg'), Buffer.from(await img.arrayBuffer()));
         thumbnailFile = 'thumb.jpg';

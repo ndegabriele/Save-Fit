@@ -123,6 +123,9 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   /** Skip the get-ready countdown. */
   const goNow = useCallback(() => {
     if (phase !== 'countdown' || !step) return;
+    // Starting now also un-pauses: the saved remainder belonged to the countdown.
+    setPaused(false);
+    pausedLeft.current = 0;
     setPhase('running');
     startTimer(step.durationSec);
     play('go');

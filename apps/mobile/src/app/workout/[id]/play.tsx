@@ -2,7 +2,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
 import { Check, ChevronsRight, Info, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View } from 'react-native';
 import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,8 +54,13 @@ function Player() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.steps.length]);
 
+  // Record the completion once per session (markPlayed changes `workout`, so guard against re-running).
+  const recorded = useRef(false);
   useEffect(() => {
-    if (p.phase === 'done' && workout) useStore.getState().markPlayed(workout.id, true);
+    if (p.phase === 'done' && workout && !recorded.current) {
+      recorded.current = true;
+      useStore.getState().markPlayed(workout.id, true);
+    }
   }, [p.phase, workout]);
 
   if (!workout) return <View className="flex-1 bg-background" />;

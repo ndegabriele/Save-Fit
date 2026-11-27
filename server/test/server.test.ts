@@ -34,3 +34,14 @@ test('toDraft builds media urls, credits and clips', () => {
   assert.deepEqual(draft.blocks[0]?.exercises[0]?.clip, { start: 2, end: 6 });
   assert.equal(draft.blocks[0]?.exercises[0]?.durationSec, undefined);
 });
+
+test('SSRF guard blocks private and metadata addresses', async () => {
+  const { isPrivateIp, assertPublicUrl } = await import('../src/net.ts');
+  for (const ip of ['127.0.0.1', '10.1.2.3', '172.16.0.1', '192.168.1.5', '169.254.169.254', '100.64.0.1', '::1', 'fd00::1', '::ffff:127.0.0.1']) {
+    assert.equal(isPrivateIp(ip), true, ip);
+  }
+  assert.equal(isPrivateIp('8.8.8.8'), false);
+  await assert.rejects(assertPublicUrl('http://169.254.169.254/latest/meta-data'));
+  await assert.rejects(assertPublicUrl('http://localhost:8787/'));
+  await assert.rejects(assertPublicUrl('file:///etc/passwd'));
+});
