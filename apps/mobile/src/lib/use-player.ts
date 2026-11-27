@@ -3,7 +3,11 @@ import { haptic, play } from './feedback';
 import { buildSequence, type Step } from './sequence';
 import type { Workout } from './types';
 
-export type Phase = 'ready' | 'countdown' | 'running' | 'done';
+/** intro = the big 'get ready' countdown before the first exercise of every workout. */
+export type Phase = 'ready' | 'intro' | 'countdown' | 'running' | 'done';
+
+/** The start countdown is always at least this long, even if per-move countdowns are off. */
+export const INTRO_MIN_SEC = 5;
 
 export interface PlayerState {
   steps: Step[];
@@ -26,6 +30,7 @@ const TICK_MS = 100;
 
 /**
  * The workout clock.
+ *  - Start: every workout opens with a get-ready countdown (intro).
  *  - Timed work: optional get-ready countdown, then counts down and
  *    auto-advances.
  *  - Rest: counts down and auto-advances (can be extended or skipped).
@@ -82,7 +87,12 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     [steps, countdownSec, startTimer],
   );
 
-  const start = useCallback(() => enterStep(0, true), [enterStep]);
+  const start = useCallback(() => {
+    setIndex(0);
+    setPaused(false);
+    setPhase('intro');
+    startTimer(Math.max(INTRO_MIN_SEC, countdownSec));
+  }, [countdownSec, startTimer]);
 
   const next = useCallback(() => {
     if (step?.kind === 'work') setWorkDone((n) => n + 1);
@@ -120,8 +130,12 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     haptic.select();
   }, [paused]);
 
-  /** Skip the get-ready countdown. */
+  /** Skip the get-ready countdown (the start one or a per-move one). */
   const goNow = useCallback(() => {
+    if (phase === 'intro') {
+      pausedLeft.current = 0;
+      return enterStep(0, false);
+    }
     if (phase !== 'countdown' || !step) return;
     // Starting now also un-pauses: the saved remainder belonged to the countdown.
     setPaused(false);
@@ -130,7 +144,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     startTimer(step.durationSec);
     play('go');
     haptic.firm();
-  }, [phase, step, startTimer]);
+  }, [phase, step, startTimer, enterStep]);
 
   // Clock
   useEffect(() => {
@@ -138,14 +152,15 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     lastTick.current = Date.now();
     const id = setInterval(() => {
       const t = Date.now();
-      if (!paused) activeMs.current += t - lastTick.current;
+      // The start countdown isn't workout time.
+      if (!paused && phase !== 'intro') activeMs.current += t - lastTick.current;
       lastTick.current = t;
       setNow(t);
     }, TICK_MS);
     return () => clearInterval(id);
   }, [phase, paused]);
 
-  const timed = phase === 'countdown' || (phase === 'running' && (step?.kind === 'rest' || step?.mode === 'time'));
+  const timed = phase === 'intro' || phase === 'countdown' || (phase === 'running' && (step?.kind === 'rest' || step?.mode === 'time'));
   const remainingMs = paused ? pausedLeft.current : Math.max(0, endsAt.current - now);
   const remaining = timed ? remainingMs / 1000 : 0;
 
@@ -159,7 +174,9 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
       haptic.tap();
     }
     if (remainingMs <= 0) {
-      if (phase === 'countdown' && step) {
+      if (phase === 'intro') {
+        enterStep(0, false);
+      } else if (phase === 'countdown' && step) {
         setPhase('running');
         startTimer(step.durationSec);
         play('go');
@@ -168,7 +185,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
         next();
       }
     }
-  }, [timed, paused, remaining, remainingMs, phase, step, next, startTimer]);
+  }, [timed, paused, remaining, remainingMs, phase, step, next, startTimer, enterStep]);
 
   const state: PlayerState = {
     steps,

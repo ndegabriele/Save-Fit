@@ -5,7 +5,7 @@ import { Button, cn, Dialog } from 'heroui-native';
 import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
-import Animated, { FadeIn, FadeOut, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeOut, Keyframe, ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Uniwind } from 'uniwind';
@@ -23,6 +23,7 @@ import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
 import { usePlayer } from '@/lib/use-player';
+import type { Workout } from '@/lib/types';
 
 export default function PlayScreen() {
   // The player is always dark: high contrast, calm, readable from the floor.
@@ -61,7 +62,7 @@ function Player() {
     pager.current?.scrollTo({ x: i * width, animated: true });
   };
 
-  // Start straight away with the get-ready countdown.
+  // Every workout opens with the start countdown.
   useEffect(() => {
     if (p.phase === 'ready' && p.steps.length) p.start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -80,6 +81,10 @@ function Player() {
 
   if (p.phase === 'done') {
     return <Finished title={workout.title} elapsed={p.elapsed} moves={p.workDone} onClose={() => router.back()} />;
+  }
+
+  if (p.phase === 'intro') {
+    return <StartCountdown workout={workout} p={p} onExit={() => router.back()} />;
   }
 
   const step = p.step;
@@ -112,11 +117,19 @@ function Player() {
   const timer = (size: number) =>
     isReps && step?.kind === 'work' ? (
               <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
-                <View className="items-center justify-center rounded-full bg-surface" style={{ width: size, height: size }}>
-                  <AppText variant="number" style={{ fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}>
+                {/* Compact: a lighter rounded square with big white reps. Large: the round dial. */}
+                <View
+                  className={cn('items-center justify-center', small(size) ? 'rounded-3xl bg-default' : 'rounded-full bg-surface')}
+                  style={{ width: size, height: size }}
+                >
+                  <AppText
+                    variant="number"
+                    className={small(size) ? 'text-white' : undefined}
+                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.5) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
+                  >
                     {step.reps}
                   </AppText>
-                  <AppText variant={small(size) ? 'caption' : 'headline'} className="text-muted">
+                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? 'text-white' : 'text-muted'}>
                     {step.side ? (small(size) ? 'each side' : 'reps this side') : 'reps'}
                   </AppText>
                   {small(size) ? null : (
@@ -341,6 +354,88 @@ function Player() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog>
+    </View>
+  );
+}
+
+// Each number lands with a short fade and settle (never from scale 0).
+const countIn = new Keyframe({
+  0: { opacity: 0, transform: [{ scale: 0.7 }] },
+  100: { opacity: 1, transform: [{ scale: 1 }], easing: EASE_OUT },
+})
+  .duration(DURATION.base)
+  .reduceMotion(ReduceMotion.System);
+
+/** The big "get ready" countdown that opens every workout. Tap the number or "Start now" to skip it. */
+function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnType<typeof usePlayer>; onExit: () => void }) {
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const size = grid(Math.min(width - 96, 280));
+  const first = p.steps.find((s) => s.kind === 'work');
+  const n = Math.max(1, Math.ceil(p.remaining));
+  const firstMeta =
+    first?.kind === 'work'
+      ? [first.mode === 'reps' ? `${first.reps} reps` : clock(first.durationSec), first.exercise.load].filter(Boolean).join('  ·  ')
+      : '';
+
+  return (
+    <View className="flex-1 bg-background px-5" style={{ paddingTop: insets.top + 6, paddingBottom: Math.max(insets.bottom, 16) }}>
+      <View className="flex-row items-center justify-between">
+        <RoundButton icon={X} label="Close" tone="ghost" size={48} onPress={onExit} />
+        <AppText variant="overline">Get ready</AppText>
+        <View className="size-12" />
+      </View>
+
+      <View className="flex-1 items-center justify-evenly">
+        <AppText variant="display" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75} className="text-center text-[24px] leading-[28px]">
+          {workout.title}
+        </AppText>
+
+        <Tappable onPress={p.goNow} feedback="firm" accessibilityLabel={`Starting in ${n}. Tap to start now`} scale={0.98}>
+          <ProgressRing size={size} stroke={16} progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0} color="accent" stepMs={120}>
+            <Animated.View key={n} entering={countIn}>
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56), fontVariant: ['tabular-nums'] }}>
+                {n}
+              </AppText>
+            </Animated.View>
+            <AppText variant="label" className="text-muted">
+              {p.paused ? 'Paused' : 'Tap to start now'}
+            </AppText>
+          </ProgressRing>
+        </Tappable>
+
+        {first?.kind === 'work' ? (
+          <View className="w-full gap-1 rounded-[32px] bg-surface p-5">
+            <AppText variant="overline" className="text-accent">
+              First up
+            </AppText>
+            <AppText variant="title" numberOfLines={2}>
+              {first.exercise.name}
+            </AppText>
+            {firstMeta ? (
+              <AppText variant="label" className="text-muted">
+                {firstMeta}
+              </AppText>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
+
+      <View className="flex-row items-center justify-center gap-4 pt-2">
+        <Tappable onPress={p.togglePause} feedback="firm" accessibilityLabel={p.paused ? 'Resume countdown' : 'Pause countdown'}>
+          <View className="size-18 items-center justify-center rounded-full bg-default">
+            <Icon icon={p.paused ? Play : Pause} size={32} strokeWidth={2.6} />
+          </View>
+        </Tappable>
+        <Tappable onPress={p.goNow} feedback="firm" accessibilityLabel="Start now">
+          <View className="h-18 flex-row items-center gap-2 rounded-full bg-accent px-8">
+            <Icon icon={ChevronsRight} size={24} color="accent-foreground" />
+            <AppText variant="headline" className="text-[18px] leading-[24px] text-accent-foreground">
+              Start now
+            </AppText>
+          </View>
+        </Tappable>
+      </View>
     </View>
   );
 }

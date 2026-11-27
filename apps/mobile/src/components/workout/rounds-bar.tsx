@@ -31,7 +31,7 @@ export function RoundsBar({ steps, index }: { steps: Step[]; index: number }) {
   const current = rounds[Math.min(index, steps.length - 1)] ?? 1;
 
   return (
-    <View className="mx-5 mt-4 flex-row gap-1" accessible accessibilityLabel={total > 1 ? `Round ${current} of ${total}` : step.block.title}>
+    <View className="mx-5 mb-2 mt-6 flex-row gap-1" accessible accessibilityLabel={total > 1 ? `Round ${current} of ${total}` : step.block.title}>
       {Array.from({ length: total }, (_, r) => {
         const round = r + 1;
         const idx = steps.map((s, i) => (s.blockIndex === block && rounds[i] === round ? i : -1)).filter((i) => i >= 0);
