@@ -5,12 +5,13 @@ const config: ExpoConfig = {
   slug: 'save-fit',
   scheme: 'savefit',
   version: '0.1.0',
-  orientation: 'portrait',
+  // Phones are locked to portrait at runtime (see _layout); tablets can rotate.
+  orientation: 'default',
   userInterfaceStyle: 'automatic',
   icon: './assets/icon.png',
   ios: {
     bundleIdentifier: 'app.savefit.mobile',
-    supportsTablet: false,
+    supportsTablet: true,
   },
   android: {
     package: 'app.savefit.mobile',

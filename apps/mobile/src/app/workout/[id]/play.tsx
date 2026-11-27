@@ -95,7 +95,10 @@ function Player() {
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
   // Sized so the whole controls view fits on one screen, no scrolling.
   // Fixed header (128) + gap (24) + action buttons (56) + space above the controls (40) come out of the measured page height.
-  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 248)));
+  // Tablet landscape: one screen, video on the left and the controls column on the right (no swiping).
+  const wide = width >= 768 && width > height && height >= 600;
+  const paneW = wide && video ? Math.min(560, Math.round(width * 0.45)) : width;
+  const ringSize = grid(Math.max(144, Math.min(paneW - 96, wide ? 360 : 280, (pageH || height * 0.5) - 248)));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
@@ -196,80 +199,14 @@ function Player() {
       </Tappable>
     );
 
-  return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6, paddingBottom: Math.max(insets.bottom, 16) }}>
-      <PhaseGlow tone={isRest ? 'rest' : step?.kind === 'work' && p.phase === 'running' ? 'work' : null} paused={p.paused} />
-      {/* Top bar */}
-      <View className="flex-row items-center justify-between px-5">
-        <RoundButton icon={X} label="End workout" tone="ghost" size={48} onPress={() => setConfirmExit(true)} />
-        <View className="items-center">
-          <AppText variant="overline">{step ? BLOCK_LABEL[step.block.kind] : ''}</AppText>
-          <AppText variant="label">
-            {Math.min(p.workDone + 1, workSteps)} / {workSteps}
-          </AppText>
-        </View>
-        <View className="h-12 min-w-12 items-center justify-center rounded-full bg-default px-4">
-          <AppText variant="label" className="text-accent" style={{ fontVariant: ['tabular-nums'] }}>
-            {clock(p.elapsed)}
-          </AppText>
-        </View>
-      </View>
-
-      {/* Rounds of the current part: one segment per round, filling as you go. */}
-      <RoundsBar steps={p.steps} index={p.index} />
-
-      {/* Two views of the same exercise, swipe between them. Controls work the same in both. */}
-
-      <ScrollView
-        ref={pager}
-        horizontal
-        pagingEnabled
-        scrollEnabled={Boolean(video)}
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(e) => setView(Math.round(e.nativeEvent.contentOffset.x / width))}
-        onScroll={(e) => {
-          const next = Math.round(e.nativeEvent.contentOffset.x / width);
-          if (next !== viewRef.current) setView(next);
-        }}
-        scrollEventThrottle={64}
-        className="flex-1"
-      >
-        {video ? (
-          // VIDEO VIEW: the coach's clip fills the screen, compact controls in a tile underneath.
-          <View style={{ width }} className="flex-1 gap-3 px-4 pt-3">
-            <View className="flex-1 overflow-hidden rounded-[32px] bg-surface">
-              <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 0} className="flex-1 rounded-[32px]" />
-            </View>
-            <View className="gap-4 rounded-[32px] bg-surface p-4">
-              <View className="flex-row items-center gap-4">
-                <View className="flex-1 gap-1">
-                  <AppText variant="title" numberOfLines={2}>
-                    {title}
-                  </AppText>
-                  {meta ? (
-                    <AppText variant="caption" numberOfLines={1}>
-                      {meta}
-                    </AppText>
-                  ) : null}
-                  <EquipmentTags items={gear} max={2} className="mt-1" />
-                </View>
-                {timer(88)}
-              </View>
-              <View className="flex-row items-center justify-between px-4">
-                <RoundButton icon={SkipBack} label="Previous" tone="ghost" size={56} onPress={p.prev} />
-                {mainButton(72, 32)}
-                <RoundButton icon={SkipForward} label="Next" tone="ghost" size={56} onPress={p.next} />
-              </View>
-            </View>
-          </View>
-        ) : null}
-
-        {/* CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail next to the title. */}
-        <View style={{ width }} className="flex-1">
+  // CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail next to the title
+  // (on a tablet in landscape the video sits beside it instead).
+  const controlsPage = (
+        <View style={{ width: paneW }} className="flex-1">
         <View className="flex-1 px-5 pt-4" onLayout={(e) => setPageH(e.nativeEvent.layout.height)}>
           {/* Header: fixed height, so long titles never push the timer down. Thumbnail left, title + details next to it. */}
           <View className="h-32 w-full flex-row items-center gap-4 overflow-hidden">
-            {video ? (
+            {video && !wide ? (
               <Tappable onPress={() => goToView(0)} accessibilityLabel="Show the coach’s video">
                 <View>
                   <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 1} height={112} width={64} className="rounded-[16px] border-2 border-foreground/20" />
@@ -328,9 +265,93 @@ function Player() {
         </View>
 
         </View>
+  );
+
+  return (
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6, paddingBottom: Math.max(insets.bottom, 16) }}>
+      <PhaseGlow tone={isRest ? 'rest' : step?.kind === 'work' && p.phase === 'running' ? 'work' : null} paused={p.paused} />
+      {/* Top bar */}
+      <View className="flex-row items-center justify-between px-5">
+        <RoundButton icon={X} label="End workout" tone="ghost" size={48} onPress={() => setConfirmExit(true)} />
+        <View className="items-center">
+          <AppText variant="overline">{step ? BLOCK_LABEL[step.block.kind] : ''}</AppText>
+          <AppText variant="label">
+            {Math.min(p.workDone + 1, workSteps)} / {workSteps}
+          </AppText>
+        </View>
+        <View className="h-12 min-w-12 items-center justify-center rounded-full bg-default px-4">
+          <AppText variant="label" className="text-accent" style={{ fontVariant: ['tabular-nums'] }}>
+            {clock(p.elapsed)}
+          </AppText>
+        </View>
+      </View>
+
+      {/* Rounds of the current part: one segment per round, filling as you go. */}
+      <RoundsBar steps={p.steps} index={p.index} />
+
+      {/* Two views of the same exercise, swipe between them. Controls work the same in both. */}
+
+      {wide ? (
+        <View className="flex-1 flex-row">
+          {video ? (
+            <View className="flex-1 py-3 pl-5">
+              <View className="flex-1 overflow-hidden rounded-[32px] bg-surface">
+                <VideoClip uri={video} clip={exercise?.clip} paused={p.paused} className="flex-1 rounded-[32px]" />
+              </View>
+            </View>
+          ) : null}
+          {controlsPage}
+        </View>
+      ) : (
+      <ScrollView
+        ref={pager}
+        horizontal
+        pagingEnabled
+        scrollEnabled={Boolean(video)}
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => setView(Math.round(e.nativeEvent.contentOffset.x / width))}
+        onScroll={(e) => {
+          const next = Math.round(e.nativeEvent.contentOffset.x / width);
+          if (next !== viewRef.current) setView(next);
+        }}
+        scrollEventThrottle={64}
+        className="flex-1"
+      >
+        {video ? (
+          // VIDEO VIEW: the coach's clip fills the screen, compact controls in a tile underneath.
+          <View style={{ width }} className="flex-1 gap-3 px-4 pt-3">
+            <View className="flex-1 overflow-hidden rounded-[32px] bg-surface">
+              <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 0} className="flex-1 rounded-[32px]" />
+            </View>
+            <View className="gap-4 rounded-[32px] bg-surface p-4">
+              <View className="flex-row items-center gap-4">
+                <View className="flex-1 gap-1">
+                  <AppText variant="title" numberOfLines={2}>
+                    {title}
+                  </AppText>
+                  {meta ? (
+                    <AppText variant="caption" numberOfLines={1}>
+                      {meta}
+                    </AppText>
+                  ) : null}
+                  <EquipmentTags items={gear} max={2} className="mt-1" />
+                </View>
+                {timer(88)}
+              </View>
+              <View className="flex-row items-center justify-between px-4">
+                <RoundButton icon={SkipBack} label="Previous" tone="ghost" size={56} onPress={p.prev} />
+                {mainButton(72, 32)}
+                <RoundButton icon={SkipForward} label="Next" tone="ghost" size={56} onPress={p.next} />
+              </View>
+            </View>
+          </View>
+        ) : null}
+
+        {controlsPage}
       </ScrollView>
-      {/* View switcher, under the play/pause button. */}
-      {video ? (
+      )}
+      {/* View switcher, under the play/pause button. Not needed when both views fit side by side. */}
+      {video && !wide ? (
         <View className="flex-row justify-center gap-1 pt-1" accessibilityRole="tablist">
           {(['Video', 'Controls'] as const).map((label, i) => (
             <Tappable key={label} onPress={() => goToView(i)} feedback="select" accessibilityLabel={`${label} view`} className="px-1 py-2">
