@@ -11,7 +11,7 @@ import { STAGE_COPY, type ImportStage } from '@/lib/api';
 import { CATEGORY_LABEL, DIFFICULTY_LABEL, creatorLine, plural } from '@/lib/format';
 import { EASE_IN_OUT } from '@/lib/motion';
 import { exerciseCount, workoutMinutes } from '@/lib/sequence';
-import { CATEGORY_BG, CATEGORY_INK } from '@/lib/theme';
+import { CATEGORY_BG, CATEGORY_BORDER, CATEGORY_INK } from '@/lib/theme';
 import type { Workout } from '@/lib/types';
 import { Pill } from './category-pill';
 import { Thumb } from './thumb';
@@ -40,7 +40,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
         className={cn(
           'overflow-hidden rounded-[32px] p-5',
           CATEGORY_BG[workout.category],
-          selected && 'border-4 border-foreground',
+          selected && cn('border-4', CATEGORY_BORDER[workout.category]),
           selecting && !selected && 'opacity-80',
         )}
         style={{ minHeight: 236 }}
@@ -70,7 +70,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
             </AppText>
           </View>
           {selecting ? (
-            <View className={cn('size-14 items-center justify-center rounded-full', selected ? 'bg-foreground' : 'border-2 border-foreground/25')}>
+            <View className={cn('size-14 items-center justify-center rounded-full', selected ? 'bg-foreground' : cn('border-2 opacity-40', CATEGORY_BORDER[workout.category]))}>
               {selected ? (
                 <AppText variant="title" className="text-background">
                   {selectedIndex + 1}

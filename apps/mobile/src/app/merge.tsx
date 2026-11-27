@@ -15,7 +15,7 @@ import { haptic } from '@/lib/feedback';
 import { DURATION, EASE_IN_OUT, EASE_OUT, enterItem } from '@/lib/motion';
 import { workoutMinutes } from '@/lib/sequence';
 import { useStore } from '@/lib/store';
-import { CATEGORY_BG } from '@/lib/theme';
+import { CATEGORY_BG, CATEGORY_BORDER } from '@/lib/theme';
 
 /**
  * Merge: pick workouts in the order you want to do them
@@ -83,7 +83,7 @@ export default function MergeScreen() {
           return (
             <Animated.View key={w.id} entering={enterItem(i)}>
               <Tappable onPress={() => toggle(w.id)} feedback="select" accessibilityLabel={`${pos >= 0 ? 'Remove' : 'Add'} ${w.title}`}>
-                <View className={cn('flex-row items-center gap-3 rounded-[24px] p-3', CATEGORY_BG[w.category], pos >= 0 && 'border-2 border-foreground')}>
+                <View className={cn('flex-row items-center gap-3 rounded-[24px] p-3', CATEGORY_BG[w.category], pos >= 0 && cn('border-2', CATEGORY_BORDER[w.category]))}>
                   <Thumb uri={w.source?.thumbnailUrl} category={w.category} size={64} />
                   <View className="flex-1 gap-1">
                     <AppText variant="headline" numberOfLines={2}>
@@ -93,7 +93,7 @@ export default function MergeScreen() {
                       {CATEGORY_LABEL[w.category]} · {workoutMinutes(w)} min · {creatorLine(w.creators)}
                     </AppText>
                   </View>
-                  <View className={cn('size-11 items-center justify-center rounded-full', pos >= 0 ? 'bg-foreground' : 'border-2 border-foreground/20')}>
+                  <View className={cn('size-11 items-center justify-center rounded-full', pos >= 0 ? 'bg-foreground' : cn('border-2 opacity-40', CATEGORY_BORDER[w.category]))}>
                     {pos >= 0 ? (
                       <Animated.View entering={ZoomIn.duration(DURATION.fast).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.6 }] })}>
                         <AppText variant="headline" className="text-background">

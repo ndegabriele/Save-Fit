@@ -29,3 +29,13 @@ export const CATEGORY_INK: Record<Category, string> = {
   core: 'text-cat-core-ink',
   mixed: 'text-cat-mixed-ink',
 };
+
+/** Strokes in a darker shade of the tile, matching its icons. */
+export const CATEGORY_BORDER: Record<Category, string> = {
+  strength: 'border-cat-strength-ink',
+  hiit: 'border-cat-hiit-ink',
+  cardio: 'border-cat-cardio-ink',
+  mobility: 'border-cat-mobility-ink',
+  core: 'border-cat-core-ink',
+  mixed: 'border-cat-mixed-ink',
+};
