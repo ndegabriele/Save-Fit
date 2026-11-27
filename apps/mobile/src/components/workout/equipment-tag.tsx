@@ -5,9 +5,9 @@ import { Icon } from '@/components/ui/icon';
 import { AppText } from '@/components/ui/text';
 import type { Exercise } from '@/lib/types';
 
-/** What a move needs: the specific load if the coach gave one ("Medium dumbbells"), else its equipment list. */
-export function exerciseEquipment(e: Pick<Exercise, 'load' | 'equipment'>): string[] {
-  return e.load ? [e.load] : e.equipment;
+/** What a move needs, as plain equipment ("Kettlebell"). Load and grip details live in "How to do it". */
+export function exerciseEquipment(e: Pick<Exercise, 'equipment'>): string[] {
+  return e.equipment;
 }
 
 /** The one equipment tag used everywhere: a small dumbbell, a short label, a soft pill. */

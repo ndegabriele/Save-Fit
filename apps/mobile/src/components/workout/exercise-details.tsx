@@ -28,6 +28,7 @@ export function ExerciseDetails({ exercise }: { exercise: Exercise }) {
       {exercise.commonMistakes.length ? <Bullets title="Avoid" items={exercise.commonMistakes} /> : null}
       {exercise.breathing ? <Line title="Breathing" body={exercise.breathing} /> : null}
       {exercise.tempo ? <Line title="Tempo" body={exercise.tempo} /> : null}
+      {exercise.load ? <Line title="Setup" body={exercise.load} /> : null}
       {exerciseEquipment(exercise).length ? (
         <View className="gap-2">
           <AppText variant="overline">Equipment</AppText>

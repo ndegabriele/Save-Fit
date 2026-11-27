@@ -12,13 +12,16 @@ export const ExerciseSchema = z.object({
   sets: z.number().describe('Sets of this exercise within one round. Usually 1 in circuits.'),
   restSec: z.number().describe('Rest after each set in seconds. 0 if moving straight on.'),
   perSide: z.boolean().describe('True when done on each side / each leg / each arm.'),
-  load: z.string().nullish().describe('Weight or resistance if shown or stated, e.g. "2 × 10 kg dumbbells".'),
+  load: z.string().nullish().describe('Weight, resistance or how to hold it, if shown or stated, e.g. "2 × 10 kg dumbbells" or "1 kettlebell held by the horns".'),
   tempo: z.string().nullish(),
   steps: z.array(z.string()).default([]).describe('3-5 short imperative how-to steps, in order.'),
   cues: z.array(z.string()).default([]).describe('2-3 very short form cues (max 4 words each) to show mid-set.'),
   commonMistakes: z.array(z.string()).default([]).describe('1-3 frequent mistakes to avoid.'),
   muscles: z.array(z.string()).default([]).describe('Main muscles worked, plain English.'),
-  equipment: z.array(z.string()).default([]),
+  equipment: z
+    .array(z.string())
+    .default([])
+    .describe('Plain equipment names only, e.g. "Kettlebell", "Dumbbells", "Bench". No grips, weights or how to hold it: that goes in load or steps.'),
   easier: z.string().nullish().describe('A regression for beginners.'),
   harder: z.string().nullish().describe('A progression.'),
   breathing: z.string().nullish(),
@@ -44,7 +47,7 @@ export const WorkoutSchema = z.object({
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
   creatorName: z.string().nullish().describe('Coach or influencer display name.'),
   creatorHandle: z.string().nullish().describe('@handle if known.'),
-  equipment: z.array(z.string()).default([]),
+  equipment: z.array(z.string()).default([]).describe('Plain equipment names for the whole workout, e.g. "Kettlebell", "Mat".'),
   targetMuscles: z.array(z.string()).default([]),
   blocks: z.array(BlockSchema),
   tips: z.array(z.string()).default([]).describe('Coaching tips from the creator or sensible safety/progression advice. Max 4.'),

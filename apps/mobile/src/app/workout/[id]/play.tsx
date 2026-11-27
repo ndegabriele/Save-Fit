@@ -19,6 +19,7 @@ import { ExerciseDetails } from '@/components/workout/exercise-details';
 import { RoundsBar } from '@/components/workout/rounds-bar';
 import { Sheet } from '@/components/ui/sheet';
 import { VideoClip } from '@/components/workout/video-clip';
+import { PhaseGlow } from '@/components/workout/phase-glow';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
@@ -93,8 +94,8 @@ function Player() {
   const source = step?.block.source ?? workout.source;
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
   // Sized so the whole controls view fits on one screen, no scrolling.
-  // Header (~112) + cues/rest buttons (56) + "how to" (40) + breathing room (64) come out of the measured page height.
-  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 272)));
+  // Fixed header (128) + action buttons (56) + breathing room (32) come out of the measured page height.
+  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 216)));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
@@ -106,13 +107,17 @@ function Player() {
     step?.kind === 'work'
       ? [
           step.sets > 1 ? `Set ${step.set} of ${step.sets}` : null,
-          step.side ? `${step.side === 'left' ? 'Left' : 'Right'} side` : null,
         ]
           .filter(Boolean)
           .join('  ·  ')
       : '';
 
   const gear = exercise ? exerciseEquipment(exercise) : [];
+  const side = step?.kind === 'work' && step.side ? (step.side === 'left' ? 'Left side' : 'Right side') : null;
+  const title = isRest ? `Next: ${exercise?.name ?? 'Finish'}` : (exercise?.name ?? '');
+  // Long names drop to a smaller size so the header keeps its fixed height and the timer never moves.
+  const longTitle = title.length > 36;
+  const hasHowTo = Boolean(exercise && (exercise.steps.length > 0 || exercise.cues.length > 0 || exercise.load));
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
@@ -132,8 +137,9 @@ function Player() {
                     {step.reps}
                   </AppText>
                   <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? '-mt-1 text-[12px] leading-[16px] text-white' : 'text-muted'}>
-                    {step.side ? (small(size) ? 'each side' : 'reps this side') : 'reps'}
+                    {small(size) && side ? `reps · ${side[0]}` : 'reps'}
                   </AppText>
+                  {small(size) ? null : side ? <SideChip label={side} /> : null}
                   {small(size) ? null : (
                     <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
                       {clock(p.repElapsed)}
@@ -153,9 +159,13 @@ function Player() {
                   <AppText variant="number" style={{ fontSize: grid(size * 0.3), lineHeight: grid(size * 0.34), fontVariant: ['tabular-nums'] }}>
                     {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
                   </AppText>
-                  <AppText variant="label" className={cn('text-muted', small(size) && 'hidden')}>
-                    {p.paused ? 'Paused · tap to resume' : isCountdown ? 'Tap to start now' : isRest ? 'Breathe' : 'Tap to pause'}
-                  </AppText>
+                  {side && !p.paused && !small(size) ? (
+                    <SideChip label={side} />
+                  ) : (
+                    <AppText variant="label" className={cn('text-muted', small(size) && 'hidden')}>
+                      {p.paused ? 'Paused · tap to resume' : isCountdown ? 'Tap to start now' : isRest ? 'Breathe' : 'Tap to pause'}
+                    </AppText>
+                  )}
                 </ProgressRing>
               </Tappable>
             )
@@ -178,6 +188,7 @@ function Player() {
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6, paddingBottom: Math.max(insets.bottom, 16) }}>
+      <PhaseGlow tone={isRest ? 'rest' : step?.kind === 'work' && p.phase === 'running' ? 'work' : null} paused={p.paused} />
       {/* Top bar */}
       <View className="flex-row items-center justify-between px-5">
         <RoundButton icon={X} label="End workout" tone="ghost" size={48} onPress={() => setConfirmExit(true)} />
@@ -222,11 +233,8 @@ function Player() {
             <View className="gap-4 rounded-[32px] bg-surface p-4">
               <View className="flex-row items-center gap-4">
                 <View className="flex-1 gap-1">
-                  <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
-                    {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
-                  </AppText>
                   <AppText variant="title" numberOfLines={2}>
-                    {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
+                    {title}
                   </AppText>
                   {meta ? (
                     <AppText variant="caption" numberOfLines={1}>
@@ -248,9 +256,9 @@ function Player() {
 
         {/* CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail next to the title. */}
         <View style={{ width }} className="flex-1">
-        <View className="flex-1 items-center justify-evenly px-5 pt-4" onLayout={(e) => setPageH(e.nativeEvent.layout.height)}>
-          {/* Header: video thumbnail on the left, eyebrow + title + details aligned next to it. */}
-          <View className="w-full flex-row items-center gap-4">
+        <View className="flex-1 px-5 pt-4" onLayout={(e) => setPageH(e.nativeEvent.layout.height)}>
+          {/* Header: fixed height, so long titles never push the timer down. Thumbnail left, title + details next to it. */}
+          <View className="h-32 w-full flex-row items-center gap-4 overflow-hidden">
             {video ? (
               <Tappable onPress={() => goToView(0)} accessibilityLabel="Show the coach’s video">
                 <View>
@@ -261,52 +269,44 @@ function Player() {
                 </View>
               </Tappable>
             ) : null}
-            <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="flex-1 gap-1">
-              <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
-                {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
-              </AppText>
-              <AppText variant="display" numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.75} className="text-[24px] leading-[28px]">
-                {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
+            <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="flex-1 gap-2">
+              <AppText
+                variant="display"
+                numberOfLines={longTitle ? 3 : 2}
+                className={longTitle ? 'text-[20px] leading-[24px]' : 'text-[24px] leading-[28px]'}
+              >
+                {title}
               </AppText>
               {meta ? (
                 <AppText variant="label" numberOfLines={1} className="text-muted">
                   {meta}
                 </AppText>
               ) : null}
-              <EquipmentTags items={gear} max={2} className="mt-1" />
+              <EquipmentTags items={gear} max={2} />
             </Animated.View>
           </View>
 
-          {/* Timer / reps */}
-          <View className="items-center justify-center">
-            {timer(ringSize)}
-          </View>
+          {/* Timer / reps: fills the space between header and buttons, always in the same spot. */}
+          <View className="flex-1 items-center justify-center">{timer(ringSize)}</View>
 
-          {/* Cues / rest actions */}
-          {isRest ? (
-            <View className="flex-row gap-3">
-              <Pillbutton icon={Plus} label="15 s" onPress={() => p.addTime(15)} />
-              <Pillbutton icon={ChevronsRight} label="Skip rest" onPress={p.next} />
-            </View>
-          ) : exercise?.cues.length ? (
-            <View className="h-10 flex-row justify-center gap-2 overflow-hidden">
-              {exercise.cues.slice(0, 2).map((c) => (
-                <View key={c} className="rounded-full bg-default px-4 py-2">
-                  <AppText variant="label">{c}</AppText>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          {exercise && (exercise.steps.length > 0 || exercise.cues.length > 0) ? (
-            <Tappable onPress={() => setHowTo(true)} accessibilityLabel="How to do this exercise">
-              <View className="flex-row items-center gap-2 px-3 py-2">
-                <Icon icon={Info} size={20} color="muted" />
-                <AppText variant="label" className="text-muted">
-                  How to do it
-                </AppText>
-              </View>
-            </Tappable>
-          ) : null}
+          {/* Actions: one row of same-size buttons on every screen. */}
+          <View className="h-14 flex-row justify-center gap-3">
+            {isRest ? (
+              <>
+                <Pillbutton icon={Plus} label="15 s" onPress={() => p.addTime(15)} />
+                <Pillbutton icon={ChevronsRight} label="Skip rest" onPress={p.next} />
+                {hasHowTo ? (
+                  <Tappable onPress={() => setHowTo(true)} accessibilityLabel="How to do the next exercise">
+                    <View className="size-14 items-center justify-center rounded-full bg-default">
+                      <Icon icon={Info} size={24} />
+                    </View>
+                  </Tappable>
+                ) : null}
+              </>
+            ) : hasHowTo ? (
+              <Pillbutton icon={Info} label="How to do it" onPress={() => setHowTo(true)} />
+            ) : null}
+          </View>
         </View>
 
         {/* Big controls: easy to hit mid-set, sweaty hands, from a distance. */}
@@ -443,6 +443,17 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
           </View>
         </Tappable>
       </View>
+    </View>
+  );
+}
+
+/** "Left side" / "Right side", shown inside the timer circle. */
+function SideChip({ label }: { label: string }) {
+  return (
+    <View className="mt-1 rounded-full bg-accent/15 px-3 py-1">
+      <AppText variant="label" className="text-[12px] leading-[16px] text-accent">
+        {label}
+      </AppText>
     </View>
   );
 }
