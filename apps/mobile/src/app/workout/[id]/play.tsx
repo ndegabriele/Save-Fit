@@ -124,33 +124,32 @@ function Player() {
   const timer = (size: number) =>
     isReps && step?.kind === 'work' ? (
       <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
-        {/* Same layout at every size: compact is a lighter rounded square, large is the round disc. */}
-        <View
-          className={cn('items-center justify-center', small(size) ? 'rounded-3xl bg-default' : 'rounded-full bg-surface')}
-          style={{ width: size, height: size }}
-        >
-          {/* Large: the side pill sits on that side of the number. Compact: in that top corner of the tile. */}
-          {small(size) ? (
-            <>
-              {side ? <SidePill side={side} compact className={cn('absolute top-2', side.startsWith('Left') ? 'left-2' : 'right-2')} /> : null}
-              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
-                {step.reps}
-              </AppText>
-            </>
-          ) : (
-            <Flanked side={side}>
-              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
-                {step.reps}
-              </AppText>
-            </Flanked>
-          )}
-          <DiscLabel size={size} text="reps" />
-          {small(size) ? null : (
-            <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
-              {clock(p.repElapsed)}
+        {small(size) ? (
+          // Compact: a lighter rounded square, side pill in that top corner.
+          <View className="items-center justify-center rounded-3xl bg-default" style={{ width: size, height: size }}>
+            {side ? <SidePill side={side} compact className={cn('absolute top-2', side.startsWith('Left') ? 'left-2' : 'right-2')} /> : null}
+            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+              {step.reps}
             </AppText>
-          )}
-        </View>
+            <DiscLabel size={size} text="reps" />
+          </View>
+        ) : (
+          // Large: a ring like the timed moves, with a yellow sweep that goes round once a minute as you work.
+          <ProgressRing size={size} stroke={16} progress={(p.repElapsed % 60) / 60} color="accent" stepMs={120}>
+            {/* The pill flanks the whole stack, so it sits at the circle's vertical centre. */}
+            <Flanked side={side}>
+              <View className="items-center">
+                <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+                  {step.reps}
+                </AppText>
+                <DiscLabel size={size} text="reps" />
+                <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
+                  {clock(p.repElapsed)}
+                </AppText>
+              </View>
+            </Flanked>
+          </ProgressRing>
+        )}
       </Tappable>
     ) : (
       <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
