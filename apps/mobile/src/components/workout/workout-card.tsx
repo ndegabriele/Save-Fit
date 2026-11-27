@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import { CoachTile } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
 import { Tappable } from '@/components/ui/tappable';
@@ -119,7 +119,13 @@ function ProcessingCard({ workout, onPress }: { workout: Workout; onPress: () =>
   const pulse = useSharedValue(0.55);
   useEffect(() => {
     // Constant, calm "breathing" while we wait. In-out because it moves on screen.
-    pulse.value = withRepeat(withSequence(withTiming(1, { duration: 900, easing: EASE_IN_OUT }), withTiming(0.55, { duration: 900, easing: EASE_IN_OUT })), -1);
+    pulse.value = withRepeat(
+      withSequence(withTiming(1, { duration: 900, easing: EASE_IN_OUT }), withTiming(0.55, { duration: 900, easing: EASE_IN_OUT })),
+      -1,
+      false,
+      undefined,
+      ReduceMotion.System,
+    );
   }, [pulse]);
   const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
   const stage = (workout.jobStage ?? 'queued') as ImportStage;

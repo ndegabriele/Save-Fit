@@ -21,7 +21,7 @@ import { Sheet } from '@/components/ui/sheet';
 import { VideoClip } from '@/components/workout/video-clip';
 import { PhaseGlow } from '@/components/workout/phase-glow';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
-import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
+import { DURATION, EASE_OUT, EASE_OUT_CSS, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
 import { usePlayer } from '@/lib/use-player';
 import type { Workout } from '@/lib/types';
@@ -94,8 +94,8 @@ function Player() {
   const source = step?.block.source ?? workout.source;
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
   // Sized so the whole controls view fits on one screen, no scrolling.
-  // Fixed header (128) + action buttons (56) + breathing room (32) come out of the measured page height.
-  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 216)));
+  // Fixed header (128) + gap (24) + action buttons (56) + space above the controls (40) come out of the measured page height.
+  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 248)));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
@@ -175,13 +175,17 @@ function Player() {
     isReps ? (
       <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise">
         <View className="items-center justify-center rounded-full bg-accent" style={{ width: size, height: size }}>
-          <Icon icon={Check} size={iconSize} color="accent-foreground" strokeWidth={3} />
+          <Animated.View key="check" entering={iconIn}>
+            <Icon icon={Check} size={iconSize} color="accent-foreground" strokeWidth={3} />
+          </Animated.View>
         </View>
       </Tappable>
     ) : (
       <Tappable onPress={p.togglePause} feedback="firm" accessibilityLabel={p.paused ? 'Resume' : 'Pause'}>
         <View className="items-center justify-center rounded-full bg-accent" style={{ width: size, height: size }}>
-          <Icon icon={p.paused ? Play : Pause} size={iconSize} color="accent-foreground" strokeWidth={2.6} />
+          <Animated.View key={p.paused ? 'play' : 'pause'} entering={iconIn}>
+            <Icon icon={p.paused ? Play : Pause} size={iconSize} color="accent-foreground" strokeWidth={2.6} />
+          </Animated.View>
         </View>
       </Tappable>
     );
@@ -286,10 +290,10 @@ function Player() {
             </Animated.View>
           </View>
 
-          {/* Timer / reps: fills the space between header and buttons, always in the same spot. */}
-          <View className="flex-1 items-center justify-center">{timer(ringSize)}</View>
-
-          {/* Actions: one row of same-size buttons on every screen. */}
+          {/* Timer / reps with its action row as one group, centred in the space between header and controls.
+              The row keeps its height even when empty, so the timer never moves. */}
+          <View className="flex-1 items-center justify-center gap-6">
+          {timer(ringSize)}
           <View className="h-14 flex-row justify-center gap-3">
             {isRest ? (
               <>
@@ -307,6 +311,7 @@ function Player() {
               <Pillbutton icon={Info} label="How to do it" onPress={() => setHowTo(true)} />
             ) : null}
           </View>
+          </View>
         </View>
 
         {/* Big controls: easy to hit mid-set, sweaty hands, from a distance. */}
@@ -323,7 +328,10 @@ function Player() {
         <View className="flex-row justify-center gap-1 pt-1" accessibilityRole="tablist">
           {(['Video', 'Controls'] as const).map((label, i) => (
             <Tappable key={label} onPress={() => goToView(i)} feedback="select" accessibilityLabel={`${label} view`} className="px-1 py-2">
-              <View className={cn('h-2 rounded-full', view === i ? 'w-8 bg-foreground' : 'w-2 bg-foreground/30')} />
+              <Animated.View
+                className={cn('h-2 rounded-full', view === i ? 'bg-foreground' : 'bg-foreground/30')}
+                style={{ width: view === i ? 32 : 8, transitionProperty: ['width', 'backgroundColor'], transitionDuration: 200, transitionTimingFunction: EASE_OUT_CSS }}
+              />
             </Tappable>
           ))}
         </View>
@@ -362,9 +370,17 @@ function Player() {
   );
 }
 
+// Play/pause/done icon swap: quick fade + settle so the change reads as one button changing state.
+const iconIn = new Keyframe({
+  0: { opacity: 0, transform: [{ scale: 0.9 }] },
+  100: { opacity: 1, transform: [{ scale: 1 }], easing: EASE_OUT },
+})
+  .duration(DURATION.press)
+  .reduceMotion(ReduceMotion.System);
+
 // Each number lands with a short fade and settle (never from scale 0).
 const countIn = new Keyframe({
-  0: { opacity: 0, transform: [{ scale: 0.7 }] },
+  0: { opacity: 0, transform: [{ scale: 0.9 }] },
   100: { opacity: 1, transform: [{ scale: 1 }], easing: EASE_OUT },
 })
   .duration(DURATION.base)
@@ -480,7 +496,7 @@ function Finished({ title, elapsed, moves, onClose }: { title: string; elapsed: 
       >
         <Icon icon={Trophy} size={56} color="accent-foreground" strokeWidth={2.2} />
       </Animated.View>
-      <Animated.View entering={FadeIn.delay(150).duration(DURATION.base)} exiting={FadeOut} className="mt-8 items-center gap-2">
+      <Animated.View entering={FadeIn.delay(150).duration(DURATION.base).easing(EASE_OUT)} exiting={FadeOut.duration(150)} className="mt-8 items-center gap-2">
         <AppText variant="hero" className="text-center">
           Good job!
         </AppText>

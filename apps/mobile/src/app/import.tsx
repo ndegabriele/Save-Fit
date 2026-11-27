@@ -4,7 +4,7 @@ import { Button, cn, Input, Label, TextArea, TextField, Description } from 'hero
 import { Check, ClipboardPaste, Link2, Sparkles, X } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import Animated, { ZoomIn } from 'react-native-reanimated';
+import Animated, { ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { Icon } from '@/components/ui/icon';
 import { RoundButton } from '@/components/ui/round-button';
 import { Screen } from '@/components/ui/screen';
@@ -138,7 +138,7 @@ function Progress({ workoutId, onDone, onLibrary }: { workoutId: string; onDone:
             <Animated.View key={s} entering={enterItem(i)} className={cn('flex-row items-center gap-4 rounded-2xl bg-surface px-4 py-4 shadow-surface', !done && !active && 'opacity-50')}>
               <View className={cn('size-9 items-center justify-center rounded-full', done ? 'bg-accent' : 'bg-default')}>
                 {done ? (
-                  <Animated.View entering={ZoomIn.duration(220).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.6 }] })}>
+                  <Animated.View entering={ZoomIn.duration(220).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.9 }] }).reduceMotion(ReduceMotion.System)}>
                     <Icon icon={Check} size={20} color="accent-foreground" strokeWidth={3} />
                   </Animated.View>
                 ) : (

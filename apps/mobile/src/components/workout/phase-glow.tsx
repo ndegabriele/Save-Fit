@@ -1,8 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, {
   cancelAnimation,
+  FadeIn,
+  FadeOut,
   Easing,
   useAnimatedStyle,
   useReducedMotion,
@@ -65,7 +67,8 @@ export function PhaseGlow({ tone, paused }: { tone: 'work' | 'rest' | null; paus
   const rgb = tone === 'work' ? LIME : VIOLET;
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    // Keyed by tone so work -> rest crossfades instead of popping.
+    <Animated.View key={tone} entering={FadeIn.duration(600)} exiting={FadeOut.duration(400)} pointerEvents="none" style={StyleSheet.absoluteFill}>
       <Animated.View style={[styles.glow, tone === 'rest' ? breathStyle : null, { transformOrigin: 'bottom' }]}>
         <LinearGradient colors={[`rgba(${rgb},0)`, `rgba(${rgb},${tone === 'work' ? 0.08 : 0.16})`]} style={StyleSheet.absoluteFill} />
       </Animated.View>
@@ -75,7 +78,7 @@ export function PhaseGlow({ tone, paused }: { tone: 'work' | 'rest' | null; paus
           style={[styles.ripple, rippleStyle]}
         />
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
 

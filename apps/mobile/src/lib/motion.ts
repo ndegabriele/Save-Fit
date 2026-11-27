@@ -1,4 +1,4 @@
-import { Easing, FadeIn, FadeInDown, FadeOut, ReduceMotion } from 'react-native-reanimated';
+import { cubicBezier, Easing, FadeIn, FadeInDown, FadeOut, ReduceMotion } from 'react-native-reanimated';
 
 /**
  * Motion rules (after Emil Kowalski's design-engineering skills):
@@ -13,6 +13,8 @@ import { Easing, FadeIn, FadeInDown, FadeOut, ReduceMotion } from 'react-native-
 export const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 export const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
 export const EASE_DRAWER = Easing.bezier(0.32, 0.72, 0, 1);
+/** Same strong ease-out, for Reanimated CSS transitions. */
+export const EASE_OUT_CSS = cubicBezier(0.23, 1, 0.32, 1);
 
 export const DURATION = {
   press: 140,

@@ -2,7 +2,8 @@ import { X } from 'lucide-react-native';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { runOnJS, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RoundButton } from '@/components/ui/round-button';
 import { AppText } from '@/components/ui/text';
@@ -21,32 +22,50 @@ export function Sheet({ isOpen, onClose, title, children, heightRatio = 0.75 }: 
   const sheetH = Math.round((height * heightRatio) / 4) * 4;
   const [mounted, setMounted] = useState(isOpen);
   const y = useSharedValue(sheetH);
+  // Reduced motion: no sliding, the sheet and backdrop just fade.
+  const fade = useSharedValue(0);
+  const dragStart = useSharedValue(0);
 
   useEffect(() => {
-    const duration = reduceMotion ? 0 : 300;
     if (isOpen) {
       setMounted(true);
-      y.value = sheetH;
-      y.value = withTiming(0, { duration, easing: EASE_DRAWER });
+      if (reduceMotion) {
+        y.set(0);
+        fade.set(withTiming(1, { duration: 200 }));
+      } else {
+        fade.set(1);
+        y.set(sheetH);
+        // Enter on the iOS drawer curve; exit a little faster than enter.
+        y.set(withTiming(0, { duration: 300, easing: EASE_DRAWER }));
+      }
     } else if (mounted) {
-      y.value = withTiming(sheetH, { duration: reduceMotion ? 0 : 220, easing: EASE_DRAWER }, (done) => {
-        if (done) runOnJS(setMounted)(false);
-      });
+      const done = (finished?: boolean) => {
+        'worklet';
+        if (finished) scheduleOnRN(setMounted, false);
+      };
+      if (reduceMotion) fade.set(withTiming(0, { duration: 160 }, done));
+      else y.set(withTiming(sheetH, { duration: 220, easing: EASE_DRAWER }, done));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sheetH]);
 
   const drag = Gesture.Pan()
-    .onChange((e) => {
-      y.value = Math.max(0, y.value + e.changeY);
+    .onStart(() => {
+      dragStart.set(y.get());
+    })
+    .onUpdate((e) => {
+      const raw = dragStart.get() + e.translationY;
+      // Tracks the finger 1:1 downwards; dragging up past the top meets growing resistance instead of a wall.
+      y.set(raw >= 0 ? raw : -Math.sqrt(-raw) * 3);
     })
     .onEnd((e) => {
-      if (y.value > sheetH * 0.25 || e.velocityY > 800) runOnJS(onClose)();
-      else y.value = withTiming(0, { duration: 200, easing: EASE_DRAWER });
+      // A flick is enough: velocity or distance closes it.
+      if (y.get() > sheetH * 0.25 || e.velocityY > 500) scheduleOnRN(onClose);
+      else y.set(withSpring(0, { duration: 300, dampingRatio: 0.8, velocity: e.velocityY }));
     });
 
-  const panel = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
-  const backdrop = useAnimatedStyle(() => ({ opacity: 1 - y.value / sheetH }));
+  const panel = useAnimatedStyle(() => ({ opacity: fade.get(), transform: [{ translateY: y.get() }] }));
+  const backdrop = useAnimatedStyle(() => ({ opacity: Math.min(1, Math.max(0, 1 - y.get() / sheetH)) * fade.get() }));
 
   if (!mounted) return null;
   return (

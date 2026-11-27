@@ -3,7 +3,7 @@ import { Button, cn, Input, Label, TextField } from 'heroui-native';
 import { ArrowRight, Check, X } from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import Animated, { LinearTransition, ZoomIn } from 'react-native-reanimated';
+import Animated, { LinearTransition, ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui/icon';
 import { RoundButton } from '@/components/ui/round-button';
@@ -95,7 +95,7 @@ export default function MergeScreen() {
                   </View>
                   <View className={cn('size-11 items-center justify-center rounded-full', pos >= 0 ? 'bg-foreground' : cn('border-2 opacity-40', CATEGORY_BORDER[w.category]))}>
                     {pos >= 0 ? (
-                      <Animated.View entering={ZoomIn.duration(DURATION.fast).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.6 }] })}>
+                      <Animated.View entering={ZoomIn.duration(DURATION.fast).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.9 }] }).reduceMotion(ReduceMotion.System)}>
                         <AppText variant="headline" className="text-background">
                           {pos + 1}
                         </AppText>

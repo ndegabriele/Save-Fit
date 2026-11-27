@@ -32,6 +32,13 @@ export default function Library() {
   // Measured by hand (scroll offset + item heights): FlatList viewability is unreliable on web,
   // and an item's own onLayout y is relative to its cell, so positions are summed in list order.
   const heights = useRef(new Map<string, number>());
+  // Rows stagger in once, on first open. Rows that mount later while scrolling (or after a filter) just appear:
+  // an entrance on every virtualized row would replay on scroll.
+  const [introDone, setIntroDone] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setIntroDone(true), 600);
+    return () => clearTimeout(t);
+  }, []);
   const headerH = useRef(0);
   const order = useRef<string[]>([]);
   const viewport = useRef({ y: 0, h: 0 });
@@ -108,7 +115,7 @@ export default function Library() {
         }
         renderItem={({ item, index }) => (
           <Animated.View
-            entering={enterItem(index)}
+            entering={introDone || index > 5 ? undefined : enterItem(index)}
             onLayout={(e) => {
               heights.current.set(item.id, e.nativeEvent.layout.height);
               recompute();
