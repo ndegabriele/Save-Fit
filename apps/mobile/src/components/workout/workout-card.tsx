@@ -16,6 +16,7 @@ import { exerciseCount, workoutMinutes } from '@/lib/sequence';
 import { CATEGORY_BG, CATEGORY_BORDER, CATEGORY_INK } from '@/lib/theme';
 import type { Workout } from '@/lib/types';
 import { Pill } from './category-pill';
+import { TileVideo } from './tile-video';
 
 export interface WorkoutCardProps {
   workout: Workout;
@@ -24,13 +25,16 @@ export interface WorkoutCardProps {
   onRetry?: () => void;
   /** Merge-picker mode: shows the order badge instead of the play button. */
   selectedIndex?: number | null;
+  /** On screen: lets the background video play. */
+  active?: boolean;
 }
 
-export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }: WorkoutCardProps) {
+export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex, active = false }: WorkoutCardProps) {
   if (workout.status === 'processing') return <ProcessingCard workout={workout} onPress={onPress} />;
   if (workout.status === 'failed') return <FailedCard workout={workout} onPress={onPress} onRetry={onRetry} />;
 
   const minutes = workoutMinutes(workout);
+  const video = workout.source?.videoUrl ?? workout.blocks.find((b) => b.source?.videoUrl)?.source?.videoUrl ?? null;
   const media = mediaUrl(workout.source?.thumbnailUrl ?? workout.blocks.find((b) => b.source?.thumbnailUrl)?.source?.thumbnailUrl);
   const selecting = selectedIndex !== undefined;
   const selected = selectedIndex !== null && selectedIndex !== undefined;
@@ -49,10 +53,11 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
       >
         {media ? (
           <>
-            {/* The coach's video frame fills the tile, blurred and darkened so busy frames never fight the text. */}
-            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} blurRadius={24} />
+            {/* The coach's video plays behind the tile (thumbnail until it starts), under a dark scrim so the text always reads. */}
+            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+            {video ? <TileVideo uri={video} active={active} /> : null}
             <LinearGradient
-              colors={['rgba(0,0,0,0.72)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)']}
+              colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.62)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.9)']}
               locations={[0, 0.45, 0.62, 1]}
               style={StyleSheet.absoluteFill}
             />
