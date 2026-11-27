@@ -127,11 +127,11 @@ function Player() {
                   <AppText
                     variant="number"
                     className={small(size) ? 'text-white' : undefined}
-                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.5) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
+                    style={small(size) ? { fontSize: grid(size * 0.5), lineHeight: grid(size * 0.42) } : { fontSize: grid(size * 0.42), lineHeight: grid(size * 0.46) }}
                   >
                     {step.reps}
                   </AppText>
-                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? 'text-white' : 'text-muted'}>
+                  <AppText variant={small(size) ? 'label' : 'headline'} className={small(size) ? '-mt-1 text-[12px] leading-[16px] text-white' : 'text-muted'}>
                     {step.side ? (small(size) ? 'each side' : 'reps this side') : 'reps'}
                   </AppText>
                   {small(size) ? null : (
@@ -391,20 +391,22 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
       </View>
 
       <View className="flex-1 items-center justify-evenly">
-        <AppText variant="display" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75} className="text-center text-[24px] leading-[28px]">
+        <AppText variant="display" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.75} className="text-center text-[32px] leading-[36px]">
           {workout.title}
         </AppText>
 
         <Tappable onPress={p.goNow} feedback="firm" accessibilityLabel={`Starting in ${n}. Tap to start now`} scale={0.98}>
           <ProgressRing size={size} stroke={16} progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0} color="accent" stepMs={120}>
             <Animated.View key={n} entering={countIn}>
-              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56), fontVariant: ['tabular-nums'] }}>
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.42), fontVariant: ['tabular-nums'] }}>
                 {n}
               </AppText>
             </Animated.View>
-            <AppText variant="label" className="text-muted">
-              {p.paused ? 'Paused' : 'Tap to start now'}
-            </AppText>
+            {p.paused ? (
+              <AppText variant="label" className="-mt-3 text-muted">
+                Paused
+              </AppText>
+            ) : null}
           </ProgressRing>
         </Tappable>
 

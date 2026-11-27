@@ -19,7 +19,7 @@ export function stepRounds(steps: Step[]): number[] {
 
 /**
  * Progress through the current part, split into one segment per round
- * ("Round 1 | Round 2 | Round 3"). Done rounds are solid, the current one fills.
+ * ("R1 | R2 | R3", short so many rounds still fit). Done rounds are solid, the current one fills.
  * A part with a single round shows one segment named after the part.
  */
 export function RoundsBar({ steps, index }: { steps: Step[]; index: number }) {
@@ -50,7 +50,7 @@ export function RoundsBar({ steps, index }: { steps: Step[]; index: number }) {
               numberOfLines={1}
               className={cn('text-center text-[12px] leading-[16px]', finished ? 'text-accent-foreground' : active ? 'text-foreground' : 'text-muted')}
             >
-              {total > 1 ? `Round ${round}` : step.block.title}
+              {total > 1 ? `R${round}` : step.block.title}
             </AppText>
           </View>
         );
