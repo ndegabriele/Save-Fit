@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
-import { CreatorChip } from '@/components/ui/avatar';
+import { CoachTile } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
@@ -59,13 +59,15 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
           </>
         ) : null}
         <View className="flex-1 p-5">
-          <View className="flex-row items-start justify-between gap-3">
-            <Pill label={CATEGORY_LABEL[workout.category]} inverted={Boolean(media)} className={media ? 'bg-black/35' : undefined} />
-            <CreatorChip creators={workout.creators} onMedia={Boolean(media)} />
+          <View className="flex-row gap-4">
+            <View className="flex-1 gap-2">
+              <Pill label={CATEGORY_LABEL[workout.category]} inverted={Boolean(media)} className={media ? 'bg-black/35' : undefined} />
+              <AppText variant="display" numberOfLines={3} className={cn(media && 'text-white')}>
+                {workout.title}
+              </AppText>
+            </View>
+            <CoachTile creators={workout.creators} onMedia={Boolean(media)} inkClass={CATEGORY_INK[workout.category]} />
           </View>
-          <AppText variant="display" numberOfLines={3} className={cn('mt-3', media && 'text-white')}>
-            {workout.title}
-          </AppText>
 
           <View className="mt-auto flex-row items-end justify-between pt-4">
             <View>

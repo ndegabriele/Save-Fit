@@ -1,3 +1,4 @@
+import { grid } from '@/lib/grid';
 import { Image } from 'expo-image';
 import { cn } from 'heroui-native';
 import { View } from 'react-native';
@@ -96,6 +97,45 @@ export function CreatorChip({ creators, onMedia, className }: { creators: Creato
       <AppText variant="label" numberOfLines={1} className={cn('shrink', onMedia ? 'text-white' : 'text-foreground')}>
         {name}
         {extra > 0 ? ` +${extra}` : ''}
+      </AppText>
+    </View>
+  );
+}
+
+/**
+ * Coach column at the top-right of a workout tile (same 96px footprint as the old icon tile):
+ * a large rounded-square photo, or big initials, with the name underneath.
+ */
+export function CoachTile({ creators, onMedia, inkClass, size = 96 }: { creators: Creator[]; onMedia?: boolean; inkClass?: string; size?: number }) {
+  const first = creators[0];
+  if (!first) return null;
+  const src = mediaUrl(first.avatarUrl);
+  const i = hash((first.handle || first.name || '').toLowerCase()) % FILLS.length;
+  const name = first.name || first.handle?.replace(/^@/, '') || 'Coach';
+  const extra = creators.length - 1;
+  return (
+    <View className="items-center gap-2" style={{ width: size }} accessible accessibilityLabel={`By ${creators.map((c) => c.name || c.handle).join(', ')}`}>
+      <View
+        className={cn('items-center justify-center overflow-hidden rounded-[24px]', onMedia ? 'border-2 border-white/30' : 'bg-white/60 dark:bg-white/10', !src && onMedia && 'bg-black/35')}
+        style={{ width: size, height: size }}
+      >
+        {src ? (
+          <Image source={{ uri: src }} style={{ width: size, height: size }} contentFit="cover" transition={160} />
+        ) : (
+          <AppText variant="number" className={onMedia ? 'text-white' : (inkClass ?? INKS[i])} style={{ fontSize: grid(size * 0.36), lineHeight: grid(size * 0.44) }}>
+            {initials(first)}
+          </AppText>
+        )}
+        {extra > 0 ? (
+          <View className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-1">
+            <AppText variant="label" className="text-[12px] text-white">
+              +{extra}
+            </AppText>
+          </View>
+        ) : null}
+      </View>
+      <AppText variant="label" numberOfLines={1} className={cn('text-center text-[12px]', onMedia ? 'text-white' : 'text-foreground/70')}>
+        {name}
       </AppText>
     </View>
   );
