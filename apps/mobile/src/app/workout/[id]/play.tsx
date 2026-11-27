@@ -186,7 +186,7 @@ function Player() {
           </AppText>
         </View>
         <View className="h-12 min-w-12 items-center justify-center rounded-full bg-default px-4">
-          <AppText variant="label" style={{ fontVariant: ['tabular-nums'] }}>
+          <AppText variant="label" className="text-accent" style={{ fontVariant: ['tabular-nums'] }}>
             {clock(p.elapsed)}
           </AppText>
         </View>
