@@ -18,6 +18,30 @@ HeroUI's semantic tokens are re-skinned rather than replaced:
 - **Type**: Bricolage Grotesque ExtraBold for headings and big numbers (`hero`, `display`, `title`, `number` variants of `AppText`), Inter for everything people read.
 - Icons: Lucide, 2.2 stroke, coloured from tokens through `<Icon color="token">`.
 
+## 4px grid
+
+Every spacing, size, radius, icon size and line height is a multiple of 4px.
+
+- **Spacing and sizes:** use Tailwind steps (1 step = 4px). Don't use half steps (`gap-1.5`, `py-2.5`, `mt-0.5`). Arbitrary values must be multiples of 4 (`rounded-[32px]`).
+- **Computed sizes:** pass them through `grid()` from `src/lib/grid.ts` (icon inside a round button, player ring, video height).
+- **Icons:** 16, 20, 24, 32 and larger multiples of 4.
+- **Radii:** HeroUI's derived radii are pinned to 4, 8, 8, 12, 20, 24, 36 and 48px in `global.css`. Cards use 24 or 32px.
+- **Type:** font sizes follow the scale below, and every line height is on the grid.
+
+| Variant | Size / line height |
+|---|---|
+| hero | 40 / 44 |
+| display | 32 / 36 |
+| title | 24 / 28 |
+| headline | 18 / 24 |
+| body | 16 / 24 |
+| label | 14 / 20 |
+| caption, overline | 12 / 16 |
+
+- **Exceptions:** hairline borders (1–2px) and letter spacing.
+- **HeroUI internals:** HeroUI uses some half steps internally (6px gaps, 3px tab padding). These are overridden at the end of `global.css`.
+- **Guard:** `npm test` runs `grid.test.mjs`, which fails on any off-grid value in `src/`.
+
 ## Custom components (`src/components/ui`)
 
 `AppText`, `Icon`, `Tappable` (HeroUI PressableFeedback + haptics), `RoundButton`, `Stepper`, `Stat`, `ProgressRing`, `Choice`, `EmptyState`, `Confetti`, `Screen`.

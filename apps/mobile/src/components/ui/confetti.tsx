@@ -16,8 +16,8 @@ export function Confetti({ count = 36 }: { count?: number }) {
         delay: Math.random() * 250,
         rotate: Math.random() * 540 - 270,
         color: COLORS[i % COLORS.length] as string,
-        w: 6 + Math.random() * 6,
-        h: 10 + Math.random() * 8,
+        w: 4 + 4 * Math.round(Math.random() * 2),
+        h: 8 + 4 * Math.round(Math.random() * 2),
         duration: 1400 + Math.random() * 900,
       })),
     [count, width],
@@ -41,5 +41,5 @@ function Piece({ x, drift, delay, rotate, color, w, h, duration, fall }: { x: nu
     opacity: t.value < 0.8 ? 1 : 1 - (t.value - 0.8) * 5,
     transform: [{ translateX: x + drift * t.value }, { translateY: -40 + fall * t.value }, { rotate: `${rotate * t.value}deg` }],
   }));
-  return <Animated.View style={[{ position: 'absolute', width: w, height: h, borderRadius: 2, backgroundColor: color }, style]} />;
+  return <Animated.View style={[{ position: 'absolute', width: w, height: h, borderRadius: 4, backgroundColor: color }, style]} />;
 }

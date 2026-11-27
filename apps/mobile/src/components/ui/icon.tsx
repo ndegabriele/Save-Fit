@@ -10,7 +10,7 @@ export interface IconProps {
 }
 
 /** Lucide icon colored from the HeroUI token set (2px stroke at 24 matches HeroUI's icons). */
-export function Icon({ icon: Glyph, size = 22, color = 'foreground', strokeWidth = 2.2 }: IconProps) {
+export function Icon({ icon: Glyph, size = 24, color = 'foreground', strokeWidth = 2.2 }: IconProps) {
   const token = useColor(color.startsWith('#') ? 'foreground' : color);
   return <Glyph size={size} color={color.startsWith('#') ? color : token} strokeWidth={strokeWidth} />;
 }

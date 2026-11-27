@@ -88,7 +88,7 @@ export default function WorkoutDetail() {
           {workout.assumptions.length ? (
             <View className="gap-2 rounded-3xl bg-warning-soft p-4">
               <View className="flex-row items-center gap-2">
-                <Icon icon={AlertTriangle} size={18} color="warning" />
+                <Icon icon={AlertTriangle} size={20} color="warning" />
                 <AppText variant="headline" className="text-warning-soft-foreground">
                   Worth a quick check
                 </AppText>
@@ -132,7 +132,7 @@ export default function WorkoutDetail() {
           {workout.tips.length ? (
             <View className="gap-2 rounded-3xl bg-violet-soft p-4">
               <View className="flex-row items-center gap-2">
-                <Icon icon={Lightbulb} size={18} color="violet" />
+                <Icon icon={Lightbulb} size={20} color="violet" />
                 <AppText variant="headline">Coach tips</AppText>
               </View>
               {workout.tips.map((t) => (
@@ -154,8 +154,8 @@ export default function WorkoutDetail() {
           isDisabled={workout.status !== 'ready' || exerciseCount(workout) === 0}
           onPress={() => router.push({ pathname: '/workout/[id]/play', params: { id: workout.id } })}
         >
-          <Icon icon={Play} size={22} color="accent-foreground" />
-          <Button.Label className="text-[18px]">Start workout</Button.Label>
+          <Icon icon={Play} size={24} color="accent-foreground" />
+          <Button.Label className="text-[18px] leading-[24px]">Start workout</Button.Label>
         </Button>
       </View>
 
@@ -216,7 +216,7 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
         <AppText variant="title">{block.title}</AppText>
         {showSource && block.source?.creator ? (
           <View className="mt-1 flex-row items-center gap-2">
-            <CreatorAvatar creator={block.source.creator} size={22} className="border-0" />
+            <CreatorAvatar creator={block.source.creator} size={24} className="border-0" />
             <AppText variant="caption" className="flex-1" numberOfLines={1}>
               from {block.source.creator.name}{block.source.workoutTitle ? ` · ${block.source.workoutTitle}` : ''}
             </AppText>
@@ -224,9 +224,9 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
         ) : null}
       </View>
       {block.rounds > 1 ? (
-        <View className="flex-row items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5">
-          <Icon icon={Repeat} size={14} color="background" />
-          <AppText variant="label" className="text-[13px] text-background">
+        <View className="flex-row items-center gap-2 rounded-full bg-foreground px-3 py-2">
+          <Icon icon={Repeat} size={16} color="background" />
+          <AppText variant="label" className="text-[12px] leading-[16px] text-background">
             {plural(block.rounds, 'round')}
             {block.restBetweenRoundsSec ? ` · ${shortDuration(block.restBetweenRoundsSec)} rest` : ''}
           </AppText>
@@ -242,8 +242,8 @@ function ChipRow({ title, items }: { title: string; items: string[] }) {
       <AppText variant="overline">{title}</AppText>
       <View className="flex-row flex-wrap gap-2">
         {items.map((t) => (
-          <View key={t} className="rounded-full border border-border bg-surface px-3.5 py-2">
-            <AppText variant="label" className="text-[13px]">
+          <View key={t} className="rounded-full border border-border bg-surface px-4 py-2">
+            <AppText variant="label" className="text-[12px] leading-[16px]">
               {t}
             </AppText>
           </View>

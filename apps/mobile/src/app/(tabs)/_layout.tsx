@@ -23,7 +23,7 @@ function FloatingBar({ state, navigateToTab }: BottomTabBarProps) {
     return (
       <Tappable onPress={() => key && navigateToTab(key)} feedback="select" accessibilityLabel={label}>
         <View className={cn('size-14 items-center justify-center rounded-full', active ? 'bg-foreground' : 'bg-surface shadow-surface')}>
-          <Icon icon={icon} size={22} color={active ? 'background' : 'foreground'} />
+          <Icon icon={icon} size={24} color={active ? 'background' : 'foreground'} />
         </View>
       </Tappable>
     );
@@ -34,7 +34,7 @@ function FloatingBar({ state, navigateToTab }: BottomTabBarProps) {
       {tab('index', House, 'Workouts')}
       <Tappable onPress={() => router.push('/import')} feedback="firm" accessibilityLabel="Save a workout">
         <View className="h-14 flex-row items-center gap-2 rounded-full bg-accent px-6 shadow-overlay">
-          <Icon icon={Plus} size={22} color="accent-foreground" strokeWidth={2.6} />
+          <Icon icon={Plus} size={24} color="accent-foreground" strokeWidth={2.6} />
           <AppText variant="headline" className="text-accent-foreground">
             Save workout
           </AppText>

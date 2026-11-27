@@ -129,29 +129,29 @@ export default function EditWorkout() {
                       </AppText>
                       <AppText variant="caption">{exerciseMeta(ex)}</AppText>
                     </View>
-                    <Icon icon={ChevronRight} size={18} color="muted" />
+                    <Icon icon={ChevronRight} size={20} color="muted" />
                   </View>
                 </Tappable>
-                <RoundButton icon={ArrowUp} label="Move up" tone="surface" size={38} disabled={i === 0} onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i - 1) }))} />
+                <RoundButton icon={ArrowUp} label="Move up" tone="surface" size={40} disabled={i === 0} onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i - 1) }))} />
                 <RoundButton
                   icon={ArrowDown}
                   label="Move down"
                   tone="surface"
-                  size={38}
+                  size={40}
                   disabled={i === block.exercises.length - 1}
                   onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i + 1) }))}
                 />
               </Animated.View>
             ))}
             <Button variant="tertiary" onPress={() => addExercise(block.id)}>
-              <Icon icon={Plus} size={18} />
+              <Icon icon={Plus} size={20} />
               <Button.Label>Add exercise</Button.Label>
             </Button>
           </Animated.View>
         ))}
 
         <Button variant="secondary" size="lg" onPress={addBlock}>
-          <Icon icon={Plus} size={18} />
+          <Icon icon={Plus} size={20} />
           <Button.Label>Add a part</Button.Label>
         </Button>
       </ScrollView>

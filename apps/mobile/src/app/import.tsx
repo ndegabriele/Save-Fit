@@ -109,7 +109,7 @@ export default function ImportScreen() {
 
           <Button size="lg" onPress={submit} isDisabled={busy || !hasServer()} className="h-16">
             <Icon icon={Link2} size={20} color="accent-foreground" />
-            <Button.Label className="text-[17px]">{busy ? 'Sending…' : 'Save workout'}</Button.Label>
+            <Button.Label className="text-[16px] leading-[24px]">{busy ? 'Sending…' : 'Save workout'}</Button.Label>
           </Button>
         </ScrollView>
       )}
@@ -139,7 +139,7 @@ function Progress({ workoutId, onDone, onLibrary }: { workoutId: string; onDone:
               <View className={cn('size-9 items-center justify-center rounded-full', done ? 'bg-accent' : 'bg-default')}>
                 {done ? (
                   <Animated.View entering={ZoomIn.duration(220).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.6 }] })}>
-                    <Icon icon={Check} size={18} color="accent-foreground" strokeWidth={3} />
+                    <Icon icon={Check} size={20} color="accent-foreground" strokeWidth={3} />
                   </Animated.View>
                 ) : (
                   <AppText variant="label">{i + 1}</AppText>
@@ -153,7 +153,7 @@ function Progress({ workoutId, onDone, onLibrary }: { workoutId: string; onDone:
       <View className="mt-auto gap-3 pb-10">
         {stage === 'done' ? (
           <Button size="lg" className="h-16" onPress={onDone}>
-            <Button.Label className="text-[17px]">Open workout</Button.Label>
+            <Button.Label className="text-[16px] leading-[24px]">Open workout</Button.Label>
           </Button>
         ) : null}
         <Button size="lg" variant="secondary" className="h-14" onPress={onLibrary}>

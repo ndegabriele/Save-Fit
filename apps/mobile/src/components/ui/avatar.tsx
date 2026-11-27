@@ -53,7 +53,7 @@ export function CreatorRow({ creators, size = 32, className }: { creators: Creat
   const name = creators.length === 1 ? creators[0]!.name || creators[0]!.handle || 'Coach' : creators.map((c) => c.name || c.handle).join(', ');
   const handle = creators.length === 1 ? creators[0]!.handle : null;
   return (
-    <View className={cn('flex-row items-center gap-2.5', className)} accessible accessibilityLabel={`By ${name}`}>
+    <View className={cn('flex-row items-center gap-3', className)} accessible accessibilityLabel={`By ${name}`}>
       <View className="flex-row">
         {shown.map((c, i) => (
           <CreatorAvatar key={(c.handle || c.name) + i} creator={c} size={size} className={i > 0 ? '-ml-3' : undefined} />
@@ -64,7 +64,7 @@ export function CreatorRow({ creators, size = 32, className }: { creators: Creat
           {name}
         </AppText>
         {handle && handle !== name ? (
-          <AppText variant="caption" numberOfLines={1} className="text-foreground/55 text-[12px] leading-[15px]">
+          <AppText variant="caption" numberOfLines={1} className="text-foreground/55 text-[12px] leading-[16px]">
             {handle.startsWith('@') ? handle : `@${handle}`}
           </AppText>
         ) : null}

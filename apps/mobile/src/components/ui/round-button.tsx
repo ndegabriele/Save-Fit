@@ -1,3 +1,4 @@
+import { grid } from '@/lib/grid';
 import { cn } from 'heroui-native';
 import type { LucideIcon } from 'lucide-react-native';
 import { View } from 'react-native';
@@ -37,7 +38,7 @@ export function RoundButton({ icon, onPress, size = 44, tone = 'surface', label,
         className={cn('items-center justify-center rounded-full', t.bg, disabled && 'opacity-40')}
         style={{ width: size, height: size }}
       >
-        <Icon icon={icon} size={Math.round(size * 0.42)} color={t.fg} />
+        <Icon icon={icon} size={grid(size * 0.42)} color={t.fg} />
       </View>
     </Tappable>
   );

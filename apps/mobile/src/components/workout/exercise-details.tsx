@@ -7,10 +7,10 @@ export function ExerciseDetails({ exercise }: { exercise: Exercise }) {
   return (
     <View className="gap-4">
       {exercise.steps.length ? (
-        <View className="gap-2.5">
+        <View className="gap-3">
           {exercise.steps.map((step, i) => (
             <View key={i} className="flex-row gap-3">
-              <View className="mt-0.5 size-6 items-center justify-center rounded-full bg-foreground">
+              <View className="mt-1 size-6 items-center justify-center rounded-full bg-foreground">
                 <AppText variant="label" className="text-[12px] text-background">
                   {i + 1}
                 </AppText>
@@ -46,8 +46,8 @@ function Tags({ title, items, tone }: { title: string; items: string[]; tone?: '
       <AppText variant="overline">{title}</AppText>
       <View className="flex-row flex-wrap gap-2">
         {items.map((t) => (
-          <View key={t} className={tone === 'accent' ? 'rounded-full bg-accent px-3 py-1.5' : 'rounded-full bg-default px-3 py-1.5'}>
-            <AppText variant="label" className={tone === 'accent' ? 'text-[13px] text-accent-foreground' : 'text-[13px]'}>
+          <View key={t} className={tone === 'accent' ? 'rounded-full bg-accent px-3 py-2' : 'rounded-full bg-default px-3 py-2'}>
+            <AppText variant="label" className={tone === 'accent' ? 'text-[12px] leading-[16px] text-accent-foreground' : 'text-[12px] leading-[16px]'}>
               {t}
             </AppText>
           </View>
@@ -59,7 +59,7 @@ function Tags({ title, items, tone }: { title: string; items: string[]; tone?: '
 
 function Bullets({ title, items }: { title: string; items: string[] }) {
   return (
-    <View className="gap-1.5">
+    <View className="gap-2">
       <AppText variant="overline">{title}</AppText>
       {items.map((t) => (
         <AppText key={t} variant="body" className="text-muted">

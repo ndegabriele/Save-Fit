@@ -57,14 +57,14 @@ export default function MergeScreen() {
             <View className="flex-row flex-wrap items-center gap-2">
               {picked.map((w, i) => (
                 <View key={w.id} className="flex-row items-center gap-2">
-                  {i > 0 ? <Icon icon={ArrowRight} size={14} color="muted" /> : null}
-                  <View className="flex-row items-center gap-1.5 rounded-full bg-default py-1.5 pl-1.5 pr-3">
+                  {i > 0 ? <Icon icon={ArrowRight} size={16} color="muted" /> : null}
+                  <View className="flex-row items-center gap-2 rounded-full bg-default py-2 pl-2 pr-3">
                     <View className="size-6 items-center justify-center rounded-full bg-foreground">
                       <AppText variant="label" className="text-[12px] text-background">
                         {i + 1}
                       </AppText>
                     </View>
-                    <AppText variant="label" className="text-[13px]" numberOfLines={1}>
+                    <AppText variant="label" className="text-[12px] leading-[16px]" numberOfLines={1}>
                       {w.title.length > 22 ? `${w.title.slice(0, 21)}…` : w.title}
                     </AppText>
                   </View>
@@ -85,7 +85,7 @@ export default function MergeScreen() {
               <Tappable onPress={() => toggle(w.id)} feedback="select" accessibilityLabel={`${pos >= 0 ? 'Remove' : 'Add'} ${w.title}`}>
                 <View className={cn('flex-row items-center gap-3 rounded-[24px] p-3', CATEGORY_BG[w.category], pos >= 0 && 'border-2 border-foreground')}>
                   <Thumb uri={w.source?.thumbnailUrl} category={w.category} size={64} />
-                  <View className="flex-1 gap-0.5">
+                  <View className="flex-1 gap-1">
                     <AppText variant="headline" numberOfLines={2}>
                       {w.title}
                     </AppText>
@@ -112,7 +112,7 @@ export default function MergeScreen() {
       <View className="absolute inset-x-0 bottom-0 bg-background px-5 pt-3" style={{ paddingBottom: Math.max(insets.bottom, 12) + 4 }}>
         <Button size="lg" className="h-16 rounded-full" isDisabled={order.length < 2} onPress={create}>
           <Icon icon={Check} size={20} color="accent-foreground" />
-          <Button.Label className="text-[17px]">
+          <Button.Label className="text-[16px] leading-[24px]">
             {order.length < 2 ? 'Pick at least 2' : `Merge ${order.length} workouts · ${total} min`}
           </Button.Label>
         </Button>

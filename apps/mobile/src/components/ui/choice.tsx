@@ -12,7 +12,7 @@ export function Choice<T extends string>({ label, value, options, format, onChan
         {options.map((o) => (
           <Tappable key={o} onPress={() => onChange(o)} feedback="select" accessibilityLabel={format(o)}>
             <View className={cn('h-10 justify-center rounded-full px-4', o === value ? 'bg-foreground' : 'bg-default')}>
-              <AppText variant="label" className={cn('text-[13px]', o === value ? 'text-background' : 'text-foreground')}>
+              <AppText variant="label" className={cn('text-[12px] leading-[16px]', o === value ? 'text-background' : 'text-foreground')}>
                 {format(o)}
               </AppText>
             </View>

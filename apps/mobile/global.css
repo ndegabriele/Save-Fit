@@ -49,6 +49,11 @@
       /* Rounder than stock HeroUI: friendlier, more "playful premium". */
       --radius: 0.75rem;
       --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
 
       --background: oklch(97.4% 0.004 286);
       --foreground: oklch(19% 0.008 286);
@@ -115,6 +120,11 @@
 
       --radius: 0.75rem;
       --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
 
       --background: oklch(14.5% 0.004 286);
       --foreground: oklch(98.5% 0 0);
@@ -171,4 +181,23 @@
       --cat-mixed-ink: oklch(86% 0.19 128);
     }
   }
+}
+
+/*
+ * 4px grid overrides for HeroUI Native internals that use half steps
+ * (calc(var(--spacing) * 1.5) = 6px, 3px tab padding ...). Same layer, later in
+ * source, so these win. Everything else in HeroUI is already on the grid.
+ */
+@layer components {
+  .button__root--size-sm { padding-inline: calc(var(--spacing) * 4); gap: calc(var(--spacing) * 2); }
+  .button__root--size-lg { gap: calc(var(--spacing) * 2); }
+  .label__root--is-inside-field,
+  .description__root--is-inside-field,
+  .field-error__container--is-inside-field { padding-inline: calc(var(--spacing) * 1); }
+  .text-field__root { gap: calc(var(--spacing) * 2); }
+  .tabs__list--variant-primary { padding: 4px; }
+  .tabs__scroll-view--variant-primary { margin-block: -4px; }
+  .tabs__scroll-view-content-container--variant-primary { padding-block: 4px; padding-inline: 0; }
+  .tabs__trigger { padding-block: calc(var(--spacing) * 2); gap: calc(var(--spacing) * 2); }
+  .tabs__indicator--variant-primary--is-scroll-view { top: 4px; }
 }

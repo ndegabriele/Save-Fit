@@ -9,7 +9,7 @@ export function Stat({ icon, value, label, className }: { icon: LucideIcon; valu
   return (
     <View className={cn('flex-1 gap-3 rounded-3xl bg-surface p-4 shadow-surface', className)}>
       <View className="size-9 items-center justify-center rounded-full bg-accent">
-        <Icon icon={icon} size={18} color="accent-foreground" />
+        <Icon icon={icon} size={20} color="accent-foreground" />
       </View>
       <View>
         <AppText variant="title">{value}</AppText>

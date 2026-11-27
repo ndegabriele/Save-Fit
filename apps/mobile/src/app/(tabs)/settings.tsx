@@ -54,7 +54,7 @@ export default function SettingsScreen() {
         <Section title="During workouts">
           <View className="gap-3">
             <View className="flex-row items-center gap-2 px-1">
-              <Icon icon={Timer} size={18} color="muted" />
+              <Icon icon={Timer} size={20} color="muted" />
               <AppText variant="label" className="text-muted">
                 Get-ready countdown before timed moves
               </AppText>
@@ -70,7 +70,7 @@ export default function SettingsScreen() {
 
         <Section title="Appearance">
           <View className="flex-row items-center gap-2 px-1">
-            <Icon icon={Moon} size={18} color="muted" />
+            <Icon icon={Moon} size={20} color="muted" />
             <AppText variant="label" className="text-muted">
               Theme
             </AppText>
@@ -96,7 +96,7 @@ export default function SettingsScreen() {
             <Description>The Save Fit server downloads the video and asks Claude to structure it.</Description>
           </TextField>
           <Button variant="secondary" onPress={testServer} isDisabled={testing || !server.trim()}>
-            <Icon icon={Server} size={18} />
+            <Icon icon={Server} size={20} />
             <Button.Label>{testing ? 'Testing…' : 'Test & save'}</Button.Label>
           </Button>
         </Section>
@@ -110,7 +110,7 @@ export default function SettingsScreen() {
               toast.show({ variant: 'success', label: 'Sample workouts added' });
             }}
           >
-            <Icon icon={RefreshCw} size={18} />
+            <Icon icon={RefreshCw} size={20} />
             <Button.Label>Add sample workouts</Button.Label>
           </Button>
         </Section>
@@ -154,11 +154,11 @@ function AiAccount() {
       <View className="gap-3 rounded-[24px] border border-dashed border-warning/60 bg-warning-soft p-4">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-2">
-            <Icon icon={KeyRound} size={18} />
+            <Icon icon={KeyRound} size={20} />
             <AppText variant="headline">Your Claude key</AppText>
           </View>
-          <View className="rounded-full bg-warning px-2.5 py-1">
-            <AppText variant="label" className="text-[11px] uppercase tracking-wider text-warning-foreground">
+          <View className="rounded-full bg-warning px-3 py-1">
+            <AppText variant="label" className="text-[12px] leading-[16px] uppercase tracking-wider text-warning-foreground">
               Temporary
             </AppText>
           </View>

@@ -49,7 +49,7 @@ export function InboxCard() {
   };
 
   return (
-    <View className="gap-3 rounded-[30px] bg-surface p-5 shadow-surface">
+    <View className="gap-3 rounded-[32px] bg-surface p-5 shadow-surface">
       <View className="flex-row items-center justify-between">
         <View>
           <AppText variant="overline">Ready to import</AppText>

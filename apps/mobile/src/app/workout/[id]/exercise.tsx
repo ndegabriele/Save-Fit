@@ -126,7 +126,7 @@ export default function EditExercise() {
         </TextField>
 
         <Button variant="danger-soft" onPress={remove}>
-          <Icon icon={Trash2} size={18} color="danger" />
+          <Icon icon={Trash2} size={20} color="danger" />
           <Button.Label>Remove exercise</Button.Label>
         </Button>
       </ScrollView>

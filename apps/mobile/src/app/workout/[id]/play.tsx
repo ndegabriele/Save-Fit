@@ -1,3 +1,4 @@
+import { grid } from '@/lib/grid';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
@@ -73,7 +74,7 @@ function Player() {
   const exercise = step?.kind === 'work' ? step.exercise : step?.next ?? null;
   const source = step?.block.source ?? workout.source;
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
-  const ringSize = Math.min(width - 96, video ? height * 0.26 : height * 0.34, 300);
+  const ringSize = grid(Math.min(width - 96, video ? height * 0.26 : height * 0.34, 300));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
@@ -100,23 +101,23 @@ function Player() {
       </View>
 
       {/* Progress */}
-      <View className="mx-5 mt-4 h-1.5 overflow-hidden rounded-full bg-default">
+      <View className="mx-5 mt-4 h-2 overflow-hidden rounded-full bg-default">
         <View className="h-full rounded-full bg-accent" style={{ width: `${Math.round(progress * 100)}%` }} />
       </View>
 
       <ScrollView className="flex-1" contentContainerClassName="flex-grow items-center px-5 pt-5" showsVerticalScrollIndicator={false}>
         {video ? (
           <View className="mb-4 w-full">
-            <VideoClip uri={video} clip={exercise?.clip} paused={p.paused} height={height * 0.24} />
+            <VideoClip uri={video} clip={exercise?.clip} paused={p.paused} height={grid(height * 0.24)} />
           </View>
         ) : null}
 
         {/* Title */}
-        <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="w-full items-center gap-1.5">
+        <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="w-full items-center gap-2">
           <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
             {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
           </AppText>
-          <AppText variant="display" className="text-center text-[34px] leading-[38px]">
+          <AppText variant="display" className="text-center text-[36px] leading-[40px]">
             {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
           </AppText>
           {step?.kind === 'work' ? (
@@ -138,7 +139,7 @@ function Player() {
           {isReps && step?.kind === 'work' ? (
             <Tappable onPress={p.next} feedback="firm" accessibilityLabel="Done, next exercise" scale={0.98}>
               <View className="items-center justify-center rounded-full bg-surface" style={{ width: ringSize, height: ringSize }}>
-                <AppText variant="number" style={{ fontSize: ringSize * 0.42, lineHeight: ringSize * 0.46 }}>
+                <AppText variant="number" style={{ fontSize: grid(ringSize * 0.42), lineHeight: grid(ringSize * 0.46) }}>
                   {step.reps}
                 </AppText>
                 <AppText variant="headline" className="text-muted">
@@ -158,7 +159,7 @@ function Player() {
                 color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
                 stepMs={120}
               >
-                <AppText variant="number" style={{ fontSize: ringSize * 0.3, lineHeight: ringSize * 0.34, fontVariant: ['tabular-nums'] }}>
+                <AppText variant="number" style={{ fontSize: grid(ringSize * 0.3), lineHeight: grid(ringSize * 0.34), fontVariant: ['tabular-nums'] }}>
                   {isCountdown ? Math.ceil(p.remaining) : clock(p.remaining)}
                 </AppText>
                 <AppText variant="label" className="text-muted">
@@ -187,7 +188,7 @@ function Player() {
         {exercise && (exercise.steps.length > 0 || exercise.cues.length > 0) ? (
           <Tappable onPress={() => setHowTo(true)} className="mt-4" accessibilityLabel="How to do this exercise">
             <View className="flex-row items-center gap-2 px-3 py-2">
-              <Icon icon={Info} size={18} color="muted" />
+              <Icon icon={Info} size={20} color="muted" />
               <AppText variant="label" className="text-muted">
                 How to do it
               </AppText>
@@ -296,7 +297,7 @@ function Finished({ title, elapsed, moves, onClose }: { title: string; elapsed: 
         </View>
       </View>
       <Button size="lg" className="mt-8 h-16 w-full rounded-full" onPress={onClose}>
-        <Button.Label className="text-[18px]">Done</Button.Label>
+        <Button.Label className="text-[18px] leading-[24px]">Done</Button.Label>
       </Button>
     </View>
   );

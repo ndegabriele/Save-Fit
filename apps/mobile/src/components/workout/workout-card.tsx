@@ -38,9 +38,9 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
     <Tappable onPress={onPress} accessibilityLabel={`${workout.title} by ${creatorLine(workout.creators)}`}>
       <View
         className={cn(
-          'overflow-hidden rounded-[30px] p-5',
+          'overflow-hidden rounded-[32px] p-5',
           CATEGORY_BG[workout.category],
-          selected && 'border-[3px] border-foreground',
+          selected && 'border-4 border-foreground',
           selecting && !selected && 'opacity-80',
         )}
         style={{ minHeight: 236 }}
@@ -87,7 +87,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
       // Sibling of the card (not nested) so it's its own button for screen readers.
       <Tappable onPress={onPlay} feedback="firm" accessibilityLabel={`Start ${workout.title}`} className="absolute bottom-5 right-5">
         <View className="size-14 items-center justify-center rounded-full bg-white shadow-surface">
-          <Icon icon={Play} size={22} color="#17171C" />
+          <Icon icon={Play} size={24} color="#17171C" />
         </View>
       </Tappable>
     ) : null}
@@ -106,7 +106,7 @@ function ProcessingCard({ workout, onPress }: { workout: Workout; onPress: () =>
 
   return (
     <Tappable onPress={onPress} accessibilityLabel="Workout being processed">
-      <View className="overflow-hidden rounded-[30px] bg-surface p-5 shadow-surface" style={{ minHeight: 170 }}>
+      <View className="overflow-hidden rounded-[32px] bg-surface p-5 shadow-surface" style={{ minHeight: 168 }}>
         <Pill label="Saving" />
         <AppText variant="title" className="mt-3">
           {STAGE_COPY[stage] ?? 'Working on it'}…
@@ -127,9 +127,9 @@ function ProcessingCard({ workout, onPress }: { workout: Workout; onPress: () =>
 function FailedCard({ workout, onPress, onRetry }: { workout: Workout; onPress: () => void; onRetry?: () => void }) {
   return (
     <Tappable onPress={onPress} accessibilityLabel="Import failed">
-      <View className="rounded-[30px] bg-danger-soft p-5" style={{ minHeight: 150 }}>
+      <View className="rounded-[32px] bg-danger-soft p-5" style={{ minHeight: 152 }}>
         <View className="flex-row items-center gap-2">
-          <Icon icon={AlertTriangle} size={18} color="danger" />
+          <Icon icon={AlertTriangle} size={20} color="danger" />
           <AppText variant="headline" className="text-danger-soft-foreground">
             Couldn’t read this one
           </AppText>
@@ -139,7 +139,7 @@ function FailedCard({ workout, onPress, onRetry }: { workout: Workout; onPress: 
         </AppText>
         {onRetry ? (
           <Tappable onPress={onRetry} className="mt-4 self-start">
-            <View className="flex-row items-center gap-2 rounded-full bg-surface px-4 py-2.5">
+            <View className="flex-row items-center gap-2 rounded-full bg-surface px-4 py-3">
               <Icon icon={RotateCcw} size={16} />
               <AppText variant="label">Try again</AppText>
             </View>
