@@ -16,6 +16,8 @@ import { RoundButton } from '@/components/ui/round-button';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { ExerciseDetails } from '@/components/workout/exercise-details';
+import { RoundsBar } from '@/components/workout/rounds-bar';
+import { Sheet } from '@/components/ui/sheet';
 import { VideoClip } from '@/components/workout/video-clip';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
@@ -98,7 +100,6 @@ function Player() {
     step?.kind === 'work'
       ? [
           step.sets > 1 ? `Set ${step.set} of ${step.sets}` : null,
-          step.rounds > 1 ? `Round ${step.round} of ${step.rounds}` : null,
           step.side ? `${step.side === 'left' ? 'Left' : 'Right'} side` : null,
           step.exercise.load,
         ]
@@ -178,21 +179,10 @@ function Player() {
         </View>
       </View>
 
-      {/* Progress */}
-      <View className="mx-5 mt-4 h-2 overflow-hidden rounded-full bg-default">
-        <View className="h-full rounded-full bg-accent" style={{ width: `${Math.round(progress * 100)}%` }} />
-      </View>
+      {/* Rounds of the current part: one segment per round, filling as you go. */}
+      <RoundsBar steps={p.steps} index={p.index} />
 
       {/* Two views of the same exercise, swipe between them. Controls work the same in both. */}
-      {video ? (
-        <View className="mt-3 flex-row justify-center gap-2" accessibilityRole="tablist">
-          {(['Video', 'Controls'] as const).map((label, i) => (
-            <Tappable key={label} onPress={() => goToView(i)} feedback="select" accessibilityLabel={`${label} view`}>
-              <View className={cn('h-2 rounded-full', view === i ? 'w-8 bg-foreground' : 'w-2 bg-foreground/30')} />
-            </Tappable>
-          ))}
-        </View>
-      ) : null}
 
       <ScrollView
         ref={pager}
@@ -311,17 +301,20 @@ function Player() {
 
         </View>
       </ScrollView>
+      {/* View switcher, under the play/pause button. */}
+      {video ? (
+        <View className="flex-row justify-center gap-1 pt-1" accessibilityRole="tablist">
+          {(['Video', 'Controls'] as const).map((label, i) => (
+            <Tappable key={label} onPress={() => goToView(i)} feedback="select" accessibilityLabel={`${label} view`} className="px-1 py-2">
+              <View className={cn('h-2 rounded-full', view === i ? 'w-8 bg-foreground' : 'w-2 bg-foreground/30')} />
+            </Tappable>
+          ))}
+        </View>
+      ) : null}
 
-      <Dialog isOpen={howTo} onOpenChange={setHowTo}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content className="max-h-[80%]">
-            <Dialog.Close />
-            <Dialog.Title>{exercise?.name}</Dialog.Title>
-            <ScrollView className="mt-3">{exercise ? <ExerciseDetails exercise={exercise} /> : null}</ScrollView>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <Sheet isOpen={howTo} onClose={() => setHowTo(false)} title={exercise?.name}>
+        {exercise ? <ExerciseDetails exercise={exercise} /> : null}
+      </Sheet>
 
       <Dialog isOpen={confirmExit} onOpenChange={setConfirmExit}>
         <Dialog.Portal>

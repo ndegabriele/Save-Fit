@@ -1,6 +1,7 @@
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Accordion, Button, cn, Dialog, useToast } from 'heroui-native';
+import { Accordion, Button, cn, useToast } from 'heroui-native';
+import { Sheet } from '@/components/ui/sheet';
 import { useState } from 'react';
 import {
   AlertTriangle,
@@ -159,12 +160,8 @@ export default function WorkoutDetail() {
         </Button>
       </View>
 
-      <Dialog isOpen={actionsOpen} onOpenChange={setActionsOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay />
-          <Dialog.Content>
-            <Dialog.Title>{workout.title}</Dialog.Title>
-            <View className="mt-4 gap-2">
+      <Sheet isOpen={actionsOpen} onClose={() => setActionsOpen(false)} title={workout.title} heightRatio={0.48}>
+            <View className="gap-2">
               <ActionRow icon={Pencil} label="Edit" onPress={() => { setActionsOpen(false); router.push({ pathname: '/workout/[id]/edit', params: { id: workout.id } }); }} />
               <ActionRow
                 icon={Copy}
@@ -188,9 +185,7 @@ export default function WorkoutDetail() {
                 }}
               />
             </View>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      </Sheet>
     </View>
   );
 }
