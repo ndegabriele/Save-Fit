@@ -1,0 +1,36 @@
+import { cn } from 'heroui-native';
+import { Dumbbell } from 'lucide-react-native';
+import { View } from 'react-native';
+import { Icon } from '@/components/ui/icon';
+import { AppText } from '@/components/ui/text';
+import type { Exercise } from '@/lib/types';
+
+/** What a move needs: the specific load if the coach gave one ("Medium dumbbells"), else its equipment list. */
+export function exerciseEquipment(e: Pick<Exercise, 'load' | 'equipment'>): string[] {
+  return e.load ? [e.load] : e.equipment;
+}
+
+/** The one equipment tag used everywhere: a small dumbbell, a short label, a soft pill. */
+export function EquipmentTag({ label }: { label: string }) {
+  return (
+    <View className="h-7 flex-row items-center gap-1 self-start rounded-full bg-default px-3" accessibilityLabel={`Equipment: ${label}`}>
+      <Icon icon={Dumbbell} size={12} color="muted" />
+      <AppText variant="label" numberOfLines={1} className="text-[12px] leading-[16px]">
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
+export function EquipmentTags({ items, className, max }: { items: string[]; className?: string; max?: number }) {
+  if (!items.length) return null;
+  const shown = max ? items.slice(0, max) : items;
+  return (
+    <View className={cn('flex-row flex-wrap gap-2', className)}>
+      {shown.map((t) => (
+        <EquipmentTag key={t} label={t} />
+      ))}
+      {max && items.length > max ? <EquipmentTag label={`+${items.length - max}`} /> : null}
+    </View>
+  );
+}

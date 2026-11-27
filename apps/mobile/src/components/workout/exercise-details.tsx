@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { AppText } from '@/components/ui/text';
 import type { Exercise } from '@/lib/types';
+import { EquipmentTags, exerciseEquipment } from './equipment-tag';
 
 /** Numbered steps + cues + mistakes + variations. Used in detail and player "how to". */
 export function ExerciseDetails({ exercise }: { exercise: Exercise }) {
@@ -27,7 +28,12 @@ export function ExerciseDetails({ exercise }: { exercise: Exercise }) {
       {exercise.commonMistakes.length ? <Bullets title="Avoid" items={exercise.commonMistakes} /> : null}
       {exercise.breathing ? <Line title="Breathing" body={exercise.breathing} /> : null}
       {exercise.tempo ? <Line title="Tempo" body={exercise.tempo} /> : null}
-      {exercise.load ? <Line title="Load" body={exercise.load} /> : null}
+      {exerciseEquipment(exercise).length ? (
+        <View className="gap-2">
+          <AppText variant="overline">Equipment</AppText>
+          <EquipmentTags items={exerciseEquipment(exercise)} />
+        </View>
+      ) : null}
       {exercise.easier || exercise.harder ? (
         <View className="flex-row gap-3">
           {exercise.easier ? <Variation label="Easier" body={exercise.easier} /> : null}

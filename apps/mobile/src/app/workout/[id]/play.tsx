@@ -24,6 +24,7 @@ import { DURATION, EASE_OUT, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
 import { usePlayer } from '@/lib/use-player';
 import type { Workout } from '@/lib/types';
+import { EquipmentTags, exerciseEquipment } from '@/components/workout/equipment-tag';
 
 export default function PlayScreen() {
   // The player is always dark: high contrast, calm, readable from the floor.
@@ -106,11 +107,12 @@ function Player() {
       ? [
           step.sets > 1 ? `Set ${step.set} of ${step.sets}` : null,
           step.side ? `${step.side === 'left' ? 'Left' : 'Right'} side` : null,
-          step.exercise.load,
         ]
           .filter(Boolean)
           .join('  ·  ')
       : '';
+
+  const gear = exercise ? exerciseEquipment(exercise) : [];
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
@@ -231,6 +233,7 @@ function Player() {
                       {meta}
                     </AppText>
                   ) : null}
+                  <EquipmentTags items={gear} max={2} className="mt-1" />
                 </View>
                 {timer(88)}
               </View>
@@ -270,6 +273,7 @@ function Player() {
                   {meta}
                 </AppText>
               ) : null}
+              <EquipmentTags items={gear} max={2} className="mt-1" />
             </Animated.View>
           </View>
 
@@ -375,7 +379,7 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
   const n = Math.max(1, Math.ceil(p.remaining));
   const firstMeta =
     first?.kind === 'work'
-      ? [first.mode === 'reps' ? `${first.reps} reps` : clock(first.durationSec), first.exercise.load].filter(Boolean).join('  ·  ')
+      ? first.mode === 'reps' ? `${first.reps} reps` : clock(first.durationSec)
       : '';
 
   return (
@@ -417,6 +421,7 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
                 {firstMeta}
               </AppText>
             ) : null}
+            <EquipmentTags items={exerciseEquipment(first.exercise)} className="mt-2" />
           </View>
         ) : null}
       </View>

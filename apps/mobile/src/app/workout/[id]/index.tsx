@@ -29,6 +29,7 @@ import { Pill } from '@/components/workout/category-pill';
 import { ExerciseDetails } from '@/components/workout/exercise-details';
 import { CreatorAvatar, CreatorRow } from '@/components/ui/avatar';
 import { Thumb } from '@/components/workout/thumb';
+import { EquipmentTags, exerciseEquipment } from '@/components/workout/equipment-tag';
 import { BLOCK_LABEL, CATEGORY_LABEL, DIFFICULTY_LABEL, creatorLine, exerciseMeta, plural, shortDuration } from '@/lib/format';
 import { exerciseCount, workoutMinutes } from '@/lib/sequence';
 import { useStore, useWorkout } from '@/lib/store';
@@ -83,7 +84,12 @@ export default function WorkoutDetail() {
             </AppText>
           ) : null}
 
-          {workout.equipment.length ? <ChipRow title="You’ll need" items={workout.equipment} /> : null}
+          {workout.equipment.length ? (
+            <View className="gap-2">
+              <AppText variant="overline">You’ll need</AppText>
+              <EquipmentTags items={workout.equipment} />
+            </View>
+          ) : null}
           {workout.targetMuscles.length ? <ChipRow title="Targets" items={workout.targetMuscles} /> : null}
 
           {workout.assumptions.length ? (
@@ -117,6 +123,7 @@ export default function WorkoutDetail() {
                         <View className="flex-1">
                           <AppText variant="headline">{ex.name}</AppText>
                           <AppText variant="caption">{exerciseMeta(ex)}</AppText>
+                          <EquipmentTags items={exerciseEquipment(ex)} max={2} className="mt-1" />
                         </View>
                       </View>
                       <Accordion.Indicator />
