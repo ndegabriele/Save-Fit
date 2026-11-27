@@ -3,7 +3,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
 import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from '@/components/ui/icons';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, Keyframe, ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -129,10 +129,22 @@ function Player() {
           className={cn('items-center justify-center', small(size) ? 'rounded-3xl bg-default' : 'rounded-full bg-surface')}
           style={{ width: size, height: size }}
         >
-          <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
-            {step.reps}
-          </AppText>
-          <DiscLabel size={size} text="reps" side={side} />
+          {/* Large: the side pill sits on that side of the number. Compact: in that top corner of the tile. */}
+          {small(size) ? (
+            <>
+              {side ? <SidePill side={side} compact className={cn('absolute top-2', side.startsWith('Left') ? 'left-2' : 'right-2')} /> : null}
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+                {step.reps}
+              </AppText>
+            </>
+          ) : (
+            <Flanked side={side}>
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+                {step.reps}
+              </AppText>
+            </Flanked>
+          )}
+          <DiscLabel size={size} text="reps" />
           {small(size) ? null : (
             <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
               {clock(p.repElapsed)}
@@ -155,7 +167,7 @@ function Player() {
           <DiscLabel
             size={size}
             text={p.paused ? 'Paused' : isCountdown ? 'Get ready' : isRest ? 'Breathe' : 'Work'}
-            side={isRest ? null : side}
+            side={isRest || small(size) ? null : side}
             tight={false}
           />
         </ProgressRing>
@@ -456,27 +468,53 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
 
 /**
  * The word under the big number ("reps", "Breathe"), sized with the disc and tucked up close to it.
- * A left/right side sits inline beside it as a small badge, not stacked underneath.
+ * On a timed move the side pill flanks the word (the clock is too wide to flank).
  */
-function DiscLabel({ size, text, side, tight = true }: { size: number; text: string; side: string | null; tight?: boolean }) {
+function DiscLabel({ size, text, side = null, tight = true }: { size: number; text: string; side?: string | null; tight?: boolean }) {
   const compact = size < 160;
   const fontSize = compact ? 12 : grid(size * 0.086);
   return (
     <View
-      className="flex-row items-center gap-2"
       // Pull the label up into the number's line box (its bottom is empty space under the digits).
       style={{ marginTop: tight ? -grid(size * (compact ? 0.08 : 0.06)) : -grid(size * 0.02) }}
     >
-      <AppText variant="headline" className="text-white" style={{ fontSize, lineHeight: grid(fontSize * 1.2) }}>
-        {text}
+      <Flanked side={side}>
+        <AppText variant="headline" className="text-white" style={{ fontSize, lineHeight: grid(fontSize * 1.2) }}>
+          {text}
+        </AppText>
+      </Flanked>
+    </View>
+  );
+}
+
+/**
+ * Puts the side pill on the matching side of its content (Left on the left, Right on the right),
+ * with an invisible twin on the other side so the content stays centred.
+ */
+function Flanked({ side, children }: { side: string | null; children: ReactNode }) {
+  if (!side) return <>{children}</>;
+  const left = side.startsWith('Left');
+  const pill = <SidePill side={side} />;
+  const ghost = (
+    <View style={{ opacity: 0 }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <SidePill side={side} />
+    </View>
+  );
+  return (
+    <View className="flex-row items-center gap-3">
+      {left ? pill : ghost}
+      {children}
+      {left ? ghost : pill}
+    </View>
+  );
+}
+
+function SidePill({ side, compact, className }: { side: string; compact?: boolean; className?: string }) {
+  return (
+    <View className={cn('items-center justify-center rounded-full bg-accent', compact ? 'h-5 min-w-5 px-1' : 'h-7 px-3', className)}>
+      <AppText variant="label" className="font-semibold uppercase text-accent-foreground" style={{ fontSize: compact ? 10 : 12, lineHeight: compact ? 12 : 16 }}>
+        {compact ? side[0] : side.replace(' side', '')}
       </AppText>
-      {side ? (
-        <View className={cn('rounded-full bg-accent', compact ? 'px-1' : 'px-2 py-1')}>
-          <AppText variant="label" className="font-semibold uppercase text-accent-foreground" style={{ fontSize: compact ? 10 : 12, lineHeight: compact ? 12 : 16 }}>
-            {compact ? side[0] : side.replace(' side', '')}
-          </AppText>
-        </View>
-      ) : null}
     </View>
   );
 }
