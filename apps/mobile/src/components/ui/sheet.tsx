@@ -15,7 +15,22 @@ import { EASE_DRAWER } from '@/lib/motion';
  * backdrop, the X, or dragging the handle down.
  * Built on Modal + Reanimated so it works in Expo Go (HeroUI's BottomSheet needs a native module).
  */
-export function Sheet({ isOpen, onClose, title, children, heightRatio = 0.75 }: { isOpen: boolean; onClose: () => void; title?: string; children: ReactNode; heightRatio?: number }) {
+export function Sheet({
+  isOpen,
+  onClose,
+  title,
+  children,
+  footer,
+  heightRatio = 0.75,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+  /** Pinned under the scrolling content (e.g. the main action). */
+  footer?: ReactNode;
+  heightRatio?: number;
+}) {
   const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
@@ -86,9 +101,14 @@ export function Sheet({ isOpen, onClose, title, children, heightRatio = 0.75 }: 
               </View>
             </View>
           </GestureDetector>
-          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: footer ? 16 : insets.bottom + 24 }} showsVerticalScrollIndicator={false}>
             {children}
           </ScrollView>
+          {footer ? (
+            <View className="border-t border-border px-5 pt-3" style={{ paddingBottom: Math.max(insets.bottom, 12) + 4 }}>
+              {footer}
+            </View>
+          ) : null}
         </Animated.View>
       </GestureHandlerRootView>
     </Modal>

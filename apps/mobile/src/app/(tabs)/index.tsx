@@ -1,6 +1,11 @@
 import { useIsFocused, useRouter } from 'expo-router';
 import { cn } from 'heroui-native';
-import { Layers, Link2 } from '@/components/ui/icons';
+import { Layers, Link2, Plus } from '@/components/ui/icons';
+import { DayStrip, type HomeView } from '@/components/plan/day-strip';
+import { DayTimeline } from '@/components/plan/day-timeline';
+import { PlanSheet, type PlanDraft } from '@/components/plan/plan-sheet';
+import { dateKey, dayTitle, plansOn, upcomingDays, type Plan } from '@/lib/plan';
+import { workoutMinutes } from '@/lib/sequence';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, ScrollView, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -15,7 +20,7 @@ import { CATEGORY_LABEL } from '@/lib/format';
 import { retryImport } from '@/lib/import-runner';
 import { enterItem } from '@/lib/motion';
 import { useStore } from '@/lib/store';
-import type { Category } from '@/lib/types';
+import type { Category, Workout } from '@/lib/types';
 
 type Filter = 'all' | Category;
 
@@ -26,6 +31,14 @@ export default function Library() {
   const router = useRouter();
   const workouts = useStore((s) => s.workouts);
   const [filter, setFilter] = useState<Filter>('all');
+  // Home shows the workouts list or one day's plan; today is fixed for the session.
+  const [view, setView] = useState<HomeView>('workouts');
+  const today = useMemo(() => new Date(), []);
+  const days = useMemo(() => upcomingDays(today, 14), [today]);
+  const plans = useStore((s) => s.plans);
+  const plannedDays = useMemo(() => new Set(plans.map((p) => p.date)), [plans]);
+  const [draft, setDraft] = useState<PlanDraft | null>(null);
+  const sheetDay = draft ? dayTitle(draft.mode === 'new' ? draft.date : draft.plan.date, today).title : '';
   const focused = useIsFocused();
   // Background videos only play on tiles that are mostly on screen.
   // Background videos only play on tiles that are at least half on screen.
@@ -72,6 +85,22 @@ export default function Library() {
 
   return (
     <Screen>
+      {/* Calendar strip: the Workouts tab, then the coming days inline. */}
+      <View className="pb-2 pt-3">
+        <DayStrip days={days} today={today} value={view} onChange={setView} planned={plannedDays} />
+      </View>
+
+      {view !== 'workouts' ? (
+        <DayView
+          key={view}
+          dayKey={view}
+          today={today}
+          plans={plansOn(plans, view)}
+          workouts={workouts}
+          onAddAt={(minutes) => setDraft({ mode: 'new', date: view, minutes })}
+          onOpenPlan={(plan) => setDraft({ mode: 'edit', plan })}
+        />
+      ) : (
       <FlatList
         data={visible}
         keyExtractor={(w) => w.id}
@@ -88,7 +117,7 @@ export default function Library() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View
-            className="gap-5 pb-1 pt-4"
+            className="gap-5 pb-1 pt-2"
             onLayout={(e) => {
               headerH.current = e.nativeEvent.layout.height;
               recompute();
@@ -138,7 +167,73 @@ export default function Library() {
           />
         }
       />
+      )}
+
+      <PlanSheet
+        draft={draft}
+        dayLabel={sheetDay}
+        workouts={workouts}
+        onClose={() => setDraft(null)}
+        onSave={({ workoutId, minutes }) => {
+          if (!draft) return;
+          if (draft.mode === 'new') useStore.getState().addPlan({ workoutId, minutes, date: draft.date });
+          else useStore.getState().updatePlan(draft.plan.id, { workoutId, minutes });
+          setDraft(null);
+        }}
+        onRemove={(id) => {
+          useStore.getState().removePlan(id);
+          setDraft(null);
+        }}
+        onStart={(workoutId) => {
+          setDraft(null);
+          router.push({ pathname: '/workout/[id]/play', params: { id: workoutId } });
+        }}
+      />
     </Screen>
+  );
+}
+
+/** One day: its name, then the timeline. */
+function DayView({
+  dayKey,
+  today,
+  plans,
+  workouts,
+  onAddAt,
+  onOpenPlan,
+}: {
+  dayKey: string;
+  today: Date;
+  plans: Plan[];
+  workouts: Workout[];
+  onAddAt: (minutes: number) => void;
+  onOpenPlan: (plan: Plan) => void;
+}) {
+  const { title, date } = dayTitle(dayKey, today);
+  const isToday = dayKey === dateKey(today);
+  const total = plans.reduce((sum, p) => {
+    const w = workouts.find((x) => x.id === p.workoutId);
+    return sum + (w ? workoutMinutes(w) : 0);
+  }, 0);
+  // The + button plans at the next whole hour today, or 7 am on other days.
+  const now = new Date();
+  const next = isToday ? Math.min(22 * 60, (now.getHours() + 1) * 60) : 7 * 60;
+  return (
+    <View className="flex-1">
+      <View className="flex-row items-end justify-between px-5 pb-4 pt-3">
+        <View>
+          <AppText variant="overline">{date}</AppText>
+          <AppText variant="hero" className="mt-1">
+            {title}
+          </AppText>
+          <AppText variant="caption" className="mt-1">
+            {plans.length ? `${plans.length === 1 ? '1 workout' : `${plans.length} workouts`} · ${total} min` : 'Tap a time to plan a workout'}
+          </AppText>
+        </View>
+        <RoundButton icon={Plus} label="Plan a workout" tone="accent" size={52} onPress={() => onAddAt(next)} />
+      </View>
+      <DayTimeline plans={plans} workouts={workouts} isToday={isToday} onAddAt={onAddAt} onOpenPlan={onOpenPlan} bottomInset={144} />
+    </View>
   );
 }
 

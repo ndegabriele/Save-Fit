@@ -7,6 +7,7 @@ import { normalizeDraft, type WorkoutDraft } from './normalize';
 import { SAMPLE_WORKOUTS } from './samples';
 import { STARTER_LINKS } from './starter-links';
 import type { Workout } from './types';
+import { snapTime, type Plan } from './plan';
 
 export interface Settings {
   /** Seconds of "get ready" countdown before each timed exercise. */
@@ -38,6 +39,11 @@ interface State {
   duplicate: (id: string) => string | null;
   merge: (ids: string[], title?: string) => string;
   markPlayed: (id: string, completed: boolean) => void;
+  /** Workouts placed on the calendar. */
+  plans: Plan[];
+  addPlan: (input: Omit<Plan, 'id'>) => string;
+  updatePlan: (id: string, patch: Partial<Omit<Plan, 'id'>>) => void;
+  removePlan: (id: string) => void;
   setSettings: (patch: Partial<Settings>) => void;
 }
 
@@ -107,7 +113,20 @@ export const useStore = create<State>()(
       update: (id, fn) =>
         set({ workouts: get().workouts.map((w) => (w.id === id ? fn(w) : w)) }),
 
-      remove: (id) => set({ workouts: get().workouts.filter((w) => w.id !== id) }),
+      // Deleting a workout also takes it off the calendar.
+      remove: (id) => set({ workouts: get().workouts.filter((w) => w.id !== id), plans: get().plans.filter((p) => p.workoutId !== id) }),
+
+      plans: [],
+      addPlan: (input) => {
+        const plan: Plan = { ...input, id: uid(), minutes: snapTime(input.minutes) };
+        set({ plans: [...get().plans, plan] });
+        return plan.id;
+      },
+      updatePlan: (id, patch) =>
+        set({
+          plans: get().plans.map((p) => (p.id === id ? { ...p, ...patch, minutes: snapTime(patch.minutes ?? p.minutes) } : p)),
+        }),
+      removePlan: (id) => set({ plans: get().plans.filter((p) => p.id !== id) }),
 
       duplicate: (id) => {
         const src = get().workouts.find((w) => w.id === id);
@@ -148,7 +167,7 @@ export const useStore = create<State>()(
       name: 'save-fit',
       version: 1,
       storage: createJSONStorage(() => kv),
-      partialize: ({ workouts, settings, seeded, inbox }) => ({ workouts, settings, seeded, inbox }),
+      partialize: ({ workouts, settings, seeded, inbox, plans }) => ({ workouts, settings, seeded, inbox, plans }),
       onRehydrateStorage: () => () => {
         useStore.setState({ hydrated: true });
       },

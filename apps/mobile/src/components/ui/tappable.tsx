@@ -16,6 +16,7 @@ export interface TappableProps {
   /** Scale on press (0.95-0.98). */
   scale?: number;
   accessibilityLabel?: string;
+  accessibilityState?: { selected?: boolean; disabled?: boolean };
   highlight?: boolean;
 }
 
@@ -33,12 +34,14 @@ export function Tappable({
   feedback = 'tap',
   scale = PRESS_SCALE,
   accessibilityLabel,
+  accessibilityState,
   highlight = false,
 }: TappableProps) {
   return (
     <PressableFeedback
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={accessibilityState}
       isDisabled={disabled}
       onPress={() => {
         if (feedback !== 'none') haptic[feedback]();
