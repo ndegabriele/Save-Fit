@@ -50,6 +50,7 @@ function Player() {
   const [confirmExit, setConfirmExit] = useState(false);
   // 0 = video view, 1 = controls view. Remembered across exercises.
   const [view, setView] = useState(0);
+  const [pageH, setPageH] = useState(0);
   const viewRef = useRef(0);
   viewRef.current = view;
   const pager = useRef<ScrollViewInstance>(null);
@@ -84,7 +85,8 @@ function Player() {
   const source = step?.block.source ?? workout.source;
   const video = settings.showVideo && source?.videoUrl && exercise?.clip ? source.videoUrl : null;
   // Sized so the whole controls view fits on one screen, no scrolling.
-  const ringSize = grid(Math.min(width - 96, video ? height * 0.26 : height * 0.3, 280));
+  // Header (~112) + cues/rest buttons (56) + "how to" (40) + breathing room (64) come out of the measured page height.
+  const ringSize = grid(Math.max(144, Math.min(width - 96, 280, (pageH || height * 0.5) - 272)));
   const workSteps = p.steps.filter((s) => s.kind === 'work').length;
   const progress = p.steps.length ? p.index / p.steps.length : 0;
 
@@ -238,26 +240,38 @@ function Player() {
           </View>
         ) : null}
 
-        {/* CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail bottom left. */}
+        {/* CONTROLS VIEW: big timer and buttons; the video shrinks to a thumbnail next to the title. */}
         <View style={{ width }} className="flex-1">
-        <View className="flex-1 items-center justify-center px-5" style={{ paddingBottom: video ? 112 : 0 }}>
-          {/* Title */}
-          <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="w-full items-center gap-2">
-            <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
-              {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
-            </AppText>
-            <AppText variant="display" numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8} className="text-center text-[28px] leading-[32px]">
-              {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
-            </AppText>
-            {meta ? (
-              <AppText variant="label" numberOfLines={1} className="text-center text-muted">
-                {meta}
-              </AppText>
+        <View className="flex-1 items-center justify-evenly px-5 pt-4" onLayout={(e) => setPageH(e.nativeEvent.layout.height)}>
+          {/* Header: video thumbnail on the left, eyebrow + title + details aligned next to it. */}
+          <View className="w-full flex-row items-center gap-4">
+            {video ? (
+              <Tappable onPress={() => goToView(0)} accessibilityLabel="Show the coach’s video">
+                <View>
+                  <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 1} height={112} width={64} className="rounded-[16px] border-2 border-foreground/20" />
+                  <View className="absolute bottom-1 right-1 size-6 items-center justify-center rounded-full bg-black/60">
+                    <Icon icon={Maximize2} size={12} color="#FFFFFF" />
+                  </View>
+                </View>
+              </Tappable>
             ) : null}
-          </Animated.View>
+            <Animated.View key={step?.key} entering={FadeIn.duration(DURATION.fast).easing(EASE_OUT)} className="flex-1 gap-1">
+              <AppText variant="overline" className={cn(isRest ? 'text-violet' : 'text-accent')}>
+                {isRest ? (step?.label ?? 'Rest') : isCountdown ? 'Get ready' : 'Now'}
+              </AppText>
+              <AppText variant="display" numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.75} className="text-[28px] leading-[32px]">
+                {isRest ? `Next: ${exercise?.name ?? 'Finish'}` : exercise?.name}
+              </AppText>
+              {meta ? (
+                <AppText variant="label" numberOfLines={1} className="text-muted">
+                  {meta}
+                </AppText>
+              ) : null}
+            </Animated.View>
+          </View>
 
           {/* Timer / reps */}
-          <View className="my-4 items-center justify-center">
+          <View className="items-center justify-center">
             {timer(ringSize)}
           </View>
 
@@ -277,7 +291,7 @@ function Player() {
             </View>
           ) : null}
           {exercise && (exercise.steps.length > 0 || exercise.cues.length > 0) ? (
-            <Tappable onPress={() => setHowTo(true)} className="mt-2" accessibilityLabel="How to do this exercise">
+            <Tappable onPress={() => setHowTo(true)} accessibilityLabel="How to do this exercise">
               <View className="flex-row items-center gap-2 px-3 py-2">
                 <Icon icon={Info} size={20} color="muted" />
                 <AppText variant="label" className="text-muted">
@@ -295,16 +309,6 @@ function Player() {
           <RoundButton icon={SkipForward} label="Next" tone="ghost" size={72} onPress={p.next} />
         </View>
 
-          {video ? (
-            <Tappable onPress={() => goToView(0)} accessibilityLabel="Show the coach’s video" className="absolute bottom-[124px] left-6">
-              <View>
-                <VideoClip uri={video} clip={exercise?.clip} paused={p.paused || view !== 1} height={96} width={56} className="rounded-[16px] border-2 border-foreground/20" />
-                <View className="absolute bottom-1 right-1 size-6 items-center justify-center rounded-full bg-black/60">
-                  <Icon icon={Maximize2} size={12} color="#FFFFFF" />
-                </View>
-              </View>
-            </Tappable>
-          ) : null}
         </View>
       </ScrollView>
 
