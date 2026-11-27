@@ -17,11 +17,10 @@ test('times format as 24 h and snap to 15 minutes inside the day', () => {
   assert.equal(snapTime(2000), 1425);
 });
 
-test('chips say Today and Tmrw, then weekdays', () => {
+test('chips show the weekday name and flag today', () => {
   const today = new Date(2026, 10, 27); // Friday
-  assert.deepEqual(dayChip('2026-11-27', today), { top: 'Today', day: 27 });
-  assert.deepEqual(dayChip('2026-11-28', today), { top: 'Tmrw', day: 28 });
-  assert.deepEqual(dayChip('2026-11-29', today), { top: 'Sun', day: 29 });
+  assert.deepEqual(dayChip('2026-11-27', today), { top: 'Fri', day: 27, isToday: true });
+  assert.deepEqual(dayChip('2026-11-28', today), { top: 'Sat', day: 28, isToday: false });
 });
 
 test('plans for a day come back in time order and sit at the right height', () => {

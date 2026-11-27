@@ -41,15 +41,16 @@ export function DayStrip({
         const chip = dayChip(key, today);
         const on = value === key;
         return (
-          <Tappable key={key} onPress={() => onChange(key)} feedback="select" accessibilityLabel={`${chip.top} ${chip.day}`} accessibilityState={{ selected: on }}>
-            <View className={cn('h-16 w-14 items-center justify-center rounded-3xl', on ? 'bg-accent' : 'bg-surface shadow-surface')}>
+          <Tappable key={key} onPress={() => onChange(key)} feedback="select" accessibilityLabel={`${chip.isToday ? 'Today, ' : ''}${chip.top} ${chip.day}`} accessibilityState={{ selected: on }}>
+            {/* Today gets an accent outline instead of a "Today" label. */}
+            <View className={cn('h-16 w-14 items-center justify-center rounded-3xl', on ? 'bg-accent' : 'bg-surface shadow-surface', chip.isToday && !on && 'border-2 border-accent')}>
               <AppText variant="caption" className={cn('text-[12px] leading-[16px]', on ? 'text-accent-foreground' : 'text-muted')}>
                 {chip.top}
               </AppText>
               <AppText variant="headline" className={on ? 'text-accent-foreground' : undefined}>
                 {chip.day}
               </AppText>
-              <View className={cn('mt-1 size-1 rounded-full', planned.has(key) ? (on ? 'bg-accent-foreground' : 'bg-accent') : 'bg-transparent')} />
+              <View className={cn('mt-1 size-2 rounded-full', planned.has(key) ? (on ? 'bg-accent-foreground' : 'bg-accent') : 'bg-transparent')} />
             </View>
           </Tappable>
         );

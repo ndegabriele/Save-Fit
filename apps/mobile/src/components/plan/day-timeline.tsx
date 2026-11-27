@@ -112,10 +112,10 @@ export function DayTimeline({
             <View key={plan.id} className="absolute right-0" style={{ top: timeToY(plan.minutes) + 2, left: GUTTER + 4, height: h - 4 }}>
               <Tappable onPress={() => onOpenPlan(plan)} accessibilityLabel={`${w.title} at ${formatTime(plan.minutes)}`} className="flex-1">
                 <View className={cn('flex-1 justify-center rounded-2xl px-4 py-2', CATEGORY_BG[w.category])}>
-                  <AppText variant="headline" numberOfLines={1} className="text-[#17171C]">
+                  <AppText variant="headline" numberOfLines={1}>
                     {w.title}
                   </AppText>
-                  <AppText variant="caption" numberOfLines={1} className="text-[#17171C]/70">
+                  <AppText variant="caption" numberOfLines={1} className="text-foreground/70">
                     {formatTime(plan.minutes)} · {mins} min · {CATEGORY_LABEL[w.category]}
                   </AppText>
                 </View>

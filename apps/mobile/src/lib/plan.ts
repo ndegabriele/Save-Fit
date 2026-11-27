@@ -56,12 +56,10 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEKDAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-/** Chip label: "Today", "Tmrw", else the short weekday. */
-export function dayChip(key: string, today: Date): { top: string; day: number } {
+/** Chip label: the short weekday and the date. Today is marked by styling, not by name. */
+export function dayChip(key: string, today: Date): { top: string; day: number; isToday: boolean } {
   const d = fromKey(key);
-  const t = dateKey(today);
-  const top = key === t ? 'Today' : key === dateKey(addDays(today, 1)) ? 'Tmrw' : (WEEKDAYS[d.getDay()] ?? '');
-  return { top, day: d.getDate() };
+  return { top: WEEKDAYS[d.getDay()] ?? '', day: d.getDate(), isToday: key === dateKey(today) };
 }
 
 /** Heading for a day: "Today", "Tomorrow" or "Monday", with "30 Nov" beside it. */
