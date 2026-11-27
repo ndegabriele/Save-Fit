@@ -16,6 +16,8 @@ export interface Creator {
   name: string;
   handle?: string | null;
   platform?: Platform;
+  /** Profile picture (absolute URL or a server /media path). */
+  avatarUrl?: string | null;
 }
 
 export interface Source {

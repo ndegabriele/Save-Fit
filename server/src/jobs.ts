@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { convertToWorkout } from './convert.ts';
-import { detectPlatform, fetchMedia, type Media } from './media.ts';
+import { detectPlatform, fetchAvatar, fetchMedia, type Media } from './media.ts';
 import type { ClaudeWorkout } from './schema.ts';
 
 export type Stage = 'queued' | 'fetching' | 'reading' | 'watching' | 'structuring' | 'done' | 'failed';
@@ -80,7 +80,8 @@ async function runJob(id: string) {
     await setStage('structuring');
     const result = await convertToWorkout(media, dir, job.text, job.url);
     if (!result.isWorkout) throw new Error(result.notWorkoutReason || "This post doesn't look like a workout.");
-    await save({ ...(jobs.get(id) as Job), status: 'done', stage: 'done', workout: toDraft(result, media, job) });
+    const avatarFile = job.url ? await fetchAvatar(detectPlatform(job.url), media.handle ?? result.creatorHandle, dir) : null;
+    await save({ ...(jobs.get(id) as Job), status: 'done', stage: 'done', workout: toDraft(result, media, job, avatarFile) });
     console.log(`[job ${id}] done: ${result.title}`);
   } catch (e) {
     let error = e instanceof Error ? e.message : String(e);
@@ -91,12 +92,13 @@ async function runJob(id: string) {
 }
 
 /** Shape Claude's answer into the app's WorkoutDraft (see apps/mobile/src/lib/normalize.ts). */
-export function toDraft(w: ClaudeWorkout, media: Media, job: Pick<Job, 'id' | 'url'>) {
+export function toDraft(w: ClaudeWorkout, media: Media, job: Pick<Job, 'id' | 'url'>, avatarFile: string | null = null) {
   const platform = job.url ? detectPlatform(job.url) : 'other';
   const creator = {
     name: w.creatorName || media.uploader || media.handle || 'Unknown coach',
     handle: w.creatorHandle || (media.handle ? `@${media.handle.replace(/^@/, '')}` : null),
     platform,
+    avatarUrl: avatarFile ? `/media/${job.id}/${avatarFile}` : null,
   };
   const videoUrl = media.videoFile ? `/media/${job.id}/${media.videoFile}` : null;
   const thumbnailUrl = media.thumbnailFile ? `/media/${job.id}/${media.thumbnailFile}` : null;

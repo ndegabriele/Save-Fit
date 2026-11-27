@@ -45,3 +45,12 @@ test('SSRF guard blocks private and metadata addresses', async () => {
   await assert.rejects(assertPublicUrl('http://localhost:8787/'));
   await assert.rejects(assertPublicUrl('file:///etc/passwd'));
 });
+
+test('isHandle keeps usernames and drops numeric/channel ids', async () => {
+  const { isHandle } = await import('../src/media.ts');
+  assert.equal(isHandle('maya.moves'), true);
+  assert.equal(isHandle('@coach_laura'), true);
+  assert.equal(isHandle('1234567890'), false);
+  assert.equal(isHandle('UCabcdefghijklmnopqrstuv'), false);
+  assert.equal(isHandle('Has Spaces'), false);
+});

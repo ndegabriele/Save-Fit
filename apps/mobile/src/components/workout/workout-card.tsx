@@ -3,6 +3,7 @@ import { AlertTriangle, Play, RotateCcw } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import { CreatorRow } from '@/components/ui/avatar';
 import { Icon } from '@/components/ui/icon';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
@@ -50,9 +51,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex }
             <AppText variant="display" numberOfLines={3}>
               {workout.title}
             </AppText>
-            <AppText variant="label" className="text-foreground/60" numberOfLines={1}>
-              By {creatorLine(workout.creators)}
-            </AppText>
+            <CreatorRow creators={workout.creators} className="mt-1" />
           </View>
           <Thumb uri={workout.source?.thumbnailUrl} category={workout.category} />
         </View>

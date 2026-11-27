@@ -26,6 +26,7 @@ import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { Pill } from '@/components/workout/category-pill';
 import { ExerciseDetails } from '@/components/workout/exercise-details';
+import { CreatorAvatar, CreatorRow } from '@/components/ui/avatar';
 import { Thumb } from '@/components/workout/thumb';
 import { BLOCK_LABEL, CATEGORY_LABEL, DIFFICULTY_LABEL, creatorLine, exerciseMeta, plural, shortDuration } from '@/lib/format';
 import { exerciseCount, workoutMinutes } from '@/lib/sequence';
@@ -62,9 +63,7 @@ export default function WorkoutDetail() {
                 <Pill label={DIFFICULTY_LABEL[workout.difficulty]} />
               </View>
               <AppText variant="hero">{workout.title}</AppText>
-              <AppText variant="label" className="text-foreground/60">
-                By {creatorLine(workout.creators)}
-              </AppText>
+              <CreatorRow creators={workout.creators} size={36} className="mt-1" />
             </View>
             <Thumb uri={workout.source?.thumbnailUrl} category={workout.category} size={84} />
           </View>
@@ -216,7 +215,12 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
         <AppText variant="overline">{BLOCK_LABEL[block.kind]}</AppText>
         <AppText variant="title">{block.title}</AppText>
         {showSource && block.source?.creator ? (
-          <AppText variant="caption">from {block.source.creator.name}{block.source.workoutTitle ? ` · ${block.source.workoutTitle}` : ''}</AppText>
+          <View className="mt-1 flex-row items-center gap-2">
+            <CreatorAvatar creator={block.source.creator} size={22} className="border-0" />
+            <AppText variant="caption" className="flex-1" numberOfLines={1}>
+              from {block.source.creator.name}{block.source.workoutTitle ? ` · ${block.source.workoutTitle}` : ''}
+            </AppText>
+          </View>
         ) : null}
       </View>
       {block.rounds > 1 ? (

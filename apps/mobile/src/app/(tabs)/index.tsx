@@ -9,6 +9,7 @@ import { RoundButton } from '@/components/ui/round-button';
 import { Screen } from '@/components/ui/screen';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
+import { InboxCard } from '@/components/workout/inbox-card';
 import { WorkoutCard } from '@/components/workout/workout-card';
 import { CATEGORY_LABEL } from '@/lib/format';
 import { retryImport } from '@/lib/import-runner';
@@ -60,6 +61,7 @@ export default function Library() {
                 ))}
               </ScrollView>
             ) : null}
+            <InboxCard />
           </View>
         }
         renderItem={({ item, index }) => (

@@ -93,7 +93,8 @@ export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetchin
       title: str(info.title),
       caption: str(info.description),
       uploader: str(info.uploader) ?? str(info.channel) ?? str(info.creator),
-      handle: str(info.uploader_id) ?? str(info.channel_id),
+      // uploader_id is a username on some platforms and a number on others; keep real handles only.
+      handle: [info.uploader_id, info.channel, info.uploader].map(str).find((h) => h && isHandle(h)) ?? null,
       duration,
       videoFile: video,
       thumbnailFile: thumb,
@@ -132,19 +133,56 @@ async function fetchOpenGraph(url: string, dir: string, platform: Platform): Pro
   }
   const caption = decode(meta('og:description')) ?? decode(meta('description'));
   const title = decode(meta('og:title'));
+  const byline = title?.match(/^(.*?)\s*\(@([A-Za-z0-9._]+)\)/) ?? caption?.match(/^(?:[\d.,KkMm]+ likes?, [\d.,KkMm]+ comments? - )?([A-Za-z0-9._]+) on /) ?? null;
   if (!caption && !title) throw new Error("Couldn't read this post. It may be private, or the platform blocked the download.");
   return {
     platform,
     title,
     caption,
-    uploader: null,
-    handle: null,
+    uploader: byline?.[2] ? byline[1]?.trim() || null : null,
+    handle: byline?.[2] ?? byline?.[1] ?? null,
     duration: null,
     videoFile: null,
     thumbnailFile,
     subtitles: null,
     frames: thumbnailFile ? [{ file: thumbnailFile, t: 0 }] : [],
   };
+}
+
+export function isHandle(s: string): boolean {
+  const h = s.replace(/^@/, '');
+  return /^[A-Za-z0-9._]{2,30}$/.test(h) && !/^\d+$/.test(h) && !/^UC[A-Za-z0-9_-]{20,}$/.test(h);
+}
+
+const PROFILE_URL: Partial<Record<Platform, (h: string) => string>> = {
+  instagram: (h) => `https://www.instagram.com/${h}/`,
+  tiktok: (h) => `https://www.tiktok.com/@${h}`,
+  youtube: (h) => `https://www.youtube.com/@${h}`,
+};
+
+/**
+ * Best effort: the coach's profile picture is the og:image of their public profile page.
+ * Saved as avatar.jpg next to the job's other media. Returns null when anything fails.
+ */
+export async function fetchAvatar(platform: Platform, handle: string | null, dir: string): Promise<string | null> {
+  const h = handle?.replace(/^@/, '');
+  const profile = h && isHandle(h) ? PROFILE_URL[platform]?.(h) : undefined;
+  if (!profile) return null;
+  try {
+    const res = await safeFetch(profile, { headers: { 'User-Agent': UA, Accept: 'text/html' } });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const image =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ??
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1];
+    if (!image) return null;
+    const img = await safeFetch(image.replace(/&amp;/g, '&'), { headers: { 'User-Agent': UA } });
+    if (!img.ok || !img.headers.get('content-type')?.startsWith('image/')) return null;
+    await writeFile(path.join(dir, 'avatar.jpg'), Buffer.from(await img.arrayBuffer()));
+    return 'avatar.jpg';
+  } catch {
+    return null;
+  }
 }
 
 /** Evenly spaced, downscaled frames with their timestamps, for Claude to "watch" the video. */

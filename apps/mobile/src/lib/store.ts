@@ -5,6 +5,7 @@ import { uid } from './id';
 import { mergeWorkouts } from './merge';
 import { normalizeDraft, type WorkoutDraft } from './normalize';
 import { SAMPLE_WORKOUTS } from './samples';
+import { STARTER_LINKS } from './starter-links';
 import type { Workout } from './types';
 
 export interface Settings {
@@ -24,6 +25,9 @@ interface State {
   settings: Settings;
   seeded: boolean;
   hydrated: boolean;
+  /** Links waiting to be imported (shown on the library). */
+  inbox: string[];
+  dismissLink: (url: string) => void;
   seedSamples: () => void;
   addProcessing: (input: { url?: string | null; text?: string | null; jobId: string }) => string;
   completeImport: (id: string, draft: WorkoutDraft) => void;
@@ -53,6 +57,8 @@ export const useStore = create<State>()(
       settings: DEFAULT_SETTINGS,
       seeded: false,
       hydrated: false,
+      inbox: STARTER_LINKS,
+      dismissLink: (url) => set({ inbox: get().inbox.filter((u) => u !== url) }),
 
       seedSamples: () => {
         if (get().seeded) return;
@@ -142,7 +148,7 @@ export const useStore = create<State>()(
       name: 'save-fit',
       version: 1,
       storage: createJSONStorage(() => kv),
-      partialize: ({ workouts, settings, seeded }) => ({ workouts, settings, seeded }),
+      partialize: ({ workouts, settings, seeded, inbox }) => ({ workouts, settings, seeded, inbox }),
       onRehydrateStorage: () => () => {
         useStore.setState({ hydrated: true });
       },
