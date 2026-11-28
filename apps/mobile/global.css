@@ -731,4 +731,6 @@
   .tabs__scroll-view-content-container--variant-primary { padding-block: 4px; padding-inline: 0; }
   .tabs__trigger { padding-block: calc(var(--spacing) * 2); gap: calc(var(--spacing) * 2); }
   .tabs__indicator--variant-primary--is-scroll-view { top: 4px; }
+  /* Secondary buttons sit on grey: HeroUI tints their label with the accent, which is unreadable with a lime accent. */
+  .button__label--variant-secondary { color: var(--color-default-foreground); }
 }
