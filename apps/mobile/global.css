@@ -249,18 +249,18 @@
       --veil-soft: oklch(0% 0 0 / 7%);
 
       /* Category pastels (card fills) and inks (big numbers / text on them). */
-      --cat-strength: oklch(93.5% 0.045 305);
-      --cat-strength-ink: oklch(72% 0.13 305);
-      --cat-hiit: oklch(93% 0.05 40);
-      --cat-hiit-ink: oklch(70% 0.16 40);
-      --cat-cardio: oklch(95.5% 0.07 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(95% 0.045 160);
-      --cat-mobility-ink: oklch(78% 0.12 160);
-      --cat-core: oklch(94% 0.04 235);
-      --cat-core-ink: oklch(72% 0.12 235);
-      --cat-mixed: oklch(95% 0.07 128);
-      --cat-mixed-ink: oklch(80% 0.19 128);
+      --cat-strength: oklch(91% 0.03 60);
+      --cat-strength-ink: oklch(56% 0.07 60);
+      --cat-hiit: oklch(91% 0.05 35);
+      --cat-hiit-ink: oklch(56% 0.12 35);
+      --cat-cardio: oklch(91% 0.05 85);
+      --cat-cardio-ink: oklch(56% 0.11 85);
+      --cat-mobility: oklch(91% 0.045 105);
+      --cat-mobility-ink: oklch(56% 0.09 105);
+      --cat-core: oklch(91% 0.035 235);
+      --cat-core-ink: oklch(56% 0.08 235);
+      --cat-mixed: oklch(91% 0.04 340);
+      --cat-mixed-ink: oklch(56% 0.09 340);
     }
 
     /* Bone, dark: roasted brown-charcoal with bone text. */
@@ -321,18 +321,18 @@
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
-      --cat-strength: oklch(30% 0.07 305);
-      --cat-strength-ink: oklch(72% 0.14 305);
-      --cat-hiit: oklch(30% 0.07 40);
-      --cat-hiit-ink: oklch(74% 0.15 40);
-      --cat-cardio: oklch(31% 0.06 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(30% 0.05 160);
-      --cat-mobility-ink: oklch(78% 0.13 160);
-      --cat-core: oklch(30% 0.05 235);
-      --cat-core-ink: oklch(74% 0.12 235);
-      --cat-mixed: oklch(30% 0.07 128);
-      --cat-mixed-ink: oklch(86% 0.19 128);
+      --cat-strength: oklch(28% 0.033 60);
+      --cat-strength-ink: oklch(74% 0.07 60);
+      --cat-hiit: oklch(28% 0.055 35);
+      --cat-hiit-ink: oklch(74% 0.12 35);
+      --cat-cardio: oklch(28% 0.055 85);
+      --cat-cardio-ink: oklch(74% 0.11 85);
+      --cat-mobility: oklch(28% 0.05 105);
+      --cat-mobility-ink: oklch(74% 0.09 105);
+      --cat-core: oklch(28% 0.039 235);
+      --cat-core-ink: oklch(74% 0.08 235);
+      --cat-mixed: oklch(28% 0.044 340);
+      --cat-mixed-ink: oklch(74% 0.09 340);
     }
 
     /* Mouse: soft mouse grey with a clear blue. */
@@ -396,18 +396,18 @@
       --veil-soft: oklch(0% 0 0 / 7%);
 
       /* Category pastels (card fills) and inks (big numbers / text on them). */
-      --cat-strength: oklch(93.5% 0.045 305);
-      --cat-strength-ink: oklch(72% 0.13 305);
-      --cat-hiit: oklch(93% 0.05 40);
-      --cat-hiit-ink: oklch(70% 0.16 40);
-      --cat-cardio: oklch(95.5% 0.07 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(95% 0.045 160);
-      --cat-mobility-ink: oklch(78% 0.12 160);
-      --cat-core: oklch(94% 0.04 235);
-      --cat-core-ink: oklch(72% 0.12 235);
-      --cat-mixed: oklch(95% 0.07 128);
-      --cat-mixed-ink: oklch(80% 0.19 128);
+      --cat-strength: oklch(92% 0.035 255);
+      --cat-strength-ink: oklch(60% 0.11 255);
+      --cat-hiit: oklch(92% 0.035 25);
+      --cat-hiit-ink: oklch(60% 0.11 25);
+      --cat-cardio: oklch(92% 0.035 210);
+      --cat-cardio-ink: oklch(60% 0.11 210);
+      --cat-mobility: oklch(92% 0.035 80);
+      --cat-mobility-ink: oklch(60% 0.11 80);
+      --cat-core: oklch(92% 0.035 290);
+      --cat-core-ink: oklch(60% 0.11 290);
+      --cat-mixed: oklch(92% 0.035 150);
+      --cat-mixed-ink: oklch(60% 0.11 150);
     }
 
     /* Mouse, dark: blue-grey slate with a brighter blue. */
@@ -468,18 +468,18 @@
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
-      --cat-strength: oklch(30% 0.07 305);
-      --cat-strength-ink: oklch(72% 0.14 305);
-      --cat-hiit: oklch(30% 0.07 40);
-      --cat-hiit-ink: oklch(74% 0.15 40);
-      --cat-cardio: oklch(31% 0.06 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(30% 0.05 160);
-      --cat-mobility-ink: oklch(78% 0.13 160);
-      --cat-core: oklch(30% 0.05 235);
-      --cat-core-ink: oklch(74% 0.12 235);
-      --cat-mixed: oklch(30% 0.07 128);
-      --cat-mixed-ink: oklch(86% 0.19 128);
+      --cat-strength: oklch(28% 0.045 255);
+      --cat-strength-ink: oklch(74% 0.11 255);
+      --cat-hiit: oklch(28% 0.045 25);
+      --cat-hiit-ink: oklch(74% 0.11 25);
+      --cat-cardio: oklch(28% 0.045 210);
+      --cat-cardio-ink: oklch(74% 0.11 210);
+      --cat-mobility: oklch(28% 0.045 80);
+      --cat-mobility-ink: oklch(74% 0.11 80);
+      --cat-core: oklch(28% 0.045 290);
+      --cat-core-ink: oklch(74% 0.11 290);
+      --cat-mixed: oklch(28% 0.045 150);
+      --cat-mixed-ink: oklch(74% 0.11 150);
     }
 
     /* Obsidian (dim): smoky volcanic glass. Still dark, a little lifted. */
@@ -540,18 +540,18 @@
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
-      --cat-strength: oklch(30% 0.07 305);
-      --cat-strength-ink: oklch(72% 0.14 305);
-      --cat-hiit: oklch(30% 0.07 40);
-      --cat-hiit-ink: oklch(74% 0.15 40);
-      --cat-cardio: oklch(31% 0.06 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(30% 0.05 160);
-      --cat-mobility-ink: oklch(78% 0.13 160);
-      --cat-core: oklch(30% 0.05 235);
-      --cat-core-ink: oklch(74% 0.12 235);
-      --cat-mixed: oklch(30% 0.07 128);
-      --cat-mixed-ink: oklch(86% 0.19 128);
+      --cat-strength: oklch(33% 0.07 12);
+      --cat-strength-ink: oklch(78% 0.14 12);
+      --cat-hiit: oklch(33% 0.07 70);
+      --cat-hiit-ink: oklch(78% 0.14 70);
+      --cat-cardio: oklch(33% 0.07 160);
+      --cat-cardio-ink: oklch(78% 0.14 160);
+      --cat-mobility: oklch(33% 0.07 255);
+      --cat-mobility-ink: oklch(78% 0.14 255);
+      --cat-core: oklch(33% 0.07 305);
+      --cat-core-ink: oklch(78% 0.14 305);
+      --cat-mixed: oklch(33% 0.07 195);
+      --cat-mixed-ink: oklch(78% 0.14 195);
     }
 
     /* Obsidian, dark: near-black for OLED. */
@@ -612,18 +612,18 @@
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
-      --cat-strength: oklch(30% 0.07 305);
-      --cat-strength-ink: oklch(72% 0.14 305);
-      --cat-hiit: oklch(30% 0.07 40);
-      --cat-hiit-ink: oklch(74% 0.15 40);
-      --cat-cardio: oklch(31% 0.06 95);
-      --cat-cardio-ink: oklch(84% 0.15 95);
-      --cat-mobility: oklch(30% 0.05 160);
-      --cat-mobility-ink: oklch(78% 0.13 160);
-      --cat-core: oklch(30% 0.05 235);
-      --cat-core-ink: oklch(74% 0.12 235);
-      --cat-mixed: oklch(30% 0.07 128);
-      --cat-mixed-ink: oklch(86% 0.19 128);
+      --cat-strength: oklch(21% 0.06 12);
+      --cat-strength-ink: oklch(74% 0.15 12);
+      --cat-hiit: oklch(21% 0.06 70);
+      --cat-hiit-ink: oklch(74% 0.15 70);
+      --cat-cardio: oklch(21% 0.06 160);
+      --cat-cardio-ink: oklch(74% 0.15 160);
+      --cat-mobility: oklch(21% 0.06 255);
+      --cat-mobility-ink: oklch(74% 0.15 255);
+      --cat-core: oklch(21% 0.06 305);
+      --cat-core-ink: oklch(74% 0.15 305);
+      --cat-mixed: oklch(21% 0.06 195);
+      --cat-mixed-ink: oklch(74% 0.15 195);
     }
   }
 }

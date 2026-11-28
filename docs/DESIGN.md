@@ -65,4 +65,4 @@ Following Emil Kowalski's design-engineering skills:
 
 ## Colour themes
 
-Four palettes, each with a light and a dark variant: Save Fit (default), Bone, Mouse grey and Obsidian (dark in both: a lifted "dim" and a near-black). They are Uniwind themes in `apps/mobile/global.css`, registered in `metro.config.js` and resolved in `src/lib/palettes.ts`. Only neutrals and the secondary colour (`--violet`) change between palettes; the lime accent, status colours and category pastels are shared. Don't use `dark:` classes: they only match the default dark theme. Use a token instead (for example `bg-veil`).
+Four palettes, each with a light and a dark variant: Save Fit (default), Bone, Mouse grey and Obsidian (dark in both: a lifted "dim" and a near-black). They are Uniwind themes in `apps/mobile/global.css`, registered in `metro.config.js` and resolved in `src/lib/palettes.ts`. Neutrals, the secondary colour (`--violet`) and the six category colours (`--cat-*`, fill + ink) change between palettes; the lime accent and status colours are shared. Don't use `dark:` classes: they only match the default dark theme. Use a token instead (for example `bg-veil`).
