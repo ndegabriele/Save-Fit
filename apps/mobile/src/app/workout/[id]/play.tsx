@@ -124,13 +124,15 @@ function Player() {
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
-  // Large rings: the side pill sits outside the circle, bottom-aligned, in the corner on its own side.
+  // Large work rings: a small "i" in the top-right corner opens How to do it.
   // (Outside the pressable, which clips its overflow.)
   const timer = (size: number) => (
     <View style={{ width: size, height: size }}>
       {timerBody(size)}
-      {side && !small(size) && !isRest ? (
-        <SidePill side={side} className={cn('absolute bottom-0', side.startsWith('Left') ? '-left-2' : '-right-2')} />
+      {hasHowTo && !small(size) && !isRest ? (
+        <View className="absolute -right-2 top-0">
+          <RoundButton icon={Info} label="How to do it" tone="ghost" size={48} onPress={() => setHowTo(true)} />
+        </View>
       ) : null}
     </View>
   );
@@ -250,8 +252,12 @@ function Player() {
                   </Tappable>
                 ) : null}
               </>
-            ) : hasHowTo ? (
-              <Pillbutton icon={Info} label="How to do it" onPress={() => setHowTo(true)} />
+            ) : side ? (
+              // Which side now: both shown, the current one lit.
+              <>
+                <SideTag label="Left" on={side.startsWith('Left')} />
+                <SideTag label="Right" on={side.startsWith('Right')} />
+              </>
             ) : null}
           </View>
           </View>
@@ -511,6 +517,20 @@ function SidePill({ side, compact, className }: { side: string; compact?: boolea
     <View className={cn('items-center justify-center rounded-full bg-accent', compact ? 'h-5 min-w-5 px-1' : 'h-7 px-3', className)}>
       <AppText variant="label" className="font-semibold uppercase text-accent-foreground" style={{ fontSize: compact ? 10 : 12, lineHeight: compact ? 12 : 16 }}>
         {compact ? side[0] : side.replace(' side', '')}
+      </AppText>
+    </View>
+  );
+}
+
+/** Left / Right, the same size as the action pills; the side you're on is lime. */
+function SideTag({ label, on }: { label: string; on: boolean }) {
+  return (
+    <View
+      className={cn('h-14 min-w-32 items-center justify-center rounded-full px-6', on ? 'bg-accent' : 'bg-default')}
+      accessibilityLabel={on ? `${label} side now` : `${label} side`}
+    >
+      <AppText variant="headline" className={cn('uppercase', on ? 'text-accent-foreground' : 'text-muted')}>
+        {label}
       </AppText>
     </View>
   );
