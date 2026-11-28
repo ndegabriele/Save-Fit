@@ -27,6 +27,13 @@ const config: ExpoConfig = {
     'expo-audio',
     'expo-font',
     [
+      'expo-speech-recognition',
+      {
+        microphonePermission: 'Save Fit listens for “play”, “pause”, “next” and “previous” during a workout when you turn on voice commands.',
+        speechRecognitionPermission: 'Save Fit turns what you say into workout controls (play, pause, next, previous), on your phone where possible.',
+      },
+    ],
+    [
       'expo-splash-screen',
       { image: './assets/splash-icon.png', imageWidth: 160, resizeMode: 'contain', backgroundColor: '#F6F6F8', dark: { backgroundColor: '#0E0F12' } },
     ],

@@ -51,6 +51,7 @@ export {
   Trash as Trash2,
   Trophy,
   Vibrate,
+  Microphone,
   VideoCamera as Video,
   SpeakerHigh as Volume2,
   X,

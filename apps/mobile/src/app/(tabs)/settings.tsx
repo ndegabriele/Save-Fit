@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Button, Input, ListGroup, Slider, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
-import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, UserSound, Vibrate, Video, Volume2 } from '@/components/ui/icons';
+import { KeyRound, Microphone, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, UserSound, Vibrate, Video, Volume2 } from '@/components/ui/icons';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
@@ -12,6 +12,7 @@ import { apiUrl, checkAiKey, ping } from '@/lib/api';
 import { play, preloadAudio, preview as previewAudio } from '@/lib/feedback';
 import { IS_EXPO_GO } from '@/lib/share-intent';
 import { useStore, type Settings } from '@/lib/store';
+import { requestVoicePermission, voiceCommandsAvailable } from '@/lib/voice-commands';
 
 export default function SettingsScreen() {
   const settings = useStore((s) => s.settings);
@@ -91,6 +92,7 @@ export default function SettingsScreen() {
           <ListGroup>
             {toggle('haptics', Vibrate, 'Haptics', 'Taps you feel on each transition')}
             {toggle('showVideo', Video, 'Coach video', 'Loop the coach’s clip for each move when available')}
+            <VoiceCommandsRow on={settings.voiceCommands} onChange={(voiceCommands) => setSettings({ voiceCommands })} />
           </ListGroup>
         </Section>
 
@@ -312,5 +314,36 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </AppText>
       {children}
     </View>
+  );
+}
+
+/** Voice commands: asks for the mic the first time it's turned on; greyed out where it can't work (Expo Go, web). */
+function VoiceCommandsRow({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  const available = voiceCommandsAvailable();
+  const [denied, setDenied] = useState(false);
+  const set = async (v: boolean) => {
+    if (!v) return onChange(false);
+    const ok = await requestVoicePermission();
+    setDenied(!ok);
+    onChange(ok);
+  };
+  const description = !available
+    ? 'Needs the Save Fit app build. Not available in Expo Go.'
+    : denied
+      ? 'Allow the microphone and speech recognition for Save Fit in your phone’s settings.'
+      : 'Say “play”, “pause”, “next” or “previous” during a workout';
+  return (
+    <ListGroup.Item onPress={available ? () => void set(!on) : undefined}>
+      <ListGroup.ItemPrefix>
+        <Icon icon={Microphone} size={20} color={available ? 'foreground' : 'muted'} />
+      </ListGroup.ItemPrefix>
+      <ListGroup.ItemContent>
+        <ListGroup.ItemTitle className={available ? undefined : 'text-muted'}>Voice commands</ListGroup.ItemTitle>
+        <ListGroup.ItemDescription>{description}</ListGroup.ItemDescription>
+      </ListGroup.ItemContent>
+      <ListGroup.ItemSuffix>
+        <Switch isSelected={available && on} isDisabled={!available} onSelectedChange={(v) => void set(v)} />
+      </ListGroup.ItemSuffix>
+    </ListGroup.Item>
   );
 }

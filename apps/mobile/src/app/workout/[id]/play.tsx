@@ -23,6 +23,7 @@ import { PhaseGlow } from '@/components/workout/phase-glow';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, EASE_OUT_CSS, SPRING_PLAYFUL } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
+import { useVoiceCommands } from '@/lib/voice-commands';
 import { usePlayer } from '@/lib/use-player';
 import type { Workout } from '@/lib/types';
 import { EquipmentTags, exerciseEquipment } from '@/components/workout/equipment-tag';
@@ -79,6 +80,20 @@ function Player() {
     }
   }, [p.phase, workout]);
 
+  // Hands-free: "play", "pause", "next", "previous" (Settings → Voice commands; app build only).
+  useVoiceCommands(settings.voiceCommands && p.phase !== 'done' && p.phase !== 'ready', (cmd) => {
+    const starting = p.phase === 'intro' || p.phase === 'countdown';
+    if (cmd === 'play') {
+      if (p.paused) p.togglePause();
+      else if (starting) p.goNow();
+    } else if (cmd === 'pause') {
+      if (!p.paused) p.togglePause();
+    } else if (cmd === 'next') {
+      if (starting) p.goNow();
+      else p.next();
+    } else p.prev();
+  });
+
   if (!workout) return <View className="flex-1 bg-background" />;
 
   if (p.phase === 'done') {
@@ -130,8 +145,9 @@ function Player() {
     <View style={{ width: size, height: size }}>
       {timerBody(size)}
       {hasHowTo && !small(size) && !isRest ? (
-        <View className="absolute -right-2 top-0">
-          <RoundButton icon={Info} label="How to do it" tone="ghost" size={48} onPress={() => setHowTo(true)} />
+        // Same 56 pt height as the old pill, centred above the Next button (72 pt, 32 pt from the edge).
+        <View className="absolute top-0" style={{ right: -((paneW - size) / 2 - (32 + 36 - 28)) }}>
+          <RoundButton icon={Info} label="How to do it" tone="ghost" size={56} onPress={() => setHowTo(true)} />
         </View>
       ) : null}
     </View>

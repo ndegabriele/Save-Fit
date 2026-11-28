@@ -21,6 +21,8 @@ export interface Settings {
   /** 0–1. */
   voiceVolume: number;
   haptics: boolean;
+  /** Say play, pause, next or previous during a workout. Off until the user turns it on (needs the mic). */
+  voiceCommands: boolean;
   /** Show the coach's video clip in the player when available. */
   showVideo: boolean;
   theme: 'system' | 'light' | 'dark';
@@ -61,6 +63,7 @@ export const DEFAULT_SETTINGS: Settings = {
   voice: true,
   voiceVolume: 1,
   haptics: true,
+  voiceCommands: false,
   showVideo: true,
   theme: 'system',
   apiUrl: '',

@@ -4,6 +4,7 @@ import { test } from 'node:test';
 import { buildSequence, workoutSeconds } from '../sequence.ts';
 import { mergeWorkouts } from '../merge.ts';
 import { normalizeDraft } from '../normalize.ts';
+import { parseCommand } from '../voice-words.ts';
 
 let n = 0;
 const id = () => `id${++n}`;
@@ -103,4 +104,13 @@ test('normalizeDraft gives every import the same shape', () => {
   assert.deepEqual(e.commonMistakes, ['m', 'n']);
   assert.equal(e.load, null);
   assert.equal(e.tempo, '2-1-1');
+});
+
+test('voice commands: the last command word wins, other speech is ignored', () => {
+  assert.equal(parseCommand('next'), 'next');
+  assert.equal(parseCommand('Okay, pause.'), 'pause');
+  assert.equal(parseCommand('go back'), 'previous');
+  assert.equal(parseCommand('resume'), 'play');
+  assert.equal(parseCommand('Five'), null);
+  assert.equal(parseCommand('three, two, one'), null);
 });
