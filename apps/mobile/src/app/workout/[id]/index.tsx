@@ -104,7 +104,7 @@ export default function WorkoutDetail() {
           {workout.blocks.map((block) => (
             <View key={block.id} className="gap-3">
               <BlockHeader block={block} showSource={multiSource || Boolean(workout.mergedFrom)} />
-              <Accordion selectionMode="multiple" variant="surface" className="rounded-[20px]">
+              <Accordion selectionMode="multiple" variant="surface" className="rounded-[20px]" classNames={{ separator: 'bg-separator/40' }}>
                 {block.exercises.map((ex, i) => (
                   <Accordion.Item key={ex.id} value={ex.id}>
                     <Accordion.Trigger>
