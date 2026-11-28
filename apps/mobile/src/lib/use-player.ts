@@ -46,6 +46,8 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   const [paused, setPaused] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [workDone, setWorkDone] = useState(0);
+  /** Bumped whenever the current timer's end moves, so the cue schedule is rebuilt. */
+  const [timerRev, setTimerRev] = useState(0);
 
   // Timestamps for the current phase.
   const endsAt = useRef(0);
@@ -62,6 +64,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     phaseTotal.current = seconds;
     endsAt.current = Date.now() + seconds * 1000;
     lastBeep.current = null;
+    setTimerRev((r) => r + 1);
   }, []);
 
   const enterStep = useCallback(
@@ -77,11 +80,9 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
       if (s.kind === 'work' && s.mode === 'time' && withCountdown && countdownSec > 0) {
         setPhase('countdown');
         startTimer(countdownSec);
-        cue.ready();
       } else {
         setPhase('running');
         if (s.kind === 'rest' || s.mode === 'time') startTimer(s.durationSec);
-        if (s.kind === 'rest') cue.rest();
         if (s.kind === 'work') {
           cue.go();
           haptic.firm();
@@ -96,7 +97,6 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     setPaused(false);
     setPhase('intro');
     startTimer(Math.max(INTRO_MIN_SEC, countdownSec));
-    cue.ready();
   }, [countdownSec, startTimer]);
 
   const next = useCallback(() => {
@@ -123,6 +123,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     setPaused((p) => {
       if (!p) pausedLeft.current = Math.max(0, endsAt.current - Date.now());
       else endsAt.current = Date.now() + pausedLeft.current;
+      setTimerRev((r) => r + 1);
       return !p;
     });
     haptic.tap();
@@ -132,6 +133,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     if (paused) pausedLeft.current += sec * 1000;
     else endsAt.current += sec * 1000;
     phaseTotal.current += sec;
+    setTimerRev((r) => r + 1);
     haptic.select();
   }, [paused]);
 
@@ -172,15 +174,36 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   // Load the sounds when the player opens, so the first cue is on time.
   useEffect(() => preloadAudio(), []);
 
-  // A beep (and the coach's count) on each of the last 5 seconds, transitions when the timer hits 0.
+  // A tick (and the coach's count) on each of the last 5 seconds. Each one is scheduled for the
+  // exact moment the number on screen changes, and re-renders the screen right then, so sound and
+  // number land together instead of waiting for the next clock tick.
   useEffect(() => {
     if (!timed || paused) return;
-    const whole = Math.ceil(remaining);
-    if (whole <= COUNT_FROM && whole >= 1 && lastBeep.current !== whole) {
-      lastBeep.current = whole;
-      cue.count(whole);
-      haptic.tap();
+    const t0 = Date.now();
+    const end = endsAt.current;
+    const ids: ReturnType<typeof setTimeout>[] = [];
+    for (let n = COUNT_FROM; n >= 1; n--) {
+      const at = end - n * 1000;
+      // Already past (e.g. after a resume): skip. A few ms late (a 5 s timer that just started): fire now.
+      if (at < t0 - 150) continue;
+      ids.push(
+        setTimeout(() => {
+          if (lastBeep.current === n) return;
+          lastBeep.current = n;
+          setNow(Date.now());
+          cue.count(n);
+          haptic.tap();
+        }, Math.max(0, at - t0)),
+      );
     }
+    // Wake exactly at zero so the next move (and its chime) starts on time.
+    ids.push(setTimeout(() => setNow(Date.now()), Math.max(0, end - t0)));
+    return () => ids.forEach(clearTimeout);
+  }, [timed, paused, timerRev]);
+
+  // Transitions when the timer hits 0.
+  useEffect(() => {
+    if (!timed || paused) return;
     if (remainingMs <= 0) {
       if (phase === 'intro') {
         enterStep(0, false);

@@ -78,15 +78,15 @@ export default function SettingsScreen() {
           <AudioControl
             icon={UserSound}
             title="Coach voice"
-            description="Counts you down and calls go and rest. Beeps soften under it."
+            description="A calm 5 to 1 on the last seconds. Beeps soften under it."
             enabled={settings.voice}
             volume={settings.voiceVolume}
             onEnabled={(voice) => {
               setSettings({ voice });
-              if (voice) say('ready');
+              if (voice) say(3);
             }}
             onVolume={(voiceVolume) => setSettings({ voiceVolume })}
-            preview={() => say('go')}
+            preview={() => say(3)}
           />
           <ListGroup>
             {toggle('haptics', Vibrate, 'Haptics', 'Taps you feel on each transition')}
