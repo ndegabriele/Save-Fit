@@ -18,6 +18,8 @@ export interface TappableProps {
   accessibilityLabel?: string;
   accessibilityState?: { selected?: boolean; disabled?: boolean };
   highlight?: boolean;
+  /** Extra touch area around a small visible control. */
+  hitSlop?: number;
 }
 
 /**
@@ -36,6 +38,7 @@ export function Tappable({
   accessibilityLabel,
   accessibilityState,
   highlight = false,
+  hitSlop,
 }: TappableProps) {
   return (
     <PressableFeedback
@@ -51,6 +54,7 @@ export function Tappable({
       animation={{ scale: { value: scale, timingConfig: { duration: DURATION.press }, ignoreScaleCoefficient: true } }}
       className={cn(className)}
       style={style}
+      hitSlop={hitSlop}
     >
       {highlight ? <PressableFeedback.Highlight /> : null}
       {children}

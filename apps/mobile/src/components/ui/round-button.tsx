@@ -33,7 +33,7 @@ export interface RoundButtonProps {
 export function RoundButton({ icon, onPress, size = 44, tone = 'surface', label, className, disabled, feedback }: RoundButtonProps) {
   const t = TONE[tone];
   return (
-    <Tappable onPress={onPress} accessibilityLabel={label} disabled={disabled} feedback={feedback} className={className}>
+    <Tappable onPress={onPress} accessibilityLabel={label} disabled={disabled} feedback={feedback} className={className} hitSlop={size < 44 ? Math.ceil((44 - size) / 2) : undefined}>
       <View
         className={cn('items-center justify-center rounded-full', t.bg, disabled && 'opacity-40')}
         style={{ width: size, height: size }}

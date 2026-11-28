@@ -38,7 +38,9 @@ export default function Library() {
   const plans = useStore((s) => s.plans);
   const plannedDays = useMemo(() => new Set(plans.map((p) => p.date)), [plans]);
   const [draft, setDraft] = useState<PlanDraft | null>(null);
-  const sheetDay = draft ? dayTitle(draft.mode === 'new' ? draft.date : draft.plan.date, today).title : '';
+  // Sentence case inside the sheet's copy: "Plan for tomorrow", "Add to Monday at 07:00".
+  const sheetTitle = draft ? dayTitle(draft.mode === 'new' ? draft.date : draft.plan.date, today).title : '';
+  const sheetDay = sheetTitle === 'Today' || sheetTitle === 'Tomorrow' ? sheetTitle.toLowerCase() : sheetTitle;
   const focused = useIsFocused();
   // Background videos only play on tiles that are mostly on screen.
   // Background videos only play on tiles that are at least half on screen.
@@ -125,9 +127,11 @@ export default function Library() {
           >
             <View className="flex-row items-start justify-between">
               <View>
-                <AppText variant="overline">{readyCount} saved</AppText>
-                <AppText variant="hero" className="mt-1">
+                <AppText variant="hero">
                   Your{'\n'}workouts
+                </AppText>
+                <AppText variant="caption" className="mt-1">
+                  {readyCount === 1 ? '1 saved' : `${readyCount} saved`}
                 </AppText>
               </View>
               <RoundButton icon={Layers} label="Merge workouts" size={52} onPress={() => router.push('/merge')} disabled={readyCount < 2} />
@@ -222,12 +226,9 @@ function DayView({
     <View className="flex-1">
       <View className="flex-row items-end justify-between px-5 pb-4 pt-3">
         <View>
-          <AppText variant="overline">{date}</AppText>
-          <AppText variant="hero" className="mt-1">
-            {title}
-          </AppText>
+          <AppText variant="hero">{title}</AppText>
           <AppText variant="caption" className="mt-1">
-            {plans.length ? `${plans.length === 1 ? '1 workout' : `${plans.length} workouts`} · ${total} min` : 'Tap a time to plan a workout'}
+            {date} · {plans.length ? `${plans.length === 1 ? '1 workout' : `${plans.length} workouts`}, ${total} min` : 'Tap a time to plan a workout'}
           </AppText>
         </View>
         <RoundButton icon={Plus} label="Plan a workout" tone="accent" size={52} onPress={() => onAddAt(next)} />

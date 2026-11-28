@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { mediaUrl } from '@/lib/api';
 import type { Category } from '@/lib/types';
 
-const CAT_ICON: Record<Category, AppIcon> = {
+export const CAT_ICON: Record<Category, AppIcon> = {
   strength: Dumbbell,
   hiit: Flame,
   cardio: Heart,

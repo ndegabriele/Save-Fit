@@ -51,10 +51,9 @@ export function InboxCard() {
   return (
     <View className="gap-3 rounded-[32px] bg-surface p-5 shadow-surface">
       <View className="flex-row items-center justify-between">
-        <View>
-          <AppText variant="overline">Ready to import</AppText>
-          <AppText variant="title">{inbox.length === 1 ? '1 saved reel' : `${inbox.length} saved reels`}</AppText>
-        </View>
+        <AppText variant="title" className="flex-1">
+          {inbox.length === 1 ? '1 reel to import' : `${inbox.length} reels to import`}
+        </AppText>
         <Button size="sm" onPress={importAll} isDisabled={!server || busy !== null}>
           <Button.Label>Import all</Button.Label>
         </Button>

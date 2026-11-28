@@ -53,8 +53,8 @@ function Tags({ title, items, tone }: { title: string; items: string[]; tone?: '
       <AppText variant="overline">{title}</AppText>
       <View className="flex-row flex-wrap gap-2">
         {items.map((t) => (
-          <View key={t} className={tone === 'accent' ? 'rounded-full bg-accent px-3 py-2' : 'rounded-full bg-default px-3 py-2'}>
-            <AppText variant="label" className={tone === 'accent' ? 'text-[12px] leading-[16px] text-accent-foreground' : 'text-[12px] leading-[16px]'}>
+          <View key={t} className={tone === 'accent' ? 'rounded-full bg-accent/15 px-3 py-2' : 'rounded-full bg-default px-3 py-2'}>
+            <AppText variant="label" className={tone === 'accent' ? 'text-[12px] leading-[16px] text-foreground' : 'text-[12px] leading-[16px]'}>
               {t}
             </AppText>
           </View>

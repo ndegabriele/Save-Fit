@@ -455,17 +455,15 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
 
         {first?.kind === 'work' ? (
           <View className="w-full gap-1 rounded-[32px] bg-surface p-5">
-            <AppText variant="overline" className="text-accent">
-              First up
-            </AppText>
             <AppText variant="title" numberOfLines={2}>
               {first.exercise.name}
             </AppText>
-            {firstMeta ? (
-              <AppText variant="label" className="text-muted">
-                {firstMeta}
+            <AppText variant="label" className="text-muted">
+              <AppText variant="label" className="text-accent">
+                First up
               </AppText>
-            ) : null}
+              {firstMeta ? ` · ${firstMeta}` : ''}
+            </AppText>
             <EquipmentTags items={exerciseEquipment(first.exercise)} className="mt-2" />
           </View>
         ) : null}

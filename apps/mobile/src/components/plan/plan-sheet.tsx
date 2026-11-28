@@ -7,7 +7,7 @@ import { RoundButton } from '@/components/ui/round-button';
 import { Sheet } from '@/components/ui/sheet';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
-import { Thumb } from '@/components/workout/thumb';
+import { CAT_ICON, Thumb } from '@/components/workout/thumb';
 import { CATEGORY_LABEL } from '@/lib/format';
 import { formatTime, snapTime, TIME_STEP, type Plan } from '@/lib/plan';
 import { workoutMinutes } from '@/lib/sequence';
@@ -104,7 +104,9 @@ export function PlanSheet({
                     {w.source?.thumbnailUrl ? (
                       <Thumb uri={w.source.thumbnailUrl} category={w.category} size={48} className="rounded-2xl" />
                     ) : (
-                      <View className={cn('size-12 rounded-2xl', CATEGORY_BG[w.category])} />
+                      <View className={cn('size-12 items-center justify-center rounded-2xl', CATEGORY_BG[w.category])}>
+                        <Icon icon={CAT_ICON[w.category]} size={20} color={`cat-${w.category}-ink`} />
+                      </View>
                     )}
                     <View className="flex-1">
                       <AppText variant="headline" numberOfLines={1}>
