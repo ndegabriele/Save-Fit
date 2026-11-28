@@ -84,7 +84,7 @@ export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex, 
               >
                 {String(minutes).padStart(2, '0')}′
               </AppText>
-              <AppText variant="caption" className={media ? 'text-white/80' : 'text-foreground/55'}>
+              <AppText variant="caption" className={media ? 'text-white/80' : 'text-foreground/70'}>
                 {plural(exerciseCount(workout), 'exercise')} · {DIFFICULTY_LABEL[workout.difficulty]}
               </AppText>
             </View>

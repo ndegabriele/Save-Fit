@@ -89,7 +89,7 @@ export default function MergeScreen() {
                     <AppText variant="headline" numberOfLines={2}>
                       {w.title}
                     </AppText>
-                    <AppText variant="caption" className="text-foreground/60" numberOfLines={1}>
+                    <AppText variant="caption" className="text-foreground/75" numberOfLines={1}>
                       {CATEGORY_LABEL[w.category]} · {workoutMinutes(w)} min · {creatorLine(w.creators)}
                     </AppText>
                   </View>

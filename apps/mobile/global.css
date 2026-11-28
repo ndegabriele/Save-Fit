@@ -13,6 +13,8 @@
 @source './src';
 
 @theme {
+  /* Fields get a 1px stroke (HeroUI default is none); colour is --field-border per theme. */
+  --field-border-width: 1px;
   --font-display: 'Bricolage-ExtraBold';
   --font-display-semibold: 'Bricolage-SemiBold';
 }
@@ -71,7 +73,7 @@
       --overlay: oklch(100% 0 0);
       --overlay-foreground: var(--foreground);
 
-      --muted: oklch(54% 0.014 286);
+      --muted: oklch(52% 0.014 286);
 
       --default: oklch(94% 0.004 286);
       --default-foreground: var(--foreground);
@@ -99,6 +101,15 @@
       --separator: oklch(86% 0.005 286);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(100% 0 0);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(77% 0.005 286);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 60%);
       --veil-soft: oklch(0% 0 0 / 7%);
 
@@ -168,9 +179,18 @@
       --segment: oklch(34% 0.006 286);
       --segment-foreground: var(--foreground);
       --border: oklch(27% 0.005 286);
-      --separator: oklch(36% 0.005 286);
+      --separator: oklch(37% 0.005 286);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(24% 0.005 286);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(53% 0.005 286);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
@@ -245,6 +265,15 @@
       --separator: oklch(84% 0.02 85);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(99% 0.006 85);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(75% 0.02 85);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 60%);
       --veil-soft: oklch(0% 0 0 / 7%);
 
@@ -318,6 +347,15 @@
       --separator: oklch(38% 0.016 70);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(26% 0.015 70);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(54% 0.016 70);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
@@ -364,7 +402,7 @@
       --overlay: oklch(98% 0.004 250);
       --overlay-foreground: var(--foreground);
 
-      --muted: oklch(50% 0.022 250);
+      --muted: oklch(48% 0.022 250);
 
       --default: oklch(89% 0.008 250);
       --default-foreground: var(--foreground);
@@ -392,6 +430,15 @@
       --separator: oklch(80% 0.012 250);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(98% 0.004 250);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(73% 0.012 250);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 60%);
       --veil-soft: oklch(0% 0 0 / 7%);
 
@@ -465,6 +512,15 @@
       --separator: oklch(40% 0.018 255);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(28% 0.016 255);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(55% 0.018 255);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
@@ -537,6 +593,15 @@
       --separator: oklch(42% 0.016 285);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(31% 0.015 285);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(58% 0.016 285);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 
@@ -605,10 +670,19 @@
 
       --segment: oklch(28% 0.012 285);
       --segment-foreground: var(--foreground);
-      --border: oklch(21% 0.01 285);
-      --separator: oklch(29% 0.012 285);
+      --border: oklch(26% 0.01 285);
+      --separator: oklch(35% 0.012 285);
       --focus: var(--violet);
       --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(18% 0.011 285);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(50% 0.012 285);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
       --veil: oklch(100% 0 0 / 10%);
       --veil-soft: oklch(100% 0 0 / 10%);
 

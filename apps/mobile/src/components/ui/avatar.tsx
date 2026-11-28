@@ -65,7 +65,7 @@ export function CreatorRow({ creators, size = 32, className }: { creators: Creat
           {name}
         </AppText>
         {handle && handle !== name ? (
-          <AppText variant="caption" numberOfLines={1} className="text-foreground/55 text-[12px] leading-[16px]">
+          <AppText variant="caption" numberOfLines={1} className="text-foreground/80 text-[12px] leading-[16px]">
             {handle.startsWith('@') ? handle : `@${handle}`}
           </AppText>
         ) : null}
@@ -135,7 +135,7 @@ export function CoachTile({ creators, onMedia, inkClass, size = 96 }: { creators
           </AppText>
         </View>
       ) : null}
-      <AppText variant="label" numberOfLines={1} className={cn('text-center text-[12px]', onMedia ? 'text-white' : 'text-foreground/70')}>
+      <AppText variant="label" numberOfLines={1} className={cn('text-center text-[12px]', onMedia ? 'text-white' : 'text-foreground/80')}>
         {name}
       </AppText>
     </View>

@@ -115,7 +115,7 @@ export function DayTimeline({
                   <AppText variant="headline" numberOfLines={1}>
                     {w.title}
                   </AppText>
-                  <AppText variant="caption" numberOfLines={1} className="text-foreground/70">
+                  <AppText variant="caption" numberOfLines={1} className="text-foreground/80">
                     {formatTime(plan.minutes)} · {mins} min · {CATEGORY_LABEL[w.category]}
                   </AppText>
                 </View>

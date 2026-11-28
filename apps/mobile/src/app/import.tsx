@@ -79,7 +79,7 @@ export default function ImportScreen() {
               <Icon icon={Sparkles} size={20} color="background" />
             </View>
             <AppText variant="display">Drop a reel,{'\n'}get a workout.</AppText>
-            <AppText variant="body" className="text-foreground/70">
+            <AppText variant="body" className="text-foreground/80">
               Tip: in Instagram or TikTok tap Share → Save Fit and it lands here on its own.
             </AppText>
           </View>

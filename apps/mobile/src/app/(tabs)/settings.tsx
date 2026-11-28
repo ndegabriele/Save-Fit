@@ -200,7 +200,7 @@ function AiAccount() {
             </AppText>
           </View>
         </View>
-        <AppText variant="caption" className="text-foreground/70">
+        <AppText variant="caption" className="text-foreground/80">
           Until Save Fit has its own accounts, imports run on your personal Claude API key. Create one at console.anthropic.com → API keys. It is stored only in this phone’s secure storage, sent to your server with each import, and never saved there.
         </AppText>
         {key ? (
