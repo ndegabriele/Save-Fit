@@ -173,7 +173,7 @@ function Player() {
           </AppText>
           <DiscLabel
             size={size}
-            text={p.paused ? 'Paused' : isCountdown ? 'Get ready' : isRest ? 'Breathe' : 'Work'}
+            text={p.paused ? 'Paused' : isCountdown ? 'Get ready' : isRest ? 'Rest' : 'Work'}
             tight={false}
           />
         </ProgressRing>
@@ -489,7 +489,7 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
 }
 
 /**
- * The word under the big number ("reps", "Breathe"), sized with the disc and tucked up close to it.
+ * The word under the big number ("reps", "Rest"), sized with the disc and tucked up close to it.
  */
 function DiscLabel({ size, text, tight = true }: { size: number; text: string; tight?: boolean }) {
   const compact = size < 160;

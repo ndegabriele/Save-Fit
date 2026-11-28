@@ -6,6 +6,7 @@ import { useState } from 'react';
 import {
   AlertTriangle,
   ChevronLeft,
+  ChevronRight,
   Copy,
   Dumbbell,
   ExternalLink,
@@ -22,7 +23,6 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui/icon';
 import { RoundButton } from '@/components/ui/round-button';
-import { Stat } from '@/components/ui/stat';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { Pill } from '@/components/workout/category-pill';
@@ -44,6 +44,7 @@ export default function WorkoutDetail() {
   const workout = useWorkout(id);
   const { toast } = useToast();
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [tray, setTray] = useState<'tips' | 'check' | null>(null);
   const bg = toHex(useColor('background'));
 
   if (!workout) return <View className="flex-1 bg-background" />;
@@ -75,40 +76,31 @@ export default function WorkoutDetail() {
         </View>
 
         <View className="gap-6 px-5 pt-5">
-          <View className="flex-row gap-3">
-            <Stat icon={Timer} value={`${workoutMinutes(workout)} min`} label="Duration" />
-            <Stat icon={Dumbbell} value={String(exerciseCount(workout))} label="Exercises" />
-            <Stat icon={ListOrdered} value={String(workout.blocks.length)} label={workout.blocks.length === 1 ? 'Part' : 'Parts'} />
+          {/* One summary: the numbers, then what to bring. */}
+          <View className="rounded-[32px] bg-surface p-5 shadow-surface">
+            <View className="flex-row">
+              <SummaryStat icon={Timer} value={String(workoutMinutes(workout))} unit="min" label="Duration" />
+              <View className="mx-4 w-px bg-border" />
+              <SummaryStat icon={Dumbbell} value={String(exerciseCount(workout))} label={exerciseCount(workout) === 1 ? 'Exercise' : 'Exercises'} />
+              <View className="mx-4 w-px bg-border" />
+              <SummaryStat icon={ListOrdered} value={String(workout.blocks.length)} label={workout.blocks.length === 1 ? 'Part' : 'Parts'} />
+            </View>
+            {workout.equipment.length ? (
+              <View className="mt-5 gap-3 border-t border-border pt-5">
+                <AppText variant="overline">You’ll need</AppText>
+                <EquipmentTags items={workout.equipment} size="md" />
+              </View>
+            ) : null}
           </View>
 
-          {workout.summary ? (
-            <AppText variant="body" className="text-foreground/80">
-              {workout.summary}
-            </AppText>
-          ) : null}
-
-          {workout.equipment.length ? (
-            <View className="gap-2">
-              <AppText variant="overline">You’ll need</AppText>
-              <EquipmentTags items={workout.equipment} />
-            </View>
-          ) : null}
-          {workout.targetMuscles.length ? <ChipRow title="Targets" items={workout.targetMuscles} /> : null}
-
-          {workout.assumptions.length ? (
-            <View className="gap-2 rounded-3xl bg-warning-soft p-4">
-              <View className="flex-row items-center gap-2">
-                <Icon icon={AlertTriangle} size={20} color="warning" />
-                <AppText variant="headline" className="text-warning-soft-foreground">
-                  Worth a quick check
+          {workout.summary || workout.targetMuscles.length ? (
+            <View className="gap-4">
+              {workout.summary ? (
+                <AppText variant="body" className="text-foreground/80">
+                  {workout.summary}
                 </AppText>
-              </View>
-              {workout.assumptions.map((a) => (
-                <AppText key={a} variant="body" className="text-foreground/80">
-                  • {a}
-                </AppText>
-              ))}
-              <AppText variant="caption">Tap Edit to adjust timings or reps.</AppText>
+              ) : null}
+              {workout.targetMuscles.length ? <ChipRow title="Targets" items={workout.targetMuscles} /> : null}
             </View>
           ) : null}
 
@@ -140,17 +132,14 @@ export default function WorkoutDetail() {
             </View>
           ))}
 
-          {workout.tips.length ? (
-            <View className="gap-2 rounded-3xl bg-violet-soft p-4">
-              <View className="flex-row items-center gap-2">
-                <Icon icon={Lightbulb} size={20} color="violet" />
-                <AppText variant="headline">Coach tips</AppText>
-              </View>
-              {workout.tips.map((t) => (
-                <AppText key={t} variant="body" className="text-foreground/80">
-                  • {t}
-                </AppText>
-              ))}
+          {workout.tips.length || workout.assumptions.length ? (
+            <View className="gap-3">
+              {workout.tips.length ? (
+                <InfoButton icon={Lightbulb} tone="violet" label="Coach tips" count={workout.tips.length} onPress={() => setTray('tips')} />
+              ) : null}
+              {workout.assumptions.length ? (
+                <InfoButton icon={AlertTriangle} tone="warning" label="Worth a quick check" count={workout.assumptions.length} onPress={() => setTray('check')} />
+              ) : null}
             </View>
           ) : null}
         </View>
@@ -175,6 +164,24 @@ export default function WorkoutDetail() {
           <Button.Label className="text-[18px] leading-[24px]">Start workout</Button.Label>
         </Button>
       </View>
+
+      <Sheet isOpen={tray !== null} onClose={() => setTray(null)} title={tray === 'check' ? 'Worth a quick check' : 'Coach tips'} heightRatio={0.56}>
+        <View className="gap-3">
+          {(tray === 'check' ? workout.assumptions : workout.tips).map((t) => (
+            <View key={t} className="flex-row gap-3">
+              <View className={cn('mt-2 size-2 rounded-full', tray === 'check' ? 'bg-warning' : 'bg-violet')} />
+              <AppText variant="body" className="flex-1">
+                {t}
+              </AppText>
+            </View>
+          ))}
+          {tray === 'check' ? (
+            <AppText variant="caption" className="mt-1">
+              Tap Edit to adjust timings or reps.
+            </AppText>
+          ) : null}
+        </View>
+      </Sheet>
 
       <Sheet isOpen={actionsOpen} onClose={() => setActionsOpen(false)} title={workout.title} heightRatio={0.48}>
             <View className="gap-2">
@@ -248,16 +255,50 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
   );
 }
 
+/** One number in the summary card: a small icon, the value, its label. */
+function SummaryStat({ icon, value, unit, label }: { icon: typeof Timer; value: string; unit?: string; label: string }) {
+  return (
+    <View className="flex-1 gap-2">
+      <View className="size-8 items-center justify-center rounded-full bg-accent">
+        <Icon icon={icon} size={16} color="accent-foreground" />
+      </View>
+      <View>
+        <AppText variant="title">
+          {value}
+          {unit ? <AppText variant="headline">{` ${unit}`}</AppText> : null}
+        </AppText>
+        <AppText variant="caption">{label}</AppText>
+      </View>
+    </View>
+  );
+}
+
+/** A full-width row that opens a tray (coach tips, things to check). */
+function InfoButton({ icon, tone, label, count, onPress }: { icon: typeof Timer; tone: 'violet' | 'warning'; label: string; count: number; onPress: () => void }) {
+  return (
+    <Tappable onPress={onPress} accessibilityLabel={label}>
+      <View className={cn('h-16 flex-row items-center gap-3 rounded-3xl px-4', tone === 'violet' ? 'bg-violet-soft' : 'bg-warning-soft')}>
+        <Icon icon={icon} size={20} color={tone} />
+        <AppText variant="headline" className="flex-1">
+          {label}
+        </AppText>
+        <AppText variant="label" className="text-muted">
+          {count}
+        </AppText>
+        <Icon icon={ChevronRight} size={20} color="muted" />
+      </View>
+    </Tappable>
+  );
+}
+
 function ChipRow({ title, items }: { title: string; items: string[] }) {
   return (
     <View className="gap-2">
       <AppText variant="overline">{title}</AppText>
       <View className="flex-row flex-wrap gap-2">
         {items.map((t) => (
-          <View key={t} className="rounded-full border border-border bg-surface px-4 py-2">
-            <AppText variant="label" className="text-[12px] leading-[16px]">
-              {t}
-            </AppText>
+          <View key={t} className="h-10 justify-center rounded-full border border-border bg-surface px-4">
+            <AppText variant="label">{t}</AppText>
           </View>
         ))}
       </View>
