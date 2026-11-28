@@ -76,15 +76,15 @@ export default function WorkoutDetail() {
         </View>
 
         <View className="gap-6 px-5 pt-5">
-          {/* One summary: the numbers, then what to bring. */}
-          <View className="gap-2 rounded-[32px] bg-surface p-2 shadow-surface">
-            <View className="flex-row gap-2">
+          {/* Summary: the numbers, then what to bring. Plain, no card. */}
+          <View className="gap-5">
+            <View className="flex-row gap-4">
               <SummaryStat icon={Timer} value={String(workoutMinutes(workout))} unit="min" label="Duration" />
               <SummaryStat icon={Dumbbell} value={String(exerciseCount(workout))} label={exerciseCount(workout) === 1 ? 'Exercise' : 'Exercises'} />
               <SummaryStat icon={ListOrdered} value={String(workout.blocks.length)} label={workout.blocks.length === 1 ? 'Part' : 'Parts'} />
             </View>
             {workout.equipment.length ? (
-              <View className="gap-3 rounded-3xl bg-surface-secondary p-4">
+              <View className="gap-3">
                 <AppText variant="overline">You’ll need</AppText>
                 <EquipmentTags items={workout.equipment} size="md" />
               </View>
@@ -256,7 +256,7 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
 /** One number in the summary card: a small icon, the value, its label. */
 function SummaryStat({ icon, value, unit, label }: { icon: typeof Timer; value: string; unit?: string; label: string }) {
   return (
-    <View className="flex-1 gap-2 rounded-3xl bg-surface-secondary p-4">
+    <View className="flex-1 gap-2">
       <View className="size-8 items-center justify-center rounded-full bg-accent">
         <Icon icon={icon} size={16} color="accent-foreground" />
       </View>
