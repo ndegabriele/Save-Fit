@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Input, Label, ListGroup, Switch, Tabs, TextArea, TextField, Description } from 'heroui-native';
-import { ArrowLeftRight, Trash2, X } from '@/components/ui/icons';
+import { ArrowLeftRight, Check, Trash2 } from '@/components/ui/icons';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -58,9 +58,9 @@ export default function EditExercise() {
     <View className="flex-1 bg-background pt-8">
       <View className="flex-row items-center justify-between px-5 pb-2">
         <AppText variant="title">Exercise</AppText>
-        <RoundButton icon={X} label="Done" tone="ghost" size={40} onPress={() => router.back()} />
+        <RoundButton icon={Check} label="Done" tone="accent" size={40} onPress={() => router.back()} />
       </View>
-      <ScrollView contentContainerClassName="gap-5 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerClassName="gap-5 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive">
         <TextField>
           <Label>Name</Label>
           <Input value={ex.name} onChangeText={(name) => patch({ name })} />

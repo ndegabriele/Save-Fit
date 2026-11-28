@@ -47,7 +47,7 @@ export default function MergeScreen() {
         <RoundButton icon={X} label="Close" tone="ghost" size={40} onPress={() => router.back()} />
       </View>
 
-      <ScrollView contentContainerClassName="gap-3 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 140 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerClassName="gap-3 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 140 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive">
         <AppText variant="body" className="text-muted">
           Tap workouts in the order you want to do them. A warm-up from one coach, the main set from another, a stretch to finish.
         </AppText>

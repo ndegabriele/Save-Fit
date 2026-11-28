@@ -1,5 +1,9 @@
 import type { ExpoConfig } from 'expo/config';
 
+// iOS share sheet needs an App Group, which free (personal team) Apple accounts can't sign.
+// Leave it off for Xcode installs with a free Apple ID; set SAVEFIT_IOS_SHARE=1 once there's a paid account.
+const iosShare = process.env.SAVEFIT_IOS_SHARE === '1';
+
 const config: ExpoConfig = {
   name: 'Save Fit',
   slug: 'save-fit',
@@ -10,14 +14,21 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   icon: './assets/icon.png',
   ios: {
-    bundleIdentifier: 'app.savefit.mobile',
+    // Free Apple IDs need a bundle id nobody else has registered; override with IOS_BUNDLE_ID if Xcode says it's taken.
+    bundleIdentifier: process.env.IOS_BUNDLE_ID || 'app.savefit.mobile',
     supportsTablet: true,
+    infoPlist: {
+      // The import server runs on your computer over plain HTTP on the local network.
+      NSLocalNetworkUsageDescription: 'Save Fit connects to your Save Fit server on this network to turn videos into workouts.',
+      NSAppTransportSecurity: { NSAllowsLocalNetworking: true, NSAllowsArbitraryLoads: true },
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     package: 'app.savefit.mobile',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#C8F25A',
+      backgroundColor: '#C9FB10',
     },
   },
   plugins: [
@@ -47,6 +58,7 @@ const config: ExpoConfig = {
         },
         androidIntentFilters: ['text/*'],
         iosShareExtensionName: 'Save Fit',
+        disableIOS: !iosShare,
       },
     ],
   ],

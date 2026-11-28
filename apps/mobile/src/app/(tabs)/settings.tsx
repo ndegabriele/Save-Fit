@@ -52,7 +52,7 @@ export default function SettingsScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerClassName="gap-6 px-5 pb-36 pt-4" keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerClassName="gap-6 px-5 pb-36 pt-4" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive">
         <AppText variant="hero">Settings</AppText>
 
         <Section title="During workouts">

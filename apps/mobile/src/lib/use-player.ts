@@ -55,6 +55,8 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   const activeMs = useRef(0);
   const lastTick = useRef(Date.now());
   const lastBeep = useRef<number | null>(null);
+  /** When the current pause began (rep stopwatch freezes while paused). */
+  const pausedAt = useRef(0);
 
   const step = steps[index];
 
@@ -118,14 +120,19 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
 
   const togglePause = useCallback(() => {
     if (phase === 'ready') return start();
-    setPaused((p) => {
-      if (!p) pausedLeft.current = Math.max(0, endsAt.current - Date.now());
-      else endsAt.current = Date.now() + pausedLeft.current;
-      setTimerRev((r) => r + 1);
-      return !p;
-    });
+    // Side effects stay out of the state updater (React may run updaters twice in dev).
+    if (!paused) {
+      pausedLeft.current = Math.max(0, endsAt.current - Date.now());
+      pausedAt.current = Date.now();
+    } else {
+      endsAt.current = Date.now() + pausedLeft.current;
+      // Don't count the pause on a reps move's stopwatch.
+      stepStartedAt.current += Date.now() - pausedAt.current;
+    }
+    setPaused(!paused);
+    setTimerRev((r) => r + 1);
     haptic.tap();
-  }, [phase, start]);
+  }, [phase, paused, start]);
 
   const addTime = useCallback((sec: number) => {
     if (paused) pausedLeft.current += sec * 1000;
@@ -228,7 +235,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     paused,
     remaining,
     phaseTotal: phaseTotal.current,
-    repElapsed: step?.kind === 'work' && step.mode === 'reps' ? (now - stepStartedAt.current) / 1000 : 0,
+    repElapsed: step?.kind === 'work' && step.mode === 'reps' ? Math.max(0, (paused ? pausedAt.current : now) - stepStartedAt.current) / 1000 : 0,
     elapsed: activeMs.current / 1000,
     workDone,
   };

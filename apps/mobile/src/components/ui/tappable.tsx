@@ -44,7 +44,7 @@ export function Tappable({
     <PressableFeedback
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={accessibilityState}
+      accessibilityState={disabled ? { ...accessibilityState, disabled: true } : accessibilityState}
       isDisabled={disabled}
       onPress={() => {
         if (feedback !== 'none') haptic[feedback]();

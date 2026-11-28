@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Accordion, Button, cn, useToast } from 'heroui-native';
+import { Accordion, Button, cn, Dialog, useToast } from 'heroui-native';
 import { Sheet } from '@/components/ui/sheet';
 import { useState } from 'react';
 import {
@@ -45,6 +45,7 @@ export default function WorkoutDetail() {
   const workout = useWorkout(id);
   const { toast } = useToast();
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [tray, setTray] = useState<'tips' | 'check' | null>(null);
   const bg = toHex(useColor('background'));
 
@@ -200,12 +201,38 @@ export default function WorkoutDetail() {
                 danger
                 onPress={() => {
                   setActionsOpen(false);
-                  router.back();
-                  useStore.getState().remove(workout.id);
+                  setConfirmDelete(true);
                 }}
               />
             </View>
       </Sheet>
+
+      {/* Deleting can't be undone, so it asks first (HIG: confirm destructive actions). */}
+      <Dialog isOpen={confirmDelete} onOpenChange={setConfirmDelete}>
+        <Dialog.Portal>
+          <Dialog.Overlay />
+          <Dialog.Content>
+            <Dialog.Title>Delete this workout?</Dialog.Title>
+            <Dialog.Description>It’s also taken off your calendar. This can’t be undone.</Dialog.Description>
+            <View className="mt-5 gap-3">
+              <Button
+                size="lg"
+                variant="danger"
+                onPress={() => {
+                  setConfirmDelete(false);
+                  router.back();
+                  useStore.getState().remove(workout.id);
+                }}
+              >
+                Delete workout
+              </Button>
+              <Button size="lg" variant="secondary" onPress={() => setConfirmDelete(false)}>
+                Cancel
+              </Button>
+            </View>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
     </View>
   );
 }

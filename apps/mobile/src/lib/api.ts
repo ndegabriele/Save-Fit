@@ -30,6 +30,20 @@ function headers(): Record<string, string> {
   return h;
 }
 
+/** fetch with a time limit: iOS otherwise waits about a minute on an address that never answers. */
+async function request(url: string, init: RequestInit = {}, ms = 15_000): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    if (ctrl.signal.aborted) throw new Error('The server took too long to answer.');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function json<T>(res: Response): Promise<T> {
   if (!res.ok) {
     let message = `Server error (${res.status})`;
@@ -39,7 +53,11 @@ async function json<T>(res: Response): Promise<T> {
     } catch {}
     throw new Error(message);
   }
-  return (await res.json()) as T;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw new Error('That address answered, but not like a Save Fit server.');
+  }
 }
 
 export async function startImport(input: { url?: string | null; text?: string | null }): Promise<ImportJob> {
@@ -48,7 +66,7 @@ export async function startImport(input: { url?: string | null; text?: string | 
   const key = await loadAiKey();
   if (!key) throw new Error('Add your Claude API key in Settings → AI account first.');
   return json<ImportJob>(
-    await fetch(`${base}/v1/imports`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key }, body: JSON.stringify(input) }),
+    await request(`${base}/v1/imports`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key }, body: JSON.stringify(input) }, 30_000),
   );
 }
 
@@ -57,7 +75,7 @@ export async function checkAiKey(key: string): Promise<string | null> {
   const base = apiUrl();
   if (!base) return 'Add the server address below first.';
   try {
-    const res = await fetch(`${base}/v1/check-key`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key } });
+    const res = await request(`${base}/v1/check-key`, { method: 'POST', headers: { ...headers(), 'X-Anthropic-Key': key } }, 30_000);
     if (res.ok) return null;
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     return body.error ?? `Server error (${res.status})`;
@@ -67,12 +85,12 @@ export async function checkAiKey(key: string): Promise<string | null> {
 }
 
 export async function getImport(jobId: string): Promise<ImportJob> {
-  return json<ImportJob>(await fetch(`${apiUrl()}/v1/imports/${jobId}`, { headers: headers() }));
+  return json<ImportJob>(await request(`${apiUrl()}/v1/imports/${jobId}`, { headers: headers() }));
 }
 
 export async function ping(base: string): Promise<boolean> {
   try {
-    const res = await fetch(`${base.replace(/\/+$/, '')}/health`);
+    const res = await request(`${base.replace(/\/+$/, '')}/health`, {}, 6_000);
     return res.ok;
   } catch {
     return false;

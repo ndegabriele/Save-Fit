@@ -74,7 +74,7 @@ export default function EditWorkout() {
         <View className="size-11" />
       </View>
 
-      <ScrollView contentContainerClassName="gap-8 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerClassName="gap-8 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive">
         <View className="gap-5">
           <TextField>
             <Label>Title</Label>

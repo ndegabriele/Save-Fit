@@ -25,6 +25,18 @@
   --color-violet: var(--violet);
   --color-violet-foreground: var(--violet-foreground);
   --color-violet-soft: var(--violet-soft);
+  /* HeroUI's field colours use var(a, var(b)) fallbacks, which Uniwind can't resolve on device
+     (placeholders fell back to the system grey). Every theme defines --field-*, so point at them directly. */
+  --color-field: var(--field-background);
+  --color-field-foreground: var(--field-foreground);
+  --color-field-placeholder: var(--field-placeholder);
+  --color-field-border: var(--field-border);
+  --color-field-hover: color-mix(in oklab, var(--field-background) 90%, var(--field-foreground) 2%);
+  --color-field-focus: var(--field-background);
+  --color-field-border-hover: color-mix(in oklab, var(--field-border) 88%, var(--field-foreground) 10%);
+  --color-field-border-focus: color-mix(in oklab, var(--field-border) 74%, var(--field-foreground) 22%);
+  --radius-field: var(--field-radius);
+  --border-width-field-width: 1px;
   /* Translucent fills on tinted cards (avatars, thumbs, category pills). */
   --color-veil: var(--veil);
   --color-veil-soft: var(--veil-soft);

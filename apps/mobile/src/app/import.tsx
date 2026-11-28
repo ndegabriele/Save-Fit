@@ -73,7 +73,7 @@ export default function ImportScreen() {
       {workoutId ? (
         <Progress workoutId={workoutId} onDone={() => router.replace({ pathname: '/workout/[id]', params: { id: workoutId } })} onLibrary={() => router.back()} />
       ) : (
-        <ScrollView contentContainerClassName="gap-5 px-5 pb-10 pt-3" keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerClassName="gap-5 px-5 pb-10 pt-3" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive">
           <View className="gap-3 rounded-[28px] bg-cat-mixed p-5">
             <View className="size-11 items-center justify-center rounded-full bg-foreground">
               <Icon icon={Sparkles} size={20} color="background" />

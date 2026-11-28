@@ -7,7 +7,7 @@ import { PlanSheet, type PlanDraft } from '@/components/plan/plan-sheet';
 import { dateKey, dayTitle, plansOn, upcomingDays, type Plan } from '@/lib/plan';
 import { workoutMinutes } from '@/lib/sequence';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, ScrollView, View } from 'react-native';
+import { AppState, FlatList, ScrollView, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { EmptyState } from '@/components/ui/empty-state';
 import { RoundButton } from '@/components/ui/round-button';
@@ -31,9 +31,16 @@ export default function Library() {
   const router = useRouter();
   const workouts = useStore((s) => s.workouts);
   const [filter, setFilter] = useState<Filter>('all');
-  // Home shows the workouts list or one day's plan; today is fixed for the session.
+  // Home shows the workouts list or one day's plan.
   const [view, setView] = useState<HomeView>('workouts');
-  const today = useMemo(() => new Date(), []);
+  // Phones keep the app suspended for days: move "today" on when the app comes back after midnight.
+  const [today, setToday] = useState(() => new Date());
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') setToday((t) => (dateKey(t) === dateKey(new Date()) ? t : new Date()));
+    });
+    return () => sub.remove();
+  }, []);
   const days = useMemo(() => upcomingDays(today, 14), [today]);
   const plans = useStore((s) => s.plans);
   const plannedDays = useMemo(() => new Set(plans.map((p) => p.date)), [plans]);
@@ -42,7 +49,6 @@ export default function Library() {
   const sheetTitle = draft ? dayTitle(draft.mode === 'new' ? draft.date : draft.plan.date, today).title : '';
   const sheetDay = sheetTitle === 'Today' || sheetTitle === 'Tomorrow' ? sheetTitle.toLowerCase() : sheetTitle;
   const focused = useIsFocused();
-  // Background videos only play on tiles that are mostly on screen.
   // Background videos only play on tiles that are at least half on screen.
   // Measured by hand (scroll offset + item heights): FlatList viewability is unreliable on web,
   // and an item's own onLayout y is relative to its cell, so positions are summed in list order.
@@ -77,9 +83,12 @@ export default function Library() {
     return [...seen];
   }, [workouts]);
 
+  // A filter whose last workout was deleted (or whose pills are hidden) falls back to All,
+  // otherwise the list would sit empty with no way to clear it.
+  const activeFilter: Filter = filter !== 'all' && categories.length > 1 && categories.includes(filter) ? filter : 'all';
   const visible = useMemo(
-    () => workouts.filter((w) => filter === 'all' || w.category === filter || w.status !== 'ready'),
-    [workouts, filter],
+    () => workouts.filter((w) => activeFilter === 'all' || w.category === activeFilter || w.status !== 'ready'),
+    [workouts, activeFilter],
   );
   order.current = visible.map((w) => w.id);
   useEffect(recompute, [visible, recompute]);
@@ -139,7 +148,7 @@ export default function Library() {
             {categories.length > 1 ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2" className="-mx-5" contentContainerStyle={{ paddingHorizontal: 20 }}>
                 {(['all', ...categories] as Filter[]).map((c) => (
-                  <FilterPill key={c} label={c === 'all' ? 'All' : CATEGORY_LABEL[c]} active={filter === c} onPress={() => setFilter(c)} />
+                  <FilterPill key={c} label={c === 'all' ? 'All' : CATEGORY_LABEL[c]} active={activeFilter === c} onPress={() => setFilter(c)} />
                 ))}
               </ScrollView>
             ) : null}

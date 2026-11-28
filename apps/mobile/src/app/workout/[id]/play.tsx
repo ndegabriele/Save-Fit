@@ -98,6 +98,23 @@ function Player() {
 
   if (!workout) return <View className="flex-1 bg-background" />;
 
+  // A workout whose parts were all emptied in the editor has nothing to play.
+  if (!p.steps.length) {
+    return (
+      <View className="flex-1 items-center justify-center gap-6 bg-background px-6">
+        <AppText variant="title" className="text-center">
+          This workout has no exercises yet
+        </AppText>
+        <AppText variant="body" className="text-center text-muted">
+          Add some in Edit workout, then start again.
+        </AppText>
+        <Button size="lg" className="h-14 w-full rounded-full" onPress={() => router.back()}>
+          <Button.Label>Back</Button.Label>
+        </Button>
+      </View>
+    );
+  }
+
   if (p.phase === 'done') {
     return <Finished title={workout.title} elapsed={p.elapsed} moves={p.workDone} onClose={() => router.back()} />;
   }
@@ -564,7 +581,7 @@ function Finished({ title, elapsed, moves, onClose }: { title: string; elapsed: 
     <View className="flex-1 items-center justify-center bg-background px-6" style={{ paddingBottom: insets.bottom + 16 }}>
       <Confetti />
       <Animated.View
-        entering={ZoomIn.springify().duration(SPRING_PLAYFUL.duration).dampingRatio(0.6).withInitialValues({ transform: [{ scale: 0.6 }] })}
+        entering={ZoomIn.springify().duration(SPRING_PLAYFUL.duration).dampingRatio(0.6).withInitialValues({ transform: [{ scale: 0.8 }] })}
         className="size-32 items-center justify-center rounded-full bg-accent"
       >
         <Icon icon={Trophy} size={56} color="accent-foreground" strokeWidth={2.2} />
