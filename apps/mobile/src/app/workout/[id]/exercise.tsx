@@ -55,7 +55,7 @@ export default function EditExercise() {
   };
 
   return (
-    <View className="flex-1 bg-background pt-4">
+    <View className="flex-1 bg-background pt-8">
       <View className="flex-row items-center justify-between px-5 pb-2">
         <AppText variant="title">Exercise</AppText>
         <RoundButton icon={X} label="Done" tone="ghost" size={40} onPress={() => router.back()} />

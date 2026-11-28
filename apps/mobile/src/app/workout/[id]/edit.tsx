@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Button, Input, Label, TextField } from 'heroui-native';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Trash2 } from '@/components/ui/icons';
-import { useState } from 'react';
+import { Button, Input, Label, TextField, useToast } from 'heroui-native';
+import { ArrowDown, ArrowUp, Check, ChevronRight, Plus, Trash2, X } from '@/components/ui/icons';
+import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,7 +34,22 @@ export default function EditWorkout() {
   const insets = useSafeAreaInsets();
   const workout = useWorkout(id);
   const update = useStore((s) => s.update);
+  const { toast } = useToast();
+  // Edits apply as you go (so the exercise editor sees them); Cancel puts this snapshot back.
+  const original = useRef(workout);
   if (!workout) return <View className="flex-1 bg-background" />;
+
+  const cancel = () => {
+    const before = original.current;
+    if (before) update(workout.id, () => before);
+    router.back();
+  };
+  const save = () => {
+    toast.show({ variant: 'success', label: 'Changes saved' });
+    router.back();
+  };
+  // One rest for every exercise in a part: the value shown is the first exercise's.
+  const exerciseRest = (b: Block) => b.exercises[0]?.restSec ?? 0;
 
   const patch = (p: Partial<Workout>) => update(workout.id, (w) => ({ ...w, ...p, updatedAt: Date.now() }));
   const patchBlock = (blockId: string, fn: (b: Block) => Block) =>
@@ -48,19 +63,19 @@ export default function EditWorkout() {
 
   const addBlock = () =>
     patch({
-      blocks: [...workout.blocks, { id: uid(), title: 'New part', kind: 'main', rounds: 1, restBetweenRoundsSec: 0, exercises: [], source: null }],
+      blocks: [...workout.blocks, { id: uid(), title: BLOCK_LABEL.main, kind: 'main', rounds: 1, restBetweenRoundsSec: 0, exercises: [], source: null }],
     });
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 6 }}>
-      <View className="flex-row items-center justify-between px-5 pb-3">
-        <RoundButton icon={ChevronLeft} label="Back" onPress={() => router.back()} />
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 8 }}>
+      <View className="flex-row items-center justify-between px-5 pb-4">
+        <RoundButton icon={X} label="Cancel changes" tone="ghost" onPress={cancel} />
         <AppText variant="headline">Edit workout</AppText>
-        <View className="w-11" />
+        <View className="size-11" />
       </View>
 
-      <ScrollView contentContainerClassName="gap-6 px-5" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }} keyboardShouldPersistTaps="handled">
-        <View className="gap-4">
+      <ScrollView contentContainerClassName="gap-8 px-5 pt-2" contentContainerStyle={{ paddingBottom: insets.bottom + 120 }} keyboardShouldPersistTaps="handled">
+        <View className="gap-5">
           <TextField>
             <Label>Title</Label>
             <Input value={workout.title} onChangeText={(title) => patch({ title })} />
@@ -86,10 +101,11 @@ export default function EditWorkout() {
         </View>
 
         {workout.blocks.map((block, bi) => (
-          <Animated.View key={block.id} layout={reorder} className="gap-3 rounded-[28px] bg-surface p-4 shadow-surface">
+          <Animated.View key={block.id} layout={reorder} className="gap-4 rounded-[28px] bg-surface p-4 shadow-surface">
             <View className="flex-row items-center gap-2">
-              <View className="flex-1">
-                <Input value={block.title} onChangeText={(title) => patchBlock(block.id, (b) => ({ ...b, title }))} />
+              <View className="flex-1 pl-1">
+                <AppText variant="caption">Part {bi + 1}</AppText>
+                <AppText variant="title">{block.title}</AppText>
               </View>
               <RoundButton icon={ArrowUp} label="Move part up" tone="ghost" size={40} disabled={bi === 0} onPress={() => patch({ blocks: move(workout.blocks, bi, bi - 1) })} />
               <RoundButton icon={ArrowDown} label="Move part down" tone="ghost" size={40} disabled={bi === workout.blocks.length - 1} onPress={() => patch({ blocks: move(workout.blocks, bi, bi + 1) })} />
@@ -99,7 +115,7 @@ export default function EditWorkout() {
               value={block.kind}
               options={Object.keys(BLOCK_LABEL) as BlockKind[]}
               format={(k) => BLOCK_LABEL[k]}
-              onChange={(kind) => patchBlock(block.id, (b) => ({ ...b, kind }))}
+              onChange={(kind) => patchBlock(block.id, (b) => ({ ...b, kind, title: BLOCK_LABEL[kind] }))}
             />
             <View className="flex-row gap-3">
               <Stepper className="flex-1" label="rounds" value={block.rounds} min={1} max={20} onChange={(rounds) => patchBlock(block.id, (b) => ({ ...b, rounds }))} />
@@ -114,9 +130,37 @@ export default function EditWorkout() {
                 onChange={(restBetweenRoundsSec) => patchBlock(block.id, (b) => ({ ...b, restBetweenRoundsSec }))}
               />
             </View>
+            {/* Quick rest between exercises: sets every exercise in this part at once. */}
+            {block.exercises.length ? (
+              <View className="gap-2">
+                <Stepper
+                  label="rest between exercises"
+                  value={exerciseRest(block)}
+                  step={5}
+                  min={0}
+                  max={300}
+                  format={(v) => (v ? shortDuration(v) : 'None')}
+                  onChange={(restSec) => patchBlock(block.id, (b) => ({ ...b, exercises: b.exercises.map((e) => ({ ...e, restSec })) }))}
+                />
+                <View className="flex-row gap-2">
+                  {[0, 10, 15, 20, 30, 45].map((sec) => {
+                    const on = block.exercises.every((e) => e.restSec === sec);
+                    return (
+                      <Tappable key={sec} className="flex-1" feedback="select" accessibilityLabel={sec ? `${sec} seconds rest` : 'No rest'} accessibilityState={{ selected: on }} onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: b.exercises.map((e) => ({ ...e, restSec: sec })) }))}>
+                        <View className={on ? 'h-10 items-center justify-center rounded-full bg-foreground' : 'h-10 items-center justify-center rounded-full bg-default'}>
+                          <AppText variant="label" className={on ? 'text-[12px] leading-[16px] text-background' : 'text-[12px] leading-[16px]'}>
+                            {sec ? `${sec}s` : 'None'}
+                          </AppText>
+                        </View>
+                      </Tappable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
 
             {block.exercises.map((ex, i) => (
-              <Animated.View key={ex.id} layout={reorder} className="flex-row items-center gap-2 rounded-2xl bg-surface-secondary p-2 pl-3">
+              <Animated.View key={ex.id} layout={reorder} className="flex-row items-center gap-2 rounded-[22px] bg-surface-secondary p-2 pl-4">
                 <Tappable
                   className="flex-1"
                   onPress={() => router.push({ pathname: '/workout/[id]/exercise', params: { id: workout.id, blockId: block.id, exId: ex.id } })}
@@ -132,12 +176,12 @@ export default function EditWorkout() {
                     <Icon icon={ChevronRight} size={20} color="muted" />
                   </View>
                 </Tappable>
-                <RoundButton icon={ArrowUp} label="Move up" tone="surface" size={40} disabled={i === 0} onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i - 1) }))} />
+                <RoundButton icon={ArrowUp} label="Move up" tone="surface" size={36} disabled={i === 0} onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i - 1) }))} />
                 <RoundButton
                   icon={ArrowDown}
                   label="Move down"
                   tone="surface"
-                  size={40}
+                  size={36}
                   disabled={i === block.exercises.length - 1}
                   onPress={() => patchBlock(block.id, (b) => ({ ...b, exercises: move(b.exercises, i, i + 1) }))}
                 />
@@ -145,16 +189,24 @@ export default function EditWorkout() {
             ))}
             <Button variant="tertiary" onPress={() => addExercise(block.id)}>
               <Icon icon={Plus} size={20} />
-              <Button.Label>Add exercise</Button.Label>
+              <Button.Label className="text-foreground">Add exercise</Button.Label>
             </Button>
           </Animated.View>
         ))}
 
-        <Button variant="secondary" size="lg" onPress={addBlock}>
+        <Button variant="tertiary" size="lg" onPress={addBlock}>
           <Icon icon={Plus} size={20} />
-          <Button.Label>Add a part</Button.Label>
+          <Button.Label className="text-foreground">Add a part</Button.Label>
         </Button>
       </ScrollView>
+
+      {/* Save, pinned like Start workout on the workout page. */}
+      <View className="absolute inset-x-0 bottom-0 bg-background px-5 pt-3" style={{ paddingBottom: Math.max(insets.bottom, 12) + 4 }}>
+        <Button size="lg" className="h-16 rounded-full" onPress={save} isDisabled={!workout.title.trim()}>
+          <Icon icon={Check} size={20} color="accent-foreground" />
+          <Button.Label className="text-[16px] leading-[24px]">Save changes</Button.Label>
+        </Button>
+      </View>
     </View>
   );
 }

@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export function Screen({ children, className, top = true }: { children: ReactNode; className?: string; top?: boolean }) {
   const insets = useSafeAreaInsets();
   return (
-    <View className={cn('flex-1 bg-background', className)} style={{ paddingTop: top ? insets.top : 0 }}>
+    <View className={cn('flex-1 bg-background', className)} style={top ? { paddingTop: insets.top } : undefined}>
       {children}
     </View>
   );
