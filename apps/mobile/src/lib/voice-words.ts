@@ -19,3 +19,44 @@ export function parseCommand(transcript: string): VoiceCommand | null {
   return null;
 }
 
+
+/** Every command word in what was heard, in order ("next ... next" -> [next, next]). */
+export function commandsIn(transcript: string): VoiceCommand[] {
+  return transcript
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .flatMap((w) => (COMMAND_WORDS[w] ? [COMMAND_WORDS[w]!] : []));
+}
+
+/** Ignore a second command this soon after one fired (a word heard twice, or the speaker's echo). */
+export const COMMAND_GAP_MS = 900;
+
+/**
+ * Turns the recogniser's stream of results into commands, each spoken word firing once.
+ * Recognisers resend the whole utterance as it grows ("next" -> "next" -> "Next."), and iOS can
+ * send the final version seconds later, so a word is only new when the utterance holds more
+ * command words than we've already acted on. A final result closes the utterance.
+ */
+export function createCommandTracker() {
+  let handled = 0;
+  let lastAt = -Infinity;
+  return {
+    feed(transcript: string, isFinal: boolean, now: number): VoiceCommand | null {
+      const cmds = commandsIn(transcript);
+      let fire: VoiceCommand | null = null;
+      if (cmds.length > handled && now - lastAt >= COMMAND_GAP_MS) {
+        fire = cmds[cmds.length - 1]!;
+        lastAt = now;
+      }
+      // Words skipped by the gap count as handled too. Never count down: a revision can drop a
+      // word and add it back ("next" -> "text" -> "next"), and that mustn't fire twice.
+      handled = isFinal ? 0 : Math.max(handled, cmds.length);
+      return fire;
+    },
+    /** A new recognition session starts a fresh utterance. */
+    reset() {
+      handled = 0;
+    },
+  };
+}

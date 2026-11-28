@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { IS_EXPO_GO } from './share-intent';
-import { COMMAND_WORDS, parseCommand, type VoiceCommand } from './voice-words';
+import { COMMAND_WORDS, createCommandTracker, parseCommand, type VoiceCommand } from './voice-words';
 
 export { parseCommand, type VoiceCommand };
 
@@ -55,9 +55,8 @@ export function useVoiceCommands(enabled: boolean, onCommand: (c: VoiceCommand) 
     const S = m.ExpoSpeechRecognitionModule;
     let active = true;
     let restart: ReturnType<typeof setTimeout> | undefined;
-    // One command per utterance: partial results repeat the same words as they grow.
-    let lastHeard = '';
-    let lastAt = 0;
+    // Each spoken command fires once, however many times the recogniser resends it.
+    const tracker = createCommandTracker();
 
     const begin = () => {
       if (!active) return;
@@ -81,17 +80,10 @@ export function useVoiceCommands(enabled: boolean, onCommand: (c: VoiceCommand) 
     };
 
     const subs = [
+      S.addListener('start', () => tracker.reset()),
       S.addListener('result', (e) => {
-        const text = e.results[0]?.transcript ?? '';
-        const cmd = parseCommand(text);
-        if (!cmd) return;
-        const key = `${cmd}:${e.isFinal ? '' : text.length}`;
-        const now = Date.now();
-        // Fire on the first partial that contains a command; ignore the same command for 1.2 s.
-        if (cmd === lastHeard.split(':')[0] && now - lastAt < 1200) return;
-        lastHeard = key;
-        lastAt = now;
-        handler.current(cmd);
+        const cmd = tracker.feed(e.results[0]?.transcript ?? '', e.isFinal, Date.now());
+        if (cmd) handler.current(cmd);
       }),
       S.addListener('end', () => {
         if (active) restart = setTimeout(begin, 300);

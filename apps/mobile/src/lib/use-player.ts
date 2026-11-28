@@ -187,8 +187,10 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     const t0 = Date.now();
     const end = endsAt.current;
     const ids: ReturnType<typeof setTimeout>[] = [];
-    const startIn = end - COUNTDOWN_SEC * 1000 - t0;
-    if (startIn <= 150) countdown.start((end - t0) / 1000);
+    // Start the audio early by the phone's output delay, so each word is heard as its number shows.
+    const lead = countdown.leadMs();
+    const startIn = end - COUNTDOWN_SEC * 1000 - lead - t0;
+    if (startIn <= 150) countdown.start((end - lead - t0) / 1000);
     else ids.push(setTimeout(() => countdown.start(COUNTDOWN_SEC), startIn));
     for (let n = COUNTDOWN_SEC; n >= 1; n--) {
       const at = end - n * 1000;

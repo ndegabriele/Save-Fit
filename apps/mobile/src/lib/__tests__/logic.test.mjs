@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { buildSequence, workoutSeconds } from '../sequence.ts';
 import { mergeWorkouts } from '../merge.ts';
 import { normalizeDraft } from '../normalize.ts';
-import { parseCommand } from '../voice-words.ts';
+import { createCommandTracker, parseCommand } from '../voice-words.ts';
 
 let n = 0;
 const id = () => `id${++n}`;
@@ -113,6 +113,36 @@ test('voice commands: the last command word wins, other speech is ignored', () =
   assert.equal(parseCommand('resume'), 'play');
   assert.equal(parseCommand('Five'), null);
   assert.equal(parseCommand('three, two, one'), null);
+});
+
+test('voice commands: one spoken word fires once, however often it is resent', () => {
+  const t = createCommandTracker();
+  const fired = [];
+  const feed = (text, isFinal, at) => {
+    const c = t.feed(text, isFinal, at);
+    if (c) fired.push(c);
+  };
+  // iOS: partials grow, then the final arrives seconds later with the same word.
+  feed('Next', false, 0);
+  feed('Next', false, 300);
+  feed('Next.', false, 1500);
+  feed('Next', true, 2500);
+  assert.deepEqual(fired, ['next']);
+  // A second "next" later in the same utterance is a real second command.
+  t.reset();
+  feed('next', false, 5000);
+  feed('next uh', false, 5400);
+  feed('next uh next', false, 6500);
+  assert.deepEqual(fired, ['next', 'next', 'next']);
+  // A revision that drops and re-adds the word doesn't fire again.
+  feed('next uh text', false, 7000);
+  feed('next uh next', false, 8000);
+  assert.deepEqual(fired.length, 3);
+  // Two commands in one breath: only the first within the gap.
+  t.reset();
+  feed('pause', false, 10000);
+  feed('pause play', false, 10300);
+  assert.deepEqual(fired.slice(3), ['pause']);
 });
 
 test('colour themes resolve to the right Uniwind theme', async () => {

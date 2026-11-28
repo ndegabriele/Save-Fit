@@ -1,5 +1,6 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
+import { Platform } from 'react-native';
 import { useStore } from './store';
 
 /**
@@ -13,6 +14,10 @@ import { useStore } from './store';
  * Players download their file first (in Expo Go assets otherwise stream from the dev server)
  * and keep the audio session open between sounds, so iOS doesn't spin it up again each time.
  * When the coach speaks, the ticks play a little quieter (DUCK).
+ *
+ * Phones take a moment between play() and sound coming out (more with Bluetooth, or while voice
+ * commands have the mic open). The countdown measures that delay each time it plays and starts the
+ * next one that much early, so "three" lands as the 3 appears (see countdown.leadMs).
  */
 
 export type Sfx = 'tick' | 'go' | 'done';
@@ -100,8 +105,34 @@ export function play(sound: Sfx) {
   } catch {}
 }
 
+/** Output delay, learned from each countdown. Starts at a typical value for the platform. */
+let latencyMs = Platform.OS === 'ios' ? 150 : 100;
+const LATENCY_MAX = 450;
+
+/**
+ * Compares how far `p` has played with how long ago play() was called: the difference is the
+ * delay before sound came out. Blends it into latencyMs so one odd reading can't throw it off.
+ */
+function measureLatency(p: AudioPlayer, at: number, calledAt: number) {
+  let done = false;
+  const sub = p.addListener('playbackStatusUpdate', (st) => {
+    if (done || !st.playing || st.currentTime <= at + 0.05) return;
+    done = true;
+    sub.remove();
+    const heard = (st.currentTime - at) * 1000;
+    const sample = Date.now() - calledAt - heard;
+    if (sample >= 0 && sample <= LATENCY_MAX) latencyMs = Math.round(latencyMs * 0.6 + sample * 0.4);
+  });
+  setTimeout(() => {
+    if (!done) sub.remove();
+    done = true;
+  }, 3000);
+}
+
 /** The last-5-seconds countdown (voice and ticks). */
 export const countdown = {
+  /** How early to call start() so the sound is heard on time (ms). */
+  leadMs: () => latencyMs,
   /** Start with `secondsLeft` on the timer (5 = from the top; less = joins part way through). */
   start(secondsLeft: number) {
     const s = settings();
@@ -112,14 +143,21 @@ export const countdown = {
     const at = Math.max(0, COUNTDOWN_SEC - secondsLeft);
     try {
       const [voice, tick] = tracks();
+      const calledAt = Date.now();
       if (voiceOn) startAt(voice, s.voiceVolume, at);
       if (tickOn) startAt(tick, s.sfxVolume * (voiceOn ? DUCK : 1), at);
+      // Only from the top: joining part way needs a seek first, which would skew the reading.
+      if (at === 0) measureLatency(voiceOn ? voice : tick, at, calledAt);
     } catch {}
   },
   stop() {
     for (const p of [voiceTrack, tickTrack]) {
       try {
-        if (p?.playing) p.pause();
+        // Rewind now, so the next countdown starts without waiting on a seek.
+        if (p?.playing) {
+          p.pause();
+          void p.seekTo(0);
+        }
       } catch {}
     }
   },
