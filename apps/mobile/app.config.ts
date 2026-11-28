@@ -48,6 +48,8 @@ const config: ExpoConfig = {
       'expo-splash-screen',
       { image: './assets/splash-icon.png', imageWidth: 160, resizeMode: 'contain', backgroundColor: '#F6F6F8', dark: { backgroundColor: '#0E0F12' } },
     ],
+    // Names the share-sheet entry "Save Fit" (see the plugin for why it isn't set below).
+    ...(iosShare ? [['./plugins/with-share-extension-name', { name: 'Save Fit' }] as [string, { name: string }]] : []),
     [
       'expo-share-intent',
       {
@@ -57,7 +59,7 @@ const config: ExpoConfig = {
           NSExtensionActivationSupportsText: true,
         },
         androidIntentFilters: ['text/*'],
-        iosShareExtensionName: 'Save Fit',
+        // No iosShareExtensionName: it doubles as the Xcode target name and "Save Fit" clashes with the app target.
         disableIOS: !iosShare,
       },
     ],
@@ -69,6 +71,8 @@ const config: ExpoConfig = {
     // Backend that fetches the video and asks Claude to structure it.
     // Set EXPO_PUBLIC_API_URL in .env (see .env.example).
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? '',
+    // Lets the import screen say whether "Share → Save Fit" exists on this iOS build.
+    iosShare,
   },
 };
 

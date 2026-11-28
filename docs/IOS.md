@@ -17,5 +17,20 @@ You need a Mac with Xcode, your iPhone and a USB cable. A free Apple ID works; t
 
 **What's different from Expo Go**
 - Voice commands work (they need this build). iOS asks for the microphone and speech recognition the first time you turn them on.
-- The share sheet ("Share → Save Fit") is off for now: it needs an App Group, which free Apple IDs can't sign. With a paid account, prebuild with `SAVEFIT_IOS_SHARE=1` to include it.
+- The share sheet ("Share → Save Fit") is off for now: it needs an App Group, which free Apple IDs can't sign. Until then, copy the link in Instagram or TikTok and use the paste button on the import screen (the app's tip says so too). See *Turning on the share sheet* below once you have a paid account.
 - The import server is reached over your local network: iOS asks for Local Network access the first time. Allow it, or imports can't reach the server.
+
+## Turning on the share sheet (paid Apple Developer account)
+
+1. Join the Apple Developer Program, then in Xcode open **Settings → Accounts** and check your paid team is listed under your Apple ID.
+2. In `apps/mobile`, rebuild the iOS project with the share extension included:
+   ```
+   npm run prebuild:ios:share
+   ```
+   If you used a custom bundle id before, keep it: `IOS_BUNDLE_ID=com.yourname.savefit npm run prebuild:ios:share`.
+3. Open `ios/SaveFit.xcworkspace`. In **Signing & Capabilities**, pick your paid team (not *Personal Team*) for **both** targets: **SaveFit** and **ShareExtension**.
+4. On both targets, check **App Groups** lists `group.<your bundle id>` with a tick. If it's red or unticked, tick it or press **+** and add exactly that name; Xcode registers it for you.
+5. Keep the scheme on **Release**, plug in the iPhone and press **Run**.
+6. In Instagram tap **Share**, scroll the app row to the end, tap **More** and switch on **Save Fit** (you can drag it to the front). Sharing a reel now opens Save Fit with the link filled in.
+
+To go back to a free Apple ID, run `npm run prebuild:ios` instead; it leaves the extension out again.

@@ -7,6 +7,8 @@
     "start": "expo start --go",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "prebuild:ios": "expo prebuild -p ios --clean",
+    "prebuild:ios:share": "SAVEFIT_IOS_SHARE=1 expo prebuild -p ios --clean",
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --no-warnings src/lib/__tests__/*.test.mjs",
     "verify": "expo export --platform android --output-dir dist"

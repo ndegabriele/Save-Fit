@@ -1,9 +1,10 @@
 import * as Clipboard from 'expo-clipboard';
+import Constants from 'expo-constants';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Input, Label, TextArea, TextField, Description } from 'heroui-native';
 import { Check, ClipboardPaste, Link2, Sparkles, X } from '@/components/ui/icons';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Platform, ScrollView, View } from 'react-native';
 import Animated, { ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { Icon } from '@/components/ui/icon';
 import { RoundButton } from '@/components/ui/round-button';
@@ -15,6 +16,9 @@ import { beginImport } from '@/lib/import-runner';
 import { EASE_OUT, enterItem } from '@/lib/motion';
 import { useStore, useWorkout } from '@/lib/store';
 import { useColor } from '@/lib/theme';
+
+// iOS builds from a free Apple ID leave out the share extension (see app.config.ts).
+const SHARE_SHEET = Platform.OS !== 'ios' || Constants.expoConfig?.extra?.iosShare === true;
 
 // The title already says when it's ready, so 'done' isn't a row of its own.
 const STAGES: ImportStage[] = ['fetching', 'reading', 'watching', 'structuring'];
@@ -80,7 +84,9 @@ export default function ImportScreen() {
             </View>
             <AppText variant="display">Drop a reel,{'\n'}get a workout.</AppText>
             <AppText variant="body" className="text-foreground/80">
-              Tip: in Instagram or TikTok tap Share → Save Fit and it lands here on its own.
+              {SHARE_SHEET
+                ? 'Tip: in Instagram or TikTok tap Share → Save Fit and it lands here on its own.'
+                : 'Tip: in Instagram or TikTok tap Share → Copy link, then tap the paste button below.'}
             </AppText>
           </View>
 
