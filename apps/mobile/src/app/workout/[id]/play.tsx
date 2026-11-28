@@ -139,15 +139,15 @@ function Player() {
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
-  // Large work rings: a small "i" in the top-right corner opens How to do it.
+  // Large rings (work and rest): a small "i" in the top-right corner opens How to do it.
   // (Outside the pressable, which clips its overflow.)
   const timer = (size: number) => (
     <View style={{ width: size, height: size }}>
       {timerBody(size)}
-      {hasHowTo && !small(size) && !isRest ? (
+      {hasHowTo && !small(size) ? (
         // Same 56 pt height as the old pill; its right edge lines up with the elapsed-time pill in the header (20 pt from the edge).
         <View className="absolute top-0" style={{ right: -((paneW - size) / 2 - 20) }}>
-          <RoundButton icon={Info} label="How to do it" tone="ghost" size={56} onPress={() => setHowTo(true)} />
+          <RoundButton icon={Info} label={isRest ? 'How to do the next exercise' : 'How to do it'} tone="ghost" size={56} onPress={() => setHowTo(true)} />
         </View>
       ) : null}
     </View>
@@ -260,13 +260,6 @@ function Player() {
               <>
                 <Pillbutton icon={Plus} label="15 s" onPress={() => p.addTime(15)} />
                 <Pillbutton icon={ChevronsRight} label="Skip rest" onPress={p.next} />
-                {hasHowTo ? (
-                  <Tappable onPress={() => setHowTo(true)} accessibilityLabel="How to do the next exercise">
-                    <View className="size-14 items-center justify-center rounded-full bg-default">
-                      <Icon icon={Info} size={24} />
-                    </View>
-                  </Tappable>
-                ) : null}
               </>
             ) : side ? (
               // Which side now: both shown, the current one lit.
