@@ -141,15 +141,15 @@ function Player() {
           // Compact: a lighter rounded square, side pill in that top corner.
           <View className="items-center justify-center rounded-3xl bg-default" style={{ width: size, height: size }}>
             {side ? <SidePill side={side} compact className={cn('absolute top-2', side.startsWith('Left') ? 'left-2' : 'right-2')} /> : null}
-            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.4), lineHeight: grid(size * 0.44) }}>
               {step.reps}
             </AppText>
             <DiscLabel size={size} text="reps" />
           </View>
         ) : (
           // Large: a ring like the timed moves, with a yellow sweep that goes round once a minute as you work.
-          <ProgressRing size={size} stroke={16} progress={(p.repElapsed % 60) / 60} color="accent" stepMs={120}>
-            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56) }}>
+          <ProgressRing size={size} stroke={24} progress={(p.repElapsed % 60) / 60} color="accent" stepMs={120}>
+            <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.4), lineHeight: grid(size * 0.44) }}>
               {step.reps}
             </AppText>
             <DiscLabel size={size} text="reps" />
@@ -163,7 +163,7 @@ function Player() {
       <Tappable onPress={isCountdown ? p.goNow : p.togglePause} feedback="none" accessibilityLabel={isCountdown ? 'Start now' : p.paused ? 'Resume' : 'Pause'} scale={0.98}>
         <ProgressRing
           size={size}
-          stroke={small(size) ? 8 : 16}
+          stroke={small(size) ? 12 : 24}
           progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0}
           color={isRest ? 'violet' : isCountdown ? 'muted' : 'accent'}
           stepMs={120}
@@ -439,9 +439,9 @@ function StartCountdown({ workout, p, onExit }: { workout: Workout; p: ReturnTyp
         </AppText>
 
         <Tappable onPress={p.goNow} feedback="firm" accessibilityLabel={`Starting in ${n}. Tap to start now`} scale={0.98}>
-          <ProgressRing size={size} stroke={16} progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0} color="accent" stepMs={120}>
+          <ProgressRing size={size} stroke={24} progress={p.phaseTotal ? 1 - p.remaining / p.phaseTotal : 0} color="accent" stepMs={120}>
             <Animated.View key={n} entering={countIn}>
-              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.5), lineHeight: grid(size * 0.56), fontVariant: ['tabular-nums'] }}>
+              <AppText variant="number" className="text-white" style={{ fontSize: grid(size * 0.4), lineHeight: grid(size * 0.44), fontVariant: ['tabular-nums'] }}>
                 {n}
               </AppText>
             </Animated.View>
