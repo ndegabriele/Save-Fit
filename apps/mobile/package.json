@@ -5,8 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --go",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "typecheck": "tsc --noEmit",
     "test": "node --test --experimental-strip-types --no-warnings src/lib/__tests__/*.test.mjs",
     "verify": "expo export --platform android --output-dir dist"
