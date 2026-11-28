@@ -158,7 +158,8 @@ function Player() {
 
   // Same timer and buttons in both views, just at different sizes.
   const small = (size: number) => size < 160;
-  // Large rings (work and rest): a small "i" in the top-right corner opens How to do it.
+  // Large rings (work and rest): a small "i" in the top-right corner opens How to do it;
+  // on rep moves a pause/resume button mirrors it top-left.
   // (Outside the pressable, which clips its overflow.)
   const timer = (size: number) => (
     <View style={{ width: size, height: size }}>
@@ -167,6 +168,12 @@ function Player() {
         // Same 56 pt height as the old pill; its right edge lines up with the elapsed-time pill in the header (20 pt from the edge).
         <View className="absolute top-0" style={{ right: -((paneW - size) / 2 - 20) }}>
           <RoundButton icon={Info} label={isRest ? 'How to do the next exercise' : 'How to do it'} tone="ghost" size={56} onPress={() => setHowTo(true)} />
+        </View>
+      ) : null}
+      {isReps && !small(size) ? (
+        // Rep moves have no timer to tap, so pause/resume sits opposite the "i", mirrored on the left.
+        <View className="absolute top-0" style={{ left: -((paneW - size) / 2 - 20) }}>
+          <RoundButton icon={p.paused ? Play : Pause} label={p.paused ? 'Resume' : 'Pause'} tone="ghost" size={56} feedback="none" onPress={p.togglePause} />
         </View>
       ) : null}
     </View>
@@ -191,7 +198,7 @@ function Player() {
             </AppText>
             <DiscLabel size={size} text="reps" />
             <AppText variant="caption" className="mt-2" style={{ fontVariant: ['tabular-nums'] }}>
-              {clock(p.repElapsed)}
+              {p.paused ? `Paused · ${clock(p.repElapsed)}` : clock(p.repElapsed)}
             </AppText>
           </ProgressRing>
         )}
