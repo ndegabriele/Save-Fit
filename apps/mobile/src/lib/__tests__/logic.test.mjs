@@ -75,3 +75,32 @@ test('normalizeDraft fills defaults, clamps numbers and drops empty blocks', () 
   assert.equal(w.blocks[0].exercises[0].sets, 1);
   assert.equal(w.status, 'ready');
 });
+
+test('normalizeDraft gives every import the same shape', () => {
+  const ex = (name, equipment) => ({ name, mode: 'reps', reps: 10, steps: ['a', 'b', 'c', 'd', 'e'], cues: ['x', 'y', 'z'], commonMistakes: ['m', 'm', 'n', 'o'], equipment, load: '  ', tempo: ' 2-1-1 ' });
+  const w = normalizeDraft(
+    {
+      title: 'Arms',
+      equipment: ['Rope'],
+      targetMuscles: ['a', 'b', 'c', 'd', 'e', 'f'],
+      tips: ['1', '2', '3', '4', '5'],
+      blocks: [
+        { title: 'Bicep Builder', kind: 'circuit', exercises: [ex('Curl', ['Kettlebell'])] },
+        { title: 'Burner', kind: 'circuit', exercises: [ex('Row', ['Kettlebell', 'Mat'])] },
+      ],
+    },
+    { id: 'x', createdAt: 0 },
+    id,
+    5,
+  );
+  assert.deepEqual(w.blocks.map((b) => b.title), ['Circuit A', 'Circuit B']);
+  assert.deepEqual(w.equipment, ['Kettlebell', 'Mat']);
+  assert.equal(w.targetMuscles.length, 4);
+  assert.equal(w.tips.length, 3);
+  const e = w.blocks[0].exercises[0];
+  assert.equal(e.steps.length, 3);
+  assert.equal(e.cues.length, 2);
+  assert.deepEqual(e.commonMistakes, ['m', 'n']);
+  assert.equal(e.load, null);
+  assert.equal(e.tempo, '2-1-1');
+});

@@ -72,6 +72,8 @@ export async function fetchMedia(url: string, dir: string, onStage: (s: 'fetchin
     '--no-progress',
     '--print-json',
     '-f', 'b[ext=mp4][height<=720]/bv*[height<=720]+ba/b',
+    // Prefer H.264: iPhones can't play VP9 and only newer ones play AV1.
+    '-S', 'vcodec:h264,res:720,ext:mp4:m4a',
     '--merge-output-format', 'mp4',
     '--max-filesize', '150M',
     '--write-thumbnail', '--convert-thumbnails', 'jpg',
@@ -224,6 +226,7 @@ export async function joinVideos(files: string[], dir: string): Promise<string |
   const out = path.join(dir, 'video.mp4');
   if (files.length === 1) {
     await rename(files[0]!, out);
+    await ensurePlayable(out);
     return 'video.mp4';
   }
   const filters = files.map((_, i) => `[${i}:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30[v${i}]`);
@@ -264,4 +267,35 @@ export function vttToText(vtt: string): string {
     .filter(Boolean);
   // Auto-captions repeat lines; keep the first of each run.
   return lines.filter((l, i) => l !== lines[i - 1]).join(' ').slice(0, 8000);
+}
+
+/** The first video stream's codec name ("h264", "vp9", "av1", "hevc"), or null. */
+export async function videoCodec(file: string): Promise<string | null> {
+  const r = await run('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=codec_name', '-of', 'default=nw=1:nk=1', file], 30_000);
+  return r.code === 0 ? r.stdout.trim() || null : null;
+}
+
+/**
+ * Re-encodes a video to H.264 + AAC with the index at the front when it isn't already H.264,
+ * so it plays in every iPhone and Android video player. Leaves the file alone if that fails.
+ */
+export async function ensurePlayable(file: string): Promise<boolean> {
+  const codec = await videoCodec(file);
+  if (!codec || codec === 'h264') return false;
+  const tmp = `${file}.h264.mp4`;
+  const r = await run('ffmpeg', [
+    '-y', '-loglevel', 'error', '-i', file,
+    '-map', '0:v:0', '-map', '0:a:0?',
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '24', '-pix_fmt', 'yuv420p',
+    '-vf', "scale='min(720,iw)':-2",
+    '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart',
+    tmp,
+  ], 300_000);
+  if (r.code !== 0) {
+    console.warn(`[media] re-encoding ${codec} to H.264 failed: ${r.stderr.slice(-300)}`);
+    return false;
+  }
+  await rename(tmp, file);
+  console.log(`[media] re-encoded ${codec} video to H.264`);
+  return true;
 }

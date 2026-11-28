@@ -7,7 +7,8 @@
     "dev": "node --env-file-if-exists=.env node_modules/.bin/tsx watch src/index.ts",
     "start": "node --env-file-if-exists=.env node_modules/.bin/tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types --no-warnings test/*.test.ts"
+    "test": "node --test --experimental-strip-types --no-warnings test/*.test.ts",
+    "fix-videos": "node --env-file-if-exists=.env node_modules/.bin/tsx scripts/fix-videos.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",

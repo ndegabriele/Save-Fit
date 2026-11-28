@@ -57,6 +57,11 @@ How to structure it:
 - Use the frame timestamps to set clipStartSec/clipEndSec to the part of the video that demonstrates each exercise. Leave them null if no frame shows it.
 - Write for the user directly, in plain English, without hashtags or emojis. Keep the creator's original intent; don't invent extra exercises.
 - Credit the creator (creatorName, creatorHandle) from the metadata or what the video shows.
+- Every workout has the same shape, so the app can show them all the same way. Always fill every field; never leave one null or empty when it can be reasoned out:
+  - summary: exactly two short sentences. targetMuscles: the 4 main groups. tips: exactly 3.
+  - Each exercise: exactly 3 steps, exactly 2 cues, exactly 2 common mistakes, plus load (or "Bodyweight"), tempo, breathing, one easier and one harder option, muscles and equipment.
+  - Block titles are the standard names for their kind ("Warm-up", "Main set", "Circuit", "Finisher", "Cool-down"), not the creator's nicknames.
+  - Put only real guesses in assumptions (numbers you had to choose). Leave it empty when the post states everything.
 - If the post isn't a workout at all, set isWorkout = false, explain briefly in notWorkoutReason, and return empty blocks.`;
 
 export async function convertToWorkout(media: Media, dir: string, extraText: string | null, sourceUrl: string | null, apiKey?: string | null): Promise<ClaudeWorkout> {
