@@ -1,0 +1,24 @@
+{
+  "name": "save-fit-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env node_modules/.bin/tsx watch src/index.ts",
+    "start": "node --env-file-if-exists=.env node_modules/.bin/tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types --no-warnings test/*.test.ts",
+    "fix-videos": "node --env-file-if-exists=.env node_modules/.bin/tsx scripts/fix-videos.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
+    "@hono/node-server": "^2.1.11",
+    "hono": "^4.13.23",
+    "tsx": "^4.23.15",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.11",
+    "typescript": "^7.0.2"
+  }
+}

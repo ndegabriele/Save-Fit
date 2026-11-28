@@ -1,0 +1,177 @@
+import { cn } from 'heroui-native';
+import { AlertTriangle, Play, RotateCcw } from '@/components/ui/icons';
+import { useEffect } from 'react';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, View } from 'react-native';
+import Animated, { ReduceMotion, useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
+import { CoachTile } from '@/components/ui/avatar';
+import { Icon } from '@/components/ui/icon';
+import { Tappable } from '@/components/ui/tappable';
+import { AppText } from '@/components/ui/text';
+import { mediaUrl, STAGE_COPY, type ImportStage } from '@/lib/api';
+import { CATEGORY_LABEL, DIFFICULTY_LABEL, creatorLine, plural } from '@/lib/format';
+import { EASE_IN_OUT } from '@/lib/motion';
+import { exerciseCount, workoutMinutes } from '@/lib/sequence';
+import { CATEGORY_BG, CATEGORY_BORDER, CATEGORY_INK } from '@/lib/theme';
+import type { Workout } from '@/lib/types';
+import { Pill } from './category-pill';
+import { TileVideo } from './tile-video';
+
+export interface WorkoutCardProps {
+  workout: Workout;
+  onPress: () => void;
+  onPlay?: () => void;
+  onRetry?: () => void;
+  /** Merge-picker mode: shows the order badge instead of the play button. */
+  selectedIndex?: number | null;
+  /** On screen: lets the background video play. */
+  active?: boolean;
+}
+
+export function WorkoutCard({ workout, onPress, onPlay, onRetry, selectedIndex, active = false }: WorkoutCardProps) {
+  if (workout.status === 'processing') return <ProcessingCard workout={workout} onPress={onPress} />;
+  if (workout.status === 'failed') return <FailedCard workout={workout} onPress={onPress} onRetry={onRetry} />;
+
+  const minutes = workoutMinutes(workout);
+  const video = workout.source?.videoUrl ?? workout.blocks.find((b) => b.source?.videoUrl)?.source?.videoUrl ?? null;
+  const media = mediaUrl(workout.source?.thumbnailUrl ?? workout.blocks.find((b) => b.source?.thumbnailUrl)?.source?.thumbnailUrl);
+  const selecting = selectedIndex !== undefined;
+  const selected = selectedIndex !== null && selectedIndex !== undefined;
+
+  return (
+    <View>
+    <Tappable onPress={onPress} accessibilityLabel={`${workout.title} by ${creatorLine(workout.creators)}`}>
+      <View
+        className={cn(
+          'overflow-hidden rounded-[32px]',
+          CATEGORY_BG[workout.category],
+          selected && cn('border-4', CATEGORY_BORDER[workout.category]),
+          selecting && !selected && 'opacity-80',
+        )}
+        style={{ minHeight: 256 }}
+      >
+        {media ? (
+          <>
+            {/* The coach's video plays behind the tile (thumbnail until it starts), under a dark scrim so the text always reads. */}
+            <Image source={{ uri: media }} style={StyleSheet.absoluteFill} contentFit="cover" transition={200} />
+            {video ? <TileVideo uri={video} active={active} /> : null}
+            <LinearGradient
+              colors={['rgba(0,0,0,0.8)', 'rgba(0,0,0,0.62)', 'rgba(0,0,0,0.55)', 'rgba(0,0,0,0.9)']}
+              locations={[0, 0.45, 0.62, 1]}
+              style={StyleSheet.absoluteFill}
+            />
+          </>
+        ) : null}
+        <View className="flex-1 p-5">
+          <View className="flex-row gap-4">
+            <View className="flex-1 gap-2">
+              <Pill label={CATEGORY_LABEL[workout.category]} inverted={Boolean(media)} className={media ? 'bg-black/35' : undefined} />
+              <AppText variant="display" numberOfLines={3} className={cn(media && 'text-white')}>
+                {workout.title}
+              </AppText>
+            </View>
+            <CoachTile creators={workout.creators} onMedia={Boolean(media)} inkClass={CATEGORY_INK[workout.category]} />
+          </View>
+
+          <View className="mt-auto flex-row items-end justify-between pt-4">
+            <View>
+              <AppText
+                variant="number"
+                className={cn('text-[84px] leading-[84px]', media ? 'text-accent' : CATEGORY_INK[workout.category])}
+                accessibilityLabel={`${minutes} minutes`}
+               
+              >
+                {String(minutes).padStart(2, '0')}′
+              </AppText>
+              <AppText variant="caption" className={media ? 'text-white/80' : 'text-foreground/70'}>
+                {plural(exerciseCount(workout), 'exercise')} · {DIFFICULTY_LABEL[workout.difficulty]}
+              </AppText>
+            </View>
+            {selecting ? (
+              <View className={cn('size-14 items-center justify-center rounded-full', selected ? 'bg-foreground' : cn('border-2 opacity-40', media ? 'border-white' : CATEGORY_BORDER[workout.category]))}>
+                {selected ? (
+                  <AppText variant="title" className="text-background">
+                    {selectedIndex + 1}
+                  </AppText>
+                ) : null}
+              </View>
+            ) : (
+              <View className="size-14" />
+            )}
+          </View>
+        </View>
+      </View>
+    </Tappable>
+    {!selecting ? (
+      // Sibling of the card (not nested) so it's its own button for screen readers.
+      <Tappable onPress={onPlay} feedback="firm" accessibilityLabel={`Start ${workout.title}`} className="absolute bottom-5 right-5">
+        <View className="size-14 items-center justify-center rounded-full bg-white shadow-surface">
+          <Icon icon={Play} size={24} color="#17171C" />
+        </View>
+      </Tappable>
+    ) : null}
+    </View>
+  );
+}
+
+function ProcessingCard({ workout, onPress }: { workout: Workout; onPress: () => void }) {
+  const pulse = useSharedValue(0.55);
+  useEffect(() => {
+    // Constant, calm "breathing" while we wait. In-out because it moves on screen.
+    pulse.value = withRepeat(
+      withSequence(withTiming(1, { duration: 900, easing: EASE_IN_OUT }), withTiming(0.55, { duration: 900, easing: EASE_IN_OUT })),
+      -1,
+      false,
+      undefined,
+      ReduceMotion.System,
+    );
+  }, [pulse]);
+  const style = useAnimatedStyle(() => ({ opacity: pulse.value }));
+  const stage = (workout.jobStage ?? 'queued') as ImportStage;
+
+  return (
+    <Tappable onPress={onPress} accessibilityLabel="Workout being processed">
+      <View className="overflow-hidden rounded-[32px] bg-surface p-5 shadow-surface" style={{ minHeight: 168 }}>
+        <Pill label="Saving" />
+        <AppText variant="title" className="mt-3">
+          {STAGE_COPY[stage] ?? 'Working on it'}…
+        </AppText>
+        <AppText variant="caption" numberOfLines={1} className="mt-1">
+          {workout.source?.url ?? 'Shared text'}
+        </AppText>
+        <View className="mt-5 gap-2">
+          <Animated.View style={style} className="h-3 w-4/5 rounded-full bg-default" />
+          <Animated.View style={style} className="h-3 w-3/5 rounded-full bg-default" />
+          <Animated.View style={style} className="h-3 w-2/5 rounded-full bg-default" />
+        </View>
+      </View>
+    </Tappable>
+  );
+}
+
+function FailedCard({ workout, onPress, onRetry }: { workout: Workout; onPress: () => void; onRetry?: () => void }) {
+  return (
+    <Tappable onPress={onPress} accessibilityLabel="Import failed">
+      <View className="rounded-[32px] bg-danger-soft p-5" style={{ minHeight: 152 }}>
+        <View className="flex-row items-center gap-2">
+          <Icon icon={AlertTriangle} size={20} color="danger" />
+          <AppText variant="headline" className="text-danger-soft-foreground">
+            Couldn’t read this one
+          </AppText>
+        </View>
+        <AppText variant="caption" className="mt-2" numberOfLines={3}>
+          {workout.error ?? 'Unknown error'}
+        </AppText>
+        {onRetry ? (
+          <Tappable onPress={onRetry} className="mt-4 self-start">
+            <View className="flex-row items-center gap-2 rounded-full bg-surface px-4 py-3">
+              <Icon icon={RotateCcw} size={16} />
+              <AppText variant="label">Try again</AppText>
+            </View>
+          </Tappable>
+        ) : null}
+      </View>
+    </Tappable>
+  );
+}

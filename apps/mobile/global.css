@@ -1,0 +1,736 @@
+/*
+ * Save Fit design tokens.
+ * HeroUI Native supplies the component styles; this file only re-skins its
+ * semantic tokens (background, surface, accent ...) and adds the few tokens
+ * Save Fit needs on top (display font, category pastels, player palette).
+ * Anything custom we build must use these tokens so it reads as HeroUI.
+ */
+@import 'tailwindcss';
+@import 'uniwind';
+@import 'heroui-native/styles';
+
+@source './node_modules/heroui-native/lib';
+@source './src';
+
+@theme {
+  /* Fields get a 1px stroke (HeroUI default is none); colour is --field-border per theme. */
+  --field-border-width: 1px;
+  --font-display: 'Bricolage-ExtraBold';
+  --font-display-semibold: 'Bricolage-SemiBold';
+}
+
+@theme inline static {
+  --color-lime: var(--lime);
+  --color-lime-foreground: var(--lime-foreground);
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-violet-soft: var(--violet-soft);
+  /* HeroUI's field colours use var(a, var(b)) fallbacks, which Uniwind can't resolve on device
+     (placeholders fell back to the system grey). Every theme defines --field-*, so point at them directly. */
+  --color-field: var(--field-background);
+  --color-field-foreground: var(--field-foreground);
+  --color-field-placeholder: var(--field-placeholder);
+  --color-field-border: var(--field-border);
+  --color-field-hover: color-mix(in oklab, var(--field-background) 90%, var(--field-foreground) 2%);
+  --color-field-focus: var(--field-background);
+  --color-field-border-hover: color-mix(in oklab, var(--field-border) 88%, var(--field-foreground) 10%);
+  --color-field-border-focus: color-mix(in oklab, var(--field-border) 74%, var(--field-foreground) 22%);
+  --radius-field: var(--field-radius);
+  --border-width-field-width: 1px;
+  /* Translucent fills on tinted cards (avatars, thumbs, category pills). */
+  --color-veil: var(--veil);
+  --color-veil-soft: var(--veil-soft);
+
+  --color-cat-strength: var(--cat-strength);
+  --color-cat-strength-ink: var(--cat-strength-ink);
+  --color-cat-hiit: var(--cat-hiit);
+  --color-cat-hiit-ink: var(--cat-hiit-ink);
+  --color-cat-cardio: var(--cat-cardio);
+  --color-cat-cardio-ink: var(--cat-cardio-ink);
+  --color-cat-mobility: var(--cat-mobility);
+  --color-cat-mobility-ink: var(--cat-mobility-ink);
+  --color-cat-core: var(--cat-core);
+  --color-cat-core-ink: var(--cat-core-ink);
+  --color-cat-mixed: var(--cat-mixed);
+  --color-cat-mixed-ink: var(--cat-mixed-ink);
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      /* Rounder than stock HeroUI: friendlier, more "playful premium". */
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(97.4% 0.004 286);
+      --foreground: oklch(19% 0.008 286);
+
+      --surface: oklch(100% 0 0);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(95.6% 0.004 286);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(93% 0.005 286);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(100% 0 0);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(52% 0.014 286);
+
+      --default: oklch(94% 0.004 286);
+      --default-foreground: var(--foreground);
+
+      /* Accent = electric lime with ink text, as in the reference shots. */
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(62% 0.2 292);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(93% 0.05 292);
+
+      --success: oklch(72% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(80% 0.16 75);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(64% 0.22 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(100% 0 0);
+      --segment-foreground: var(--foreground);
+      --border: oklch(91% 0.005 286);
+      --separator: oklch(86% 0.005 286);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(100% 0 0);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(77% 0.005 286);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 60%);
+      --veil-soft: oklch(0% 0 0 / 7%);
+
+      /* Category pastels (card fills) and inks (big numbers / text on them). */
+      --cat-strength: oklch(93.5% 0.045 305);
+      --cat-strength-ink: oklch(72% 0.13 305);
+      --cat-hiit: oklch(93% 0.05 40);
+      --cat-hiit-ink: oklch(70% 0.16 40);
+      --cat-cardio: oklch(95.5% 0.07 95);
+      --cat-cardio-ink: oklch(84% 0.15 95);
+      --cat-mobility: oklch(95% 0.045 160);
+      --cat-mobility-ink: oklch(78% 0.12 160);
+      --cat-core: oklch(94% 0.04 235);
+      --cat-core-ink: oklch(72% 0.12 235);
+      --cat-mixed: oklch(95% 0.07 128);
+      --cat-mixed-ink: oklch(80% 0.19 128);
+    }
+
+    @variant dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(14.5% 0.004 286);
+      --foreground: oklch(98.5% 0 0);
+
+      --surface: oklch(20% 0.005 286);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(24% 0.005 286);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(28% 0.005 286);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(21% 0.005 286);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(70% 0.012 286);
+
+      --default: oklch(26% 0.005 286);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(70% 0.17 292);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(30% 0.08 292);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(34% 0.006 286);
+      --segment-foreground: var(--foreground);
+      --border: oklch(27% 0.005 286);
+      --separator: oklch(37% 0.005 286);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(24% 0.005 286);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(53% 0.005 286);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 10%);
+      --veil-soft: oklch(100% 0 0 / 10%);
+
+      --cat-strength: oklch(30% 0.07 305);
+      --cat-strength-ink: oklch(72% 0.14 305);
+      --cat-hiit: oklch(30% 0.07 40);
+      --cat-hiit-ink: oklch(74% 0.15 40);
+      --cat-cardio: oklch(31% 0.06 95);
+      --cat-cardio-ink: oklch(84% 0.15 95);
+      --cat-mobility: oklch(30% 0.05 160);
+      --cat-mobility-ink: oklch(78% 0.13 160);
+      --cat-core: oklch(30% 0.05 235);
+      --cat-core-ink: oklch(74% 0.12 235);
+      --cat-mixed: oklch(30% 0.07 128);
+      --cat-mixed-ink: oklch(86% 0.19 128);
+    }
+
+    /* Bone: warm off-white paper, espresso ink, clay secondary. */
+    @variant bone-light {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      /* Rounder than stock HeroUI: friendlier, more "playful premium". */
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(95.5% 0.014 85);
+      --foreground: oklch(22% 0.02 60);
+
+      --surface: oklch(99% 0.006 85);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(93% 0.016 85);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(90% 0.018 85);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(99% 0.006 85);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(50% 0.03 65);
+
+      --default: oklch(92% 0.016 85);
+      --default-foreground: var(--foreground);
+
+      /* Accent = electric lime with ink text, as in the reference shots. */
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(60% 0.14 42);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(92% 0.04 50);
+
+      --success: oklch(72% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(80% 0.16 75);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(64% 0.22 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(99% 0.006 85);
+      --segment-foreground: var(--foreground);
+      --border: oklch(89% 0.018 85);
+      --separator: oklch(84% 0.02 85);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(99% 0.006 85);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(75% 0.02 85);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 60%);
+      --veil-soft: oklch(0% 0 0 / 7%);
+
+      /* Category pastels (card fills) and inks (big numbers / text on them). */
+      --cat-strength: oklch(91% 0.03 60);
+      --cat-strength-ink: oklch(56% 0.07 60);
+      --cat-hiit: oklch(91% 0.05 35);
+      --cat-hiit-ink: oklch(56% 0.12 35);
+      --cat-cardio: oklch(91% 0.05 85);
+      --cat-cardio-ink: oklch(56% 0.11 85);
+      --cat-mobility: oklch(91% 0.045 105);
+      --cat-mobility-ink: oklch(56% 0.09 105);
+      --cat-core: oklch(91% 0.035 235);
+      --cat-core-ink: oklch(56% 0.08 235);
+      --cat-mixed: oklch(91% 0.04 340);
+      --cat-mixed-ink: oklch(56% 0.09 340);
+    }
+
+    /* Bone, dark: roasted brown-charcoal with bone text. */
+    @variant bone-dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(17% 0.012 70);
+      --foreground: oklch(95% 0.012 85);
+
+      --surface: oklch(22% 0.014 70);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(26% 0.015 70);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(30% 0.016 70);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(23% 0.014 70);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(72% 0.025 80);
+
+      --default: oklch(28% 0.015 70);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(72% 0.12 45);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(32% 0.06 45);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(37% 0.016 70);
+      --segment-foreground: var(--foreground);
+      --border: oklch(29% 0.014 70);
+      --separator: oklch(38% 0.016 70);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(26% 0.015 70);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(54% 0.016 70);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 10%);
+      --veil-soft: oklch(100% 0 0 / 10%);
+
+      --cat-strength: oklch(28% 0.033 60);
+      --cat-strength-ink: oklch(74% 0.07 60);
+      --cat-hiit: oklch(28% 0.055 35);
+      --cat-hiit-ink: oklch(74% 0.12 35);
+      --cat-cardio: oklch(28% 0.055 85);
+      --cat-cardio-ink: oklch(74% 0.11 85);
+      --cat-mobility: oklch(28% 0.05 105);
+      --cat-mobility-ink: oklch(74% 0.09 105);
+      --cat-core: oklch(28% 0.039 235);
+      --cat-core-ink: oklch(74% 0.08 235);
+      --cat-mixed: oklch(28% 0.044 340);
+      --cat-mixed-ink: oklch(74% 0.09 340);
+    }
+
+    /* Mouse: soft mouse grey with a clear blue. */
+    @variant mouse-light {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      /* Rounder than stock HeroUI: friendlier, more "playful premium". */
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(92.5% 0.006 250);
+      --foreground: oklch(22% 0.02 255);
+
+      --surface: oklch(98% 0.004 250);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(90% 0.008 250);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(87% 0.01 250);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(98% 0.004 250);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(48% 0.022 250);
+
+      --default: oklch(89% 0.008 250);
+      --default-foreground: var(--foreground);
+
+      /* Accent = electric lime with ink text, as in the reference shots. */
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(58% 0.17 255);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(90% 0.045 255);
+
+      --success: oklch(72% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(80% 0.16 75);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(64% 0.22 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(98% 0.004 250);
+      --segment-foreground: var(--foreground);
+      --border: oklch(86% 0.01 250);
+      --separator: oklch(80% 0.012 250);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(98% 0.004 250);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(73% 0.012 250);
+      --backdrop: oklch(0% 0 0 / 20%);
+      --surface-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06), 0 0 1px 0 rgba(0, 0, 0, 0.06);
+      --overlay-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.02), 0 -6px 12px 0 rgba(0, 0, 0, 0.01), 0 14px 28px 0 rgba(0, 0, 0, 0.03);
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 60%);
+      --veil-soft: oklch(0% 0 0 / 7%);
+
+      /* Category pastels (card fills) and inks (big numbers / text on them). */
+      --cat-strength: oklch(92% 0.035 255);
+      --cat-strength-ink: oklch(60% 0.11 255);
+      --cat-hiit: oklch(92% 0.035 25);
+      --cat-hiit-ink: oklch(60% 0.11 25);
+      --cat-cardio: oklch(92% 0.035 210);
+      --cat-cardio-ink: oklch(60% 0.11 210);
+      --cat-mobility: oklch(92% 0.035 80);
+      --cat-mobility-ink: oklch(60% 0.11 80);
+      --cat-core: oklch(92% 0.035 290);
+      --cat-core-ink: oklch(60% 0.11 290);
+      --cat-mixed: oklch(92% 0.035 150);
+      --cat-mixed-ink: oklch(60% 0.11 150);
+    }
+
+    /* Mouse, dark: blue-grey slate with a brighter blue. */
+    @variant mouse-dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(19% 0.012 255);
+      --foreground: oklch(96% 0.005 250);
+
+      --surface: oklch(24% 0.015 255);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(28% 0.016 255);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(32% 0.017 255);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(25% 0.015 255);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(72% 0.02 250);
+
+      --default: oklch(30% 0.016 255);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(70% 0.14 250);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(32% 0.07 255);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(39% 0.018 255);
+      --segment-foreground: var(--foreground);
+      --border: oklch(31% 0.015 255);
+      --separator: oklch(40% 0.018 255);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(28% 0.016 255);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(55% 0.018 255);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 10%);
+      --veil-soft: oklch(100% 0 0 / 10%);
+
+      --cat-strength: oklch(28% 0.045 255);
+      --cat-strength-ink: oklch(74% 0.11 255);
+      --cat-hiit: oklch(28% 0.045 25);
+      --cat-hiit-ink: oklch(74% 0.11 25);
+      --cat-cardio: oklch(28% 0.045 210);
+      --cat-cardio-ink: oklch(74% 0.11 210);
+      --cat-mobility: oklch(28% 0.045 80);
+      --cat-mobility-ink: oklch(74% 0.11 80);
+      --cat-core: oklch(28% 0.045 290);
+      --cat-core-ink: oklch(74% 0.11 290);
+      --cat-mixed: oklch(28% 0.045 150);
+      --cat-mixed-ink: oklch(74% 0.11 150);
+    }
+
+    /* Obsidian (dim): smoky volcanic glass. Still dark, a little lifted. */
+    @variant obsidian-dim-dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(22% 0.012 285);
+      --foreground: oklch(97% 0.004 285);
+
+      --surface: oklch(27% 0.014 285);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(31% 0.015 285);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(35% 0.016 285);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(28% 0.014 285);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(74% 0.015 285);
+
+      --default: oklch(33% 0.015 285);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(72% 0.15 300);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(36% 0.07 300);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(41% 0.016 285);
+      --segment-foreground: var(--foreground);
+      --border: oklch(34% 0.014 285);
+      --separator: oklch(42% 0.016 285);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(31% 0.015 285);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(58% 0.016 285);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 10%);
+      --veil-soft: oklch(100% 0 0 / 10%);
+
+      --cat-strength: oklch(33% 0.07 12);
+      --cat-strength-ink: oklch(78% 0.14 12);
+      --cat-hiit: oklch(33% 0.07 70);
+      --cat-hiit-ink: oklch(78% 0.14 70);
+      --cat-cardio: oklch(33% 0.07 160);
+      --cat-cardio-ink: oklch(78% 0.14 160);
+      --cat-mobility: oklch(33% 0.07 255);
+      --cat-mobility-ink: oklch(78% 0.14 255);
+      --cat-core: oklch(33% 0.07 305);
+      --cat-core-ink: oklch(78% 0.14 305);
+      --cat-mixed: oklch(33% 0.07 195);
+      --cat-mixed-ink: oklch(78% 0.14 195);
+    }
+
+    /* Obsidian, dark: near-black for OLED. */
+    @variant obsidian-dark {
+      --font-normal: 'Inter-Regular';
+      --font-medium: 'Inter-Medium';
+      --font-semibold: 'Inter-SemiBold';
+      --font-bold: 'Inter-Bold';
+
+      --radius: 0.75rem;
+      --field-radius: 1rem;
+      /* 4px grid: HeroUI derives these as fractions of --radius (3/6/9/18px); pin them to the grid. */
+      --radius-xs: 4px;
+      --radius-sm: 8px;
+      --radius-md: 8px;
+      --radius-xl: 20px;
+
+      --background: oklch(8% 0.006 285);
+      --foreground: oklch(98% 0.003 285);
+
+      --surface: oklch(14% 0.01 285);
+      --surface-foreground: var(--foreground);
+      --surface-secondary: oklch(18% 0.011 285);
+      --surface-secondary-foreground: var(--foreground);
+      --surface-tertiary: oklch(22% 0.012 285);
+      --surface-tertiary-foreground: var(--foreground);
+
+      --overlay: oklch(15% 0.01 285);
+      --overlay-foreground: var(--foreground);
+
+      --muted: oklch(68% 0.014 285);
+
+      --default: oklch(20% 0.011 285);
+      --default-foreground: var(--foreground);
+
+      --accent: oklch(92.5% 0.225 124);
+      --accent-foreground: oklch(19% 0.04 124);
+
+      --lime: oklch(92.5% 0.225 124);
+      --lime-foreground: oklch(19% 0.04 124);
+      --violet: oklch(70% 0.16 300);
+      --violet-foreground: oklch(99% 0 0);
+      --violet-soft: oklch(26% 0.07 300);
+
+      --success: oklch(74% 0.18 150);
+      --success-foreground: oklch(19% 0.008 286);
+      --warning: oklch(82% 0.14 76);
+      --warning-foreground: oklch(19% 0.008 286);
+      --danger: oklch(62% 0.2 25);
+      --danger-foreground: oklch(99% 0 0);
+
+      --segment: oklch(28% 0.012 285);
+      --segment-foreground: var(--foreground);
+      --border: oklch(26% 0.01 285);
+      --separator: oklch(35% 0.012 285);
+      --focus: var(--violet);
+      --link: var(--violet);
+      /* Form fields: filled, with a visible stroke and a readable placeholder. */
+      --field-background: oklch(18% 0.011 285);
+      --field-foreground: var(--foreground);
+      --field-placeholder: var(--muted);
+      --field-border: oklch(50% 0.012 285);
+      --backdrop: oklch(0% 0 0 / 50%);
+      --surface-shadow: 0 0 0 0 transparent inset;
+      --overlay-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+      --field-shadow: 0 0 0 0 transparent inset;
+      --veil: oklch(100% 0 0 / 10%);
+      --veil-soft: oklch(100% 0 0 / 10%);
+
+      --cat-strength: oklch(21% 0.06 12);
+      --cat-strength-ink: oklch(74% 0.15 12);
+      --cat-hiit: oklch(21% 0.06 70);
+      --cat-hiit-ink: oklch(74% 0.15 70);
+      --cat-cardio: oklch(21% 0.06 160);
+      --cat-cardio-ink: oklch(74% 0.15 160);
+      --cat-mobility: oklch(21% 0.06 255);
+      --cat-mobility-ink: oklch(74% 0.15 255);
+      --cat-core: oklch(21% 0.06 305);
+      --cat-core-ink: oklch(74% 0.15 305);
+      --cat-mixed: oklch(21% 0.06 195);
+      --cat-mixed-ink: oklch(74% 0.15 195);
+    }
+  }
+}
+
+/*
+ * 4px grid overrides for HeroUI Native internals that use half steps
+ * (calc(var(--spacing) * 1.5) = 6px, 3px tab padding ...). Same layer, later in
+ * source, so these win. Everything else in HeroUI is already on the grid.
+ */
+@layer components {
+  .button__root--size-sm { padding-inline: calc(var(--spacing) * 4); gap: calc(var(--spacing) * 2); }
+  .button__root--size-lg { gap: calc(var(--spacing) * 2); }
+  .label__root--is-inside-field,
+  .description__root--is-inside-field,
+  .field-error__container--is-inside-field { padding-inline: calc(var(--spacing) * 1); }
+  .text-field__root { gap: calc(var(--spacing) * 2); }
+  .tabs__list--variant-primary { padding: 4px; }
+  .tabs__scroll-view--variant-primary { margin-block: -4px; }
+  .tabs__scroll-view-content-container--variant-primary { padding-block: 4px; padding-inline: 0; }
+  .tabs__trigger { padding-block: calc(var(--spacing) * 2); gap: calc(var(--spacing) * 2); }
+  .tabs__indicator--variant-primary--is-scroll-view { top: 4px; }
+  /* Secondary buttons sit on grey: HeroUI tints their label with the accent, which is unreadable with a lime accent. */
+  .button__label--variant-secondary { color: var(--color-default-foreground); }
+}
