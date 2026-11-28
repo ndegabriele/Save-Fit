@@ -144,7 +144,7 @@ function Progress({ workoutId, onDone, onLibrary }: { workoutId: string; onDone:
           const done = current > i || stage === 'done';
           const active = current === i || (i === 0 && current < 0 && stage !== 'failed');
           return (
-            <Animated.View key={s} entering={enterItem(i)} className={cn('h-16 flex-row items-center gap-4 rounded-[20px] bg-surface px-4 shadow-surface', !done && !active && 'opacity-50')}>
+            <Animated.View key={s} entering={enterItem(i)} className={cn('h-16 flex-row items-center gap-4 rounded-[22px] bg-surface px-4 shadow-surface', !done && !active && 'opacity-50')}>
               <View className={cn('size-8 items-center justify-center rounded-full', done ? 'bg-accent' : 'bg-default')}>
                 {done ? (
                   <Animated.View entering={ZoomIn.duration(220).easing(EASE_OUT).withInitialValues({ transform: [{ scale: 0.9 }] }).reduceMotion(ReduceMotion.System)}>

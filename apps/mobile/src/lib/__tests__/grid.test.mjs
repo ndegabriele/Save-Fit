@@ -16,7 +16,8 @@ walk(root);
 const PREFIX = String.raw`(?<![\w-])-?(?:p|px|py|pt|pb|pl|pr|ps|pe|m|mx|my|mt|mb|ml|mr|gap|gap-x|gap-y|space-x|space-y|w|h|size|min-w|min-h|max-w|max-h|top|bottom|left|right|inset|inset-x|inset-y|translate-x|translate-y|rounded(?:-[tblrse]{1,2})?|leading)-`;
 const RULES = [
   [new RegExp(PREFIX + String.raw`\d+\.5(?![\w.])`, 'g'), () => true],
-  [new RegExp(PREFIX + String.raw`\[(-?\d+(?:\.\d+)?)px\]`, 'g'), (m) => Number(m[1]) % 4 !== 0],
+  // One agreed exception: content cards use a 22px radius (rounded-[22px]), Nick's call on 2026-11-28.
+  [new RegExp(PREFIX + String.raw`\[(-?\d+(?:\.\d+)?)px\]`, 'g'), (m) => Number(m[1]) % 4 !== 0 && m[0] !== 'rounded-[22px]'],
   [/border(?:-[tblrxy])?-\[(\d+)px\]/g, (m) => Number(m[1]) > 2 && Number(m[1]) % 4 !== 0],
   [/\b(?:size|width|height|minHeight|minWidth|maxWidth|maxHeight|padding\w*|margin\w*|gap|rowGap|columnGap|borderRadius|lineHeight)\s*[=:]\s*\{?\s*(\d+(?:\.\d+)?)\b/g, (m) => Number(m[1]) % 4 !== 0],
 ];

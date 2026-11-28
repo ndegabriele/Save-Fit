@@ -38,7 +38,7 @@ Every spacing, size, radius, icon size and line height is a multiple of 4px.
 | label | 14 / 20 |
 | caption, overline | 12 / 16 |
 
-- **Exceptions:** hairline borders (1–2px) and letter spacing.
+- **Exceptions:** hairline borders (1–2px), letter spacing, and the 22px radius on content cards (`rounded-[22px]`: stat cards, exercise lists, tips buttons, import steps).
 - **HeroUI internals:** HeroUI uses some half steps internally (6px gaps, 3px tab padding). These are overridden at the end of `global.css`.
 - **Guard:** `npm test` runs `grid.test.mjs`, which fails on any off-grid value in `src/`.
 

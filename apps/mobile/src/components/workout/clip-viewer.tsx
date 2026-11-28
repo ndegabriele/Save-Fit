@@ -33,7 +33,7 @@ export function ClipViewer({ uri, clip, paused, thumbHeight }: { uri: string; cl
     <>
       <Tappable onPress={() => setExpanded(true)} accessibilityLabel="Show the coach’s video bigger">
         <View>
-          <VideoClip uri={uri} clip={clip} paused={paused || expanded} height={thumbH} width={thumbW} className="rounded-[20px]" />
+          <VideoClip uri={uri} clip={clip} paused={paused || expanded} height={thumbH} width={thumbW} className="rounded-[22px]" />
           <View className="absolute bottom-2 right-2 size-8 items-center justify-center rounded-full bg-black/50">
             <Icon icon={Maximize2} size={16} color="#FFFFFF" />
           </View>

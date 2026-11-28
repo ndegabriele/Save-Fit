@@ -104,7 +104,7 @@ export default function WorkoutDetail() {
           {workout.blocks.map((block) => (
             <View key={block.id} className="gap-3">
               <BlockHeader block={block} showSource={multiSource || Boolean(workout.mergedFrom)} />
-              <Accordion selectionMode="multiple" variant="surface" className="rounded-[20px]" classNames={{ separator: 'bg-separator/40' }}>
+              <Accordion selectionMode="multiple" variant="surface" className="rounded-[22px]" classNames={{ separator: 'bg-separator/40' }}>
                 {block.exercises.map((ex, i) => (
                   <Accordion.Item key={ex.id} value={ex.id}>
                     <Accordion.Trigger>
@@ -256,7 +256,7 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
 function InfoButton({ icon, tone, label, count, onPress }: { icon: typeof Timer; tone: 'violet' | 'warning'; label: string; count: number; onPress: () => void }) {
   return (
     <Tappable onPress={onPress} accessibilityLabel={label}>
-      <View className={cn('h-16 flex-row items-center gap-3 rounded-[20px] px-4', tone === 'violet' ? 'bg-violet-soft' : 'bg-warning-soft')}>
+      <View className={cn('h-16 flex-row items-center gap-3 rounded-[22px] px-4', tone === 'violet' ? 'bg-violet-soft' : 'bg-warning-soft')}>
         <Icon icon={icon} size={20} color={tone} />
         <AppText variant="headline" className="flex-1">
           {label}
