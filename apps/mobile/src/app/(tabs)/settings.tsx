@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { Button, Input, ListGroup, Slider, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
-import { KeyRound, Microphone, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, UserSound, Vibrate, Video, Volume2 } from '@/components/ui/icons';
+import { Check, KeyRound, Microphone, Moon, Palette, RefreshCw, Server, ShieldCheck, Timer, Trash2, UserSound, Vibrate, Video, Volume2 } from '@/components/ui/icons';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
@@ -11,7 +11,9 @@ import { maskKey, setAiKey, useAiKey } from '@/lib/ai-key';
 import { apiUrl, checkAiKey, ping } from '@/lib/api';
 import { play, preloadAudio, preview as previewAudio } from '@/lib/feedback';
 import { IS_EXPO_GO } from '@/lib/share-intent';
+import { PALETTES, type Palette as PaletteId } from '@/lib/palettes';
 import { useStore, type Settings } from '@/lib/store';
+import { Tappable } from '@/components/ui/tappable';
 import { requestVoicePermission, voiceCommandsAvailable } from '@/lib/voice-commands';
 
 export default function SettingsScreen() {
@@ -98,9 +100,16 @@ export default function SettingsScreen() {
 
         <Section title="Appearance">
           <View className="flex-row items-center gap-2 px-1">
+            <Icon icon={Palette} size={20} color="muted" />
+            <AppText variant="label" className="text-muted">
+              Colour theme
+            </AppText>
+          </View>
+          <ThemePicker value={settings.palette ?? 'default'} onChange={(palette) => setSettings({ palette })} />
+          <View className="flex-row items-center gap-2 px-1 pt-2">
             <Icon icon={Moon} size={20} color="muted" />
             <AppText variant="label" className="text-muted">
-              Theme
+              Light or dark
             </AppText>
           </View>
           <Tabs value={settings.theme} onValueChange={(v) => setSettings({ theme: v as Settings['theme'] })}>
@@ -345,5 +354,52 @@ function VoiceCommandsRow({ on, onChange }: { on: boolean; onChange: (v: boolean
         <Switch isSelected={available && on} isDisabled={!available} onSelectedChange={(v) => void set(v)} />
       </ListGroup.ItemSuffix>
     </ListGroup.Item>
+  );
+}
+
+/** Colour themes as small previews: page, card, and the lime button every theme keeps. */
+function ThemePicker({ value, onChange }: { value: PaletteId; onChange: (p: PaletteId) => void }) {
+  return (
+    <View className="flex-row flex-wrap gap-3">
+      {PALETTES.map((p) => {
+        const on = p.id === value;
+        const [page, card, second] = p.swatch;
+        return (
+          <Tappable
+            key={p.id}
+            onPress={() => onChange(p.id)}
+            feedback="select"
+            accessibilityLabel={`${p.name} theme`}
+            accessibilityState={{ selected: on }}
+            className="grow basis-[45%]"
+          >
+            <View className={`rounded-[22px] border-2 bg-surface p-2 ${on ? 'border-accent' : 'border-transparent'}`}>
+              <View className="h-24 justify-end gap-2 rounded-2xl p-3" style={{ backgroundColor: page }}>
+                <View className="h-8 flex-row items-center gap-2 rounded-xl px-2" style={{ backgroundColor: card }}>
+                  <View className="size-4 rounded-full" style={{ backgroundColor: second }} />
+                  <View className="h-2 flex-1 rounded-full" style={{ backgroundColor: second, opacity: 0.25 }} />
+                </View>
+                <View className="h-6 w-16 rounded-full bg-lime" />
+              </View>
+              <View className="flex-row items-center justify-between gap-2 px-2 pb-1 pt-3">
+                <View className="flex-1">
+                  <AppText variant="label" numberOfLines={1}>
+                    {p.name}
+                  </AppText>
+                  <AppText variant="caption" className="text-muted" numberOfLines={1}>
+                    {p.blurb}
+                  </AppText>
+                </View>
+                {on ? (
+                  <View className="size-6 items-center justify-center rounded-full bg-accent">
+                    <Icon icon={Check} size={16} color="accent-foreground" />
+                  </View>
+                ) : null}
+              </View>
+            </View>
+          </Tappable>
+        );
+      })}
+    </View>
   );
 }

@@ -114,3 +114,15 @@ test('voice commands: the last command word wins, other speech is ignored', () =
   assert.equal(parseCommand('Five'), null);
   assert.equal(parseCommand('three, two, one'), null);
 });
+
+test('colour themes resolve to the right Uniwind theme', async () => {
+  const { resolveTheme, playerTheme } = await import('../palettes.ts');
+  assert.deepEqual(resolveTheme('default', 'system', 'dark'), { name: 'system', dark: true });
+  assert.deepEqual(resolveTheme('default', 'light', 'dark'), { name: 'light', dark: false });
+  assert.deepEqual(resolveTheme('bone', 'system', 'light'), { name: 'bone-light', dark: false });
+  assert.deepEqual(resolveTheme('mouse', 'dark', 'light'), { name: 'mouse-dark', dark: true });
+  assert.deepEqual(resolveTheme('obsidian', 'light', 'light'), { name: 'obsidian-dim-dark', dark: true });
+  assert.deepEqual(resolveTheme('obsidian', 'system', 'dark'), { name: 'obsidian-dark', dark: true });
+  assert.equal(playerTheme('default'), 'dark');
+  assert.equal(playerTheme('bone'), 'bone-dark');
+});

@@ -1,3 +1,4 @@
+import type { Mode, Palette } from './palettes';
 import { kv } from './kv';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -25,7 +26,9 @@ export interface Settings {
   voiceCommands: boolean;
   /** Show the coach's video clip in the player when available. */
   showVideo: boolean;
-  theme: 'system' | 'light' | 'dark';
+  theme: Mode;
+  /** Colour theme; each has its own light and dark. */
+  palette: Palette;
   /** Optional override of the server URL baked into the build. */
   apiUrl: string;
 }
@@ -66,6 +69,7 @@ export const DEFAULT_SETTINGS: Settings = {
   voiceCommands: false,
   showVideo: true,
   theme: 'system',
+  palette: 'default',
   apiUrl: '',
 };
 

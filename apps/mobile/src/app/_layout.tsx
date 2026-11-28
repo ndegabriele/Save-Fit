@@ -19,16 +19,25 @@ import '../../global.css';
 import { preloadAudio } from '@/lib/feedback';
 import { ImportRunner } from '@/lib/import-runner';
 import { IS_EXPO_GO, ShareIntentHandler } from '@/lib/share-intent';
+import { resolveTheme } from '@/lib/palettes';
 import { useStore } from '@/lib/store';
 
 void SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({ duration: 250, fade: true });
 
-function ThemeSync() {
+/** The theme the app should show now, from the chosen palette, mode and the device's scheme. */
+function useAppTheme() {
+  const scheme = useColorScheme();
   const theme = useStore((s) => s.settings.theme);
+  const palette = useStore((s) => s.settings.palette ?? 'default');
+  return resolveTheme(palette, theme, scheme);
+}
+
+function ThemeSync() {
+  const { name } = useAppTheme();
   useEffect(() => {
-    Uniwind.setTheme(theme);
-  }, [theme]);
+    Uniwind.setTheme(name as Parameters<typeof Uniwind.setTheme>[0]);
+  }, [name]);
   return null;
 }
 
@@ -46,9 +55,7 @@ export default function RootLayout() {
   });
   const hydrated = useStore((s) => s.hydrated);
   const seeded = useStore((s) => s.seeded);
-  const scheme = useColorScheme();
-  const theme = useStore((s) => s.settings.theme);
-  const dark = theme === 'dark' || (theme === 'system' && scheme === 'dark');
+  const { dark } = useAppTheme();
 
   useEffect(() => {
     if (hydrated && !seeded) useStore.getState().seedSamples();

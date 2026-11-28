@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Dimensions, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 
-const COLORS = ['#C8F25A', '#8B6CF6', '#FF9F6B', '#5CC8FF', '#FFD84D', '#4ADE80'];
+const COLORS = ['#C9FB10', '#8B6CF6', '#FF9F6B', '#5CC8FF', '#FFD84D', '#4ADE80'];
 
 /** One-off celebration burst for finishing a workout (the rare moment delight is allowed). */
 export function Confetti({ count = 36 }: { count?: number }) {

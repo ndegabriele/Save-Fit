@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, cn, Dialog } from 'heroui-native';
 import { Check, ChevronsRight, Info, Maximize2, Pause, Play, Plus, SkipBack, SkipForward, Trophy, X } from '@/components/ui/icons';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
+import { Appearance, ScrollView, useWindowDimensions, View, type ScrollViewInstance } from 'react-native';
 import Animated, { FadeIn, FadeOut, Keyframe, ReduceMotion, ZoomIn } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -22,6 +22,7 @@ import { VideoClip } from '@/components/workout/video-clip';
 import { PhaseGlow } from '@/components/workout/phase-glow';
 import { BLOCK_LABEL, clock, plural } from '@/lib/format';
 import { DURATION, EASE_OUT, EASE_OUT_CSS, SPRING_PLAYFUL } from '@/lib/motion';
+import { playerTheme, resolveTheme } from '@/lib/palettes';
 import { useStore, useWorkout } from '@/lib/store';
 import { useVoiceCommands } from '@/lib/voice-commands';
 import { usePlayer } from '@/lib/use-player';
@@ -32,8 +33,9 @@ export default function PlayScreen() {
   // The player is always dark: high contrast, calm, readable from the floor.
   // It's a full-screen modal, so switching the app theme while it's open is invisible elsewhere.
   useEffect(() => {
-    Uniwind.setTheme('dark');
-    return () => Uniwind.setTheme(useStore.getState().settings.theme);
+    const { palette = 'default', theme } = useStore.getState().settings;
+    Uniwind.setTheme(playerTheme(palette) as Parameters<typeof Uniwind.setTheme>[0]);
+    return () => Uniwind.setTheme(resolveTheme(palette, theme, Appearance.getColorScheme()).name as Parameters<typeof Uniwind.setTheme>[0]);
   }, []);
   return (
     <>

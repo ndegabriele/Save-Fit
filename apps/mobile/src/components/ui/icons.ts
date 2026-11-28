@@ -33,6 +33,7 @@ export {
   ArrowsOut as Maximize2,
   Minus,
   Moon,
+  Palette,
   DotsThree as MoreHorizontal,
   Pause,
   PencilSimple as Pencil,

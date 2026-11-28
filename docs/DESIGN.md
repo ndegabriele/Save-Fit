@@ -62,3 +62,7 @@ Following Emil Kowalski's design-engineering skills:
 - Player is always dark for contrast and calm.
 - Main control 104 pt, prev/next 72 pt; the whole timer ring is a pause/resume target, the whole rep circle is a "done" target.
 - Sounds on the last 3 seconds and on "go", haptic on every transition, screen kept awake.
+
+## Colour themes
+
+Four palettes, each with a light and a dark variant: Save Fit (default), Bone, Mouse grey and Obsidian (dark in both: a lifted "dim" and a near-black). They are Uniwind themes in `apps/mobile/global.css`, registered in `metro.config.js` and resolved in `src/lib/palettes.ts`. Only neutrals and the secondary colour (`--violet`) change between palettes; the lime accent, status colours and category pastels are shared. Don't use `dark:` classes: they only match the default dark theme. Use a token instead (for example `bg-veil`).

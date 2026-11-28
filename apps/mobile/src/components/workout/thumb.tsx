@@ -20,7 +20,7 @@ export const CAT_ICON: Record<Category, AppIcon> = {
 export function Thumb({ uri, category, size = 96, className }: { uri?: string | null; category: Category; size?: number; className?: string }) {
   const src = mediaUrl(uri);
   return (
-    <View className={cn('overflow-hidden rounded-[24px] bg-white/60 dark:bg-white/10', className)} style={{ width: size, height: size }}>
+    <View className={cn('overflow-hidden rounded-[24px] bg-veil', className)} style={{ width: size, height: size }}>
       {src ? (
         <Image source={{ uri: src }} style={{ width: size, height: size }} contentFit="cover" transition={180} />
       ) : (

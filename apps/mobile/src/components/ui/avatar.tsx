@@ -85,7 +85,7 @@ export function CreatorChip({ creators, onMedia, className }: { creators: Creato
   const extra = creators.length - 1;
   return (
     <View
-      className={cn('max-w-[176px] flex-row items-center gap-2 rounded-full py-1 pl-1 pr-3', onMedia ? 'bg-black/35' : 'bg-white/70 dark:bg-white/10', className)}
+      className={cn('max-w-[176px] flex-row items-center gap-2 rounded-full py-1 pl-1 pr-3', onMedia ? 'bg-black/35' : 'bg-veil', className)}
       accessible
       accessibilityLabel={`By ${creators.map((c) => c.name || c.handle).join(', ')}`}
     >
@@ -116,7 +116,7 @@ export function CoachTile({ creators, onMedia, inkClass, size = 96 }: { creators
   return (
     <View className="items-center gap-2" style={{ width: size }} accessible accessibilityLabel={`By ${creators.map((c) => c.name || c.handle).join(', ')}`}>
       <View
-        className={cn('items-center justify-center overflow-hidden rounded-full', onMedia ? 'border-2 border-white/30' : 'bg-white/60 dark:bg-white/10', !src && onMedia && 'bg-black/35')}
+        className={cn('items-center justify-center overflow-hidden rounded-full', onMedia ? 'border-2 border-white/30' : 'bg-veil', !src && onMedia && 'bg-black/35')}
         style={{ width: size, height: size }}
       >
         {src ? (
