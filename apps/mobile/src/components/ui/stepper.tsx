@@ -21,11 +21,12 @@ export function Stepper({ label, value, onChange, step = 1, min = 0, max = 999, 
   return (
     <View className={cn('flex-row items-center justify-between rounded-2xl bg-surface-secondary px-2 py-2', className)}>
       <RoundButton icon={Minus} label={`Decrease ${label}`} tone="surface" size={40} feedback="select" disabled={value <= min} onPress={() => onChange(clamp(value - step))} />
-      <View className="items-center">
-        <AppText variant="title" className="text-[20px]">
+      {/* The middle takes the space between the buttons and shrinks long values ("1 min 30s") to fit. */}
+      <View className="min-w-0 flex-1 items-center px-1">
+        <AppText variant="title" className="text-[20px]" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
           {format ? format(value) : value}
         </AppText>
-        <AppText variant="caption" className="text-[12px]">
+        <AppText variant="caption" className="text-[12px]" numberOfLines={1}>
           {label}
         </AppText>
       </View>

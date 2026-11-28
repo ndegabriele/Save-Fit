@@ -117,19 +117,17 @@ export default function EditWorkout() {
               format={(k) => BLOCK_LABEL[k]}
               onChange={(kind) => patchBlock(block.id, (b) => ({ ...b, kind, title: BLOCK_LABEL[kind] }))}
             />
-            <View className="flex-row gap-3">
-              <Stepper className="flex-1" label="rounds" value={block.rounds} min={1} max={20} onChange={(rounds) => patchBlock(block.id, (b) => ({ ...b, rounds }))} />
-              <Stepper
-                className="flex-1"
-                label="round rest"
-                value={block.restBetweenRoundsSec}
-                step={15}
-                min={0}
-                max={600}
-                format={shortDuration}
-                onChange={(restBetweenRoundsSec) => patchBlock(block.id, (b) => ({ ...b, restBetweenRoundsSec }))}
-              />
-            </View>
+            {/* Full-width rows, like "rest between exercises": "1 min 30s" needs the room. */}
+            <Stepper label="rounds" value={block.rounds} min={1} max={20} onChange={(rounds) => patchBlock(block.id, (b) => ({ ...b, rounds }))} />
+            <Stepper
+              label="round rest"
+              value={block.restBetweenRoundsSec}
+              step={15}
+              min={0}
+              max={600}
+              format={shortDuration}
+              onChange={(restBetweenRoundsSec) => patchBlock(block.id, (b) => ({ ...b, restBetweenRoundsSec }))}
+            />
             {/* Quick rest between exercises: sets every exercise in this part at once. */}
             {block.exercises.length ? (
               <View className="gap-2">
