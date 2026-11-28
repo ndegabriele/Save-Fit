@@ -45,7 +45,7 @@ export default function RootLayout() {
   // Fetch the workout sounds early so the first countdown starts on time.
   useEffect(() => preloadAudio(), []);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsReady, fontError] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-Medium': Inter_500Medium,
     'Inter-SemiBold': Inter_600SemiBold,
@@ -54,6 +54,18 @@ export default function RootLayout() {
     'Bricolage-ExtraBold': BricolageGrotesque_800ExtraBold,
   });
   const hydrated = useStore((s) => s.hydrated);
+  // Never leave the splash up: a font that fails to load falls back to the system font,
+  // and if saved data hasn't loaded after 4 s the app opens anyway.
+  const fontsLoaded = fontsReady || Boolean(fontError);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (!useStore.getState().hydrated) {
+        console.warn('Save Fit: saved data took too long to load; opening anyway.');
+        useStore.setState({ hydrated: true });
+      }
+    }, 4000);
+    return () => clearTimeout(t);
+  }, []);
   const seeded = useStore((s) => s.seeded);
   const { dark } = useAppTheme();
 
