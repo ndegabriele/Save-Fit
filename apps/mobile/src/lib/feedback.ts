@@ -5,14 +5,17 @@ import { useStore } from './store';
 /**
  * Workout audio, in two layers the user controls separately (Settings → During workouts):
  *  - SFX: soft tick on each of the last 5 seconds, a chime when a move starts, a chime at the finish.
- *  - Coach voice: a calm "5, 4, 3, 2, 1" on the same seconds as the ticks.
- * Both were generated with ElevenLabs (voice: "Douglas"), trimmed to start on the first sample
- * and stored as WAV, which has no decoder delay, so they land exactly when they're fired.
- * When the coach speaks, the tick plays a little quieter underneath (DUCK).
+ *  - Coach voice: a calm "5, 4, 3, 2, 1" (ElevenLabs voice "Douglas").
+ *
+ * Staying in sync: the last 5 seconds are two pre-timed 5 s tracks (voice, ticks) with every
+ * count on an exact second, started once together. The counts can't drift from each other,
+ * and starting one track is far more punctual than starting five clips.
+ * Players download their file first (in Expo Go assets otherwise stream from the dev server)
+ * and keep the audio session open between sounds, so iOS doesn't spin it up again each time.
+ * When the coach speaks, the ticks play a little quieter (DUCK).
  */
 
 export type Sfx = 'tick' | 'go' | 'done';
-export type VoiceLine = 1 | 2 | 3 | 4 | 5;
 
 const SFX: Record<Sfx, number> = {
   tick: require('../../assets/sounds/tick.wav'),
@@ -20,21 +23,18 @@ const SFX: Record<Sfx, number> = {
   done: require('../../assets/sounds/done.wav'),
 };
 
-const VOICE: Record<VoiceLine, number> = {
-  1: require('../../assets/sounds/coach/1.wav'),
-  2: require('../../assets/sounds/coach/2.wav'),
-  3: require('../../assets/sounds/coach/3.wav'),
-  4: require('../../assets/sounds/coach/4.wav'),
-  5: require('../../assets/sounds/coach/5.wav'),
+const TRACK = {
+  voice: require('../../assets/sounds/countdown-voice.wav'),
+  tick: require('../../assets/sounds/countdown-tick.wav'),
 };
 
-/** How loud the tick plays under the coach's voice (fraction of the SFX volume). */
+/** Length of the countdown tracks: they cover the last this-many seconds of a timer. */
+export const COUNTDOWN_SEC = 5;
+
+/** How loud the ticks play under the coach's voice (fraction of the SFX volume). */
 const DUCK = 0.55;
 
-const sfxPlayers: Partial<Record<Sfx, AudioPlayer>> = {};
-const voicePlayers: Partial<Record<VoiceLine, AudioPlayer>> = {};
 let audioReady = false;
-
 async function ensureAudio() {
   if (audioReady) return;
   audioReady = true;
@@ -44,9 +44,9 @@ async function ensureAudio() {
   } catch {}
 }
 
-/** Players rewind themselves when they finish, so firing one never waits on a seek. */
+/** Players rewind themselves when they finish, so starting one never waits on a seek. */
 function load(source: number) {
-  const p = createAudioPlayer(source);
+  const p = createAudioPlayer(source, { downloadFirst: true, keepAudioSessionActive: true });
   p.addListener('playbackStatusUpdate', (s) => {
     if (s.didJustFinish) {
       p.pause();
@@ -56,12 +56,13 @@ function load(source: number) {
   return p;
 }
 
-function fire(p: AudioPlayer, volume: number) {
+/** Start `p` at `at` seconds, seeking only when it isn't already there. */
+function startAt(p: AudioPlayer, volume: number, at = 0) {
   try {
     p.volume = Math.max(0, Math.min(1, volume));
-    if (p.playing || p.currentTime > 0.02) {
-      // Still sounding (or never rewound): restart from the top.
-      void p.seekTo(0).then(() => p.play());
+    if (p.playing || Math.abs(p.currentTime - at) > 0.02) {
+      if (p.playing) p.pause();
+      void p.seekTo(at).then(() => p.play());
     } else {
       p.play();
     }
@@ -69,53 +70,76 @@ function fire(p: AudioPlayer, volume: number) {
 }
 
 const settings = () => useStore.getState().settings;
-const sfxPlayer = (k: Sfx) => (sfxPlayers[k] ??= load(SFX[k]));
-const voicePlayer = (k: VoiceLine) => (voicePlayers[k] ??= load(VOICE[k]));
 
-/** Create every player up front so the first beep of a workout isn't late. */
+const sfxPlayers: Partial<Record<Sfx, AudioPlayer>> = {};
+const sfxPlayer = (k: Sfx) => (sfxPlayers[k] ??= load(SFX[k]));
+let voiceTrack: AudioPlayer | null = null;
+let tickTrack: AudioPlayer | null = null;
+const tracks = () => {
+  voiceTrack ??= load(TRACK.voice);
+  tickTrack ??= load(TRACK.tick);
+  return [voiceTrack, tickTrack] as const;
+};
+
+/** Create every player up front (and fetch its file) so the first cue of a workout is on time. */
 export function preloadAudio() {
   void ensureAudio();
   try {
     (Object.keys(SFX) as Sfx[]).forEach(sfxPlayer);
-    ([1, 2, 3, 4, 5] as const).forEach(voicePlayer);
+    tracks();
   } catch {}
 }
 
-/** Play a sound effect. `ducked` lowers it under the coach's voice. */
-export function play(sound: Sfx, ducked = false) {
+/** Play a one-off sound effect. */
+export function play(sound: Sfx) {
   const s = settings();
   if (!s.sfx || s.sfxVolume <= 0) return;
   void ensureAudio();
   try {
-    fire(sfxPlayer(sound), s.sfxVolume * (ducked ? DUCK : 1));
+    startAt(sfxPlayer(sound), s.sfxVolume);
   } catch {}
 }
 
-/** Speak a count. Returns true if it plays. */
-export function say(line: VoiceLine) {
-  const s = settings();
-  if (!s.voice || s.voiceVolume <= 0) return false;
-  void ensureAudio();
-  try {
-    fire(voicePlayer(line), s.voiceVolume);
-    return true;
-  } catch {
-    return false;
-  }
-}
+/** The last-5-seconds countdown (voice and ticks). */
+export const countdown = {
+  /** Start with `secondsLeft` on the timer (5 = from the top; less = joins part way through). */
+  start(secondsLeft: number) {
+    const s = settings();
+    const voiceOn = s.voice && s.voiceVolume > 0;
+    const tickOn = s.sfx && s.sfxVolume > 0;
+    if (!voiceOn && !tickOn) return;
+    void ensureAudio();
+    const at = Math.max(0, COUNTDOWN_SEC - secondsLeft);
+    try {
+      const [voice, tick] = tracks();
+      if (voiceOn) startAt(voice, s.voiceVolume, at);
+      if (tickOn) startAt(tick, s.sfxVolume * (voiceOn ? DUCK : 1), at);
+    } catch {}
+  },
+  stop() {
+    for (const p of [voiceTrack, tickTrack]) {
+      try {
+        if (p?.playing) p.pause();
+      } catch {}
+    }
+  },
+};
 
-/** The workout's audio moments. */
-export const cue = {
-  /** One of the last 5 seconds of a timer: the coach's count with the tick under it. */
-  count(n: number) {
-    const spoken = n >= 1 && n <= 5 && say(n as VoiceLine);
-    play('tick', spoken);
+/** Settings previews. */
+export const preview = {
+  sfx() {
+    play('tick');
   },
-  go() {
-    play('go');
-  },
-  done() {
-    play('done');
+  /** The coach saying "three". */
+  voice() {
+    const s = settings();
+    if (!s.voice || s.voiceVolume <= 0) return;
+    void ensureAudio();
+    try {
+      const [voice] = tracks();
+      startAt(voice, s.voiceVolume, 2);
+      setTimeout(() => voice.playing && voice.pause(), 900);
+    } catch {}
   },
 };
 

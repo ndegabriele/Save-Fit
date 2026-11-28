@@ -9,7 +9,7 @@ import { Stepper } from '@/components/ui/stepper';
 import { AppText } from '@/components/ui/text';
 import { maskKey, setAiKey, useAiKey } from '@/lib/ai-key';
 import { apiUrl, checkAiKey, ping } from '@/lib/api';
-import { play, preloadAudio, say } from '@/lib/feedback';
+import { play, preloadAudio, preview as previewAudio } from '@/lib/feedback';
 import { IS_EXPO_GO } from '@/lib/share-intent';
 import { useStore, type Settings } from '@/lib/store';
 
@@ -83,10 +83,10 @@ export default function SettingsScreen() {
             volume={settings.voiceVolume}
             onEnabled={(voice) => {
               setSettings({ voice });
-              if (voice) say(3);
+              if (voice) previewAudio.voice();
             }}
             onVolume={(voiceVolume) => setSettings({ voiceVolume })}
-            preview={() => say(3)}
+            preview={previewAudio.voice}
           />
           <ListGroup>
             {toggle('haptics', Vibrate, 'Haptics', 'Taps you feel on each transition')}

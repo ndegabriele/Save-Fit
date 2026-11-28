@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { cue, haptic, preloadAudio } from './feedback';
+import { COUNTDOWN_SEC, countdown, haptic, play, preloadAudio } from './feedback';
 import { buildSequence, type Step } from './sequence';
 import type { Workout } from './types';
 
@@ -27,8 +27,6 @@ export interface PlayerState {
 }
 
 const TICK_MS = 100;
-/** Beep (and count aloud) on each of the last this-many seconds of a timer. */
-const COUNT_FROM = 5;
 
 /**
  * The workout clock.
@@ -84,7 +82,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
         setPhase('running');
         if (s.kind === 'rest' || s.mode === 'time') startTimer(s.durationSec);
         if (s.kind === 'work') {
-          cue.go();
+          play('go');
           haptic.firm();
         }
       }
@@ -103,7 +101,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     if (step?.kind === 'work') setWorkDone((n) => n + 1);
     if (index >= steps.length - 1) {
       setPhase('done');
-      cue.done();
+      play('done');
       haptic.success();
       return;
     }
@@ -149,7 +147,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     pausedLeft.current = 0;
     setPhase('running');
     startTimer(step.durationSec);
-    cue.go();
+    play('go');
     haptic.firm();
   }, [phase, step, startTimer, enterStep]);
 
@@ -174,31 +172,35 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   // Load the sounds when the player opens, so the first cue is on time.
   useEffect(() => preloadAudio(), []);
 
-  // A tick (and the coach's count) on each of the last 5 seconds. Each one is scheduled for the
-  // exact moment the number on screen changes, and re-renders the screen right then, so sound and
-  // number land together instead of waiting for the next clock tick.
+  // The last 5 seconds: one pre-timed audio track (voice + ticks) started as the timer reaches 5,
+  // or part way through if it's already under 5 (a short timer, a resume). The screen re-renders
+  // on each exact second, so the number changes with the count instead of on the next clock tick.
   useEffect(() => {
     if (!timed || paused) return;
     const t0 = Date.now();
     const end = endsAt.current;
     const ids: ReturnType<typeof setTimeout>[] = [];
-    for (let n = COUNT_FROM; n >= 1; n--) {
+    const startIn = end - COUNTDOWN_SEC * 1000 - t0;
+    if (startIn <= 150) countdown.start((end - t0) / 1000);
+    else ids.push(setTimeout(() => countdown.start(COUNTDOWN_SEC), startIn));
+    for (let n = COUNTDOWN_SEC; n >= 1; n--) {
       const at = end - n * 1000;
-      // Already past (e.g. after a resume): skip. A few ms late (a 5 s timer that just started): fire now.
       if (at < t0 - 150) continue;
       ids.push(
         setTimeout(() => {
+          setNow(Math.max(Date.now(), at));
           if (lastBeep.current === n) return;
           lastBeep.current = n;
-          setNow(Date.now());
-          cue.count(n);
           haptic.tap();
         }, Math.max(0, at - t0)),
       );
     }
     // Wake exactly at zero so the next move (and its chime) starts on time.
-    ids.push(setTimeout(() => setNow(Date.now()), Math.max(0, end - t0)));
-    return () => ids.forEach(clearTimeout);
+    ids.push(setTimeout(() => setNow(Math.max(Date.now(), end)), Math.max(0, end - t0)));
+    return () => {
+      ids.forEach(clearTimeout);
+      countdown.stop();
+    };
   }, [timed, paused, timerRev]);
 
   // Transitions when the timer hits 0.
@@ -210,7 +212,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
       } else if (phase === 'countdown' && step) {
         setPhase('running');
         startTimer(step.durationSec);
-        cue.go();
+        play('go');
         haptic.firm();
       } else {
         next();

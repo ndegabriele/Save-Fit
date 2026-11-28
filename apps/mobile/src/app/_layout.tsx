@@ -16,6 +16,7 @@ import { Dimensions, Platform, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Uniwind } from 'uniwind';
 import '../../global.css';
+import { preloadAudio } from '@/lib/feedback';
 import { ImportRunner } from '@/lib/import-runner';
 import { IS_EXPO_GO, ShareIntentHandler } from '@/lib/share-intent';
 import { useStore } from '@/lib/store';
@@ -32,6 +33,9 @@ function ThemeSync() {
 }
 
 export default function RootLayout() {
+  // Fetch the workout sounds early so the first countdown starts on time.
+  useEffect(() => preloadAudio(), []);
+
   const [fontsLoaded] = useFonts({
     'Inter-Regular': Inter_400Regular,
     'Inter-Medium': Inter_500Medium,
