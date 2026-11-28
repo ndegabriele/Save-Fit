@@ -23,6 +23,7 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/ui/icon';
 import { RoundButton } from '@/components/ui/round-button';
+import { Stat } from '@/components/ui/stat';
 import { Tappable } from '@/components/ui/tappable';
 import { AppText } from '@/components/ui/text';
 import { Pill } from '@/components/workout/category-pill';
@@ -76,20 +77,18 @@ export default function WorkoutDetail() {
         </View>
 
         <View className="gap-6 px-5 pt-5">
-          {/* Summary: the numbers, then what to bring. Plain, no card. */}
-          <View className="gap-5">
-            <View className="flex-row gap-4">
-              <SummaryStat icon={Timer} value={String(workoutMinutes(workout))} unit="min" label="Duration" />
-              <SummaryStat icon={Dumbbell} value={String(exerciseCount(workout))} label={exerciseCount(workout) === 1 ? 'Exercise' : 'Exercises'} />
-              <SummaryStat icon={ListOrdered} value={String(workout.blocks.length)} label={workout.blocks.length === 1 ? 'Part' : 'Parts'} />
-            </View>
-            {workout.equipment.length ? (
-              <View className="gap-3">
-                <AppText variant="overline">You’ll need</AppText>
-                <EquipmentTags items={workout.equipment} size="md" />
-              </View>
-            ) : null}
+          <View className="flex-row gap-3">
+            <Stat icon={Timer} value={`${workoutMinutes(workout)} min`} label="Duration" />
+            <Stat icon={Dumbbell} value={String(exerciseCount(workout))} label={exerciseCount(workout) === 1 ? 'Exercise' : 'Exercises'} />
+            <Stat icon={ListOrdered} value={String(workout.blocks.length)} label={workout.blocks.length === 1 ? 'Part' : 'Parts'} />
           </View>
+
+          {workout.equipment.length ? (
+            <View className="gap-3">
+              <AppText variant="overline">You’ll need</AppText>
+              <EquipmentTags items={workout.equipment} size="md" />
+            </View>
+          ) : null}
 
           {workout.summary || workout.targetMuscles.length ? (
             <View className="gap-4">
@@ -105,12 +104,12 @@ export default function WorkoutDetail() {
           {workout.blocks.map((block) => (
             <View key={block.id} className="gap-3">
               <BlockHeader block={block} showSource={multiSource || Boolean(workout.mergedFrom)} />
-              <Accordion selectionMode="multiple" variant="surface" className="rounded-3xl">
+              <Accordion selectionMode="multiple" variant="surface" className="rounded-[20px]">
                 {block.exercises.map((ex, i) => (
                   <Accordion.Item key={ex.id} value={ex.id}>
                     <Accordion.Trigger>
                       <View className="flex-1 flex-row items-center gap-3 py-1">
-                        <View className="size-10 items-center justify-center rounded-2xl bg-default">
+                        <View className="size-10 items-center justify-center rounded-[12px] bg-default">
                           <AppText variant="headline">{i + 1}</AppText>
                         </View>
                         <View className="flex-1">
@@ -253,29 +252,11 @@ function BlockHeader({ block, showSource }: { block: Block; showSource: boolean 
   );
 }
 
-/** One number in the summary card: a small icon, the value, its label. */
-function SummaryStat({ icon, value, unit, label }: { icon: typeof Timer; value: string; unit?: string; label: string }) {
-  return (
-    <View className="flex-1 gap-2">
-      <View className="size-8 items-center justify-center rounded-full bg-accent">
-        <Icon icon={icon} size={16} color="accent-foreground" />
-      </View>
-      <View>
-        <AppText variant="title">
-          {value}
-          {unit ? <AppText variant="headline">{` ${unit}`}</AppText> : null}
-        </AppText>
-        <AppText variant="caption">{label}</AppText>
-      </View>
-    </View>
-  );
-}
-
 /** A full-width row that opens a tray (coach tips, things to check). */
 function InfoButton({ icon, tone, label, count, onPress }: { icon: typeof Timer; tone: 'violet' | 'warning'; label: string; count: number; onPress: () => void }) {
   return (
     <Tappable onPress={onPress} accessibilityLabel={label}>
-      <View className={cn('h-16 flex-row items-center gap-3 rounded-3xl px-4', tone === 'violet' ? 'bg-violet-soft' : 'bg-warning-soft')}>
+      <View className={cn('h-16 flex-row items-center gap-3 rounded-[20px] px-4', tone === 'violet' ? 'bg-violet-soft' : 'bg-warning-soft')}>
         <Icon icon={icon} size={20} color={tone} />
         <AppText variant="headline" className="flex-1">
           {label}
