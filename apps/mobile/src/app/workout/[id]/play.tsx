@@ -145,8 +145,8 @@ function Player() {
     <View style={{ width: size, height: size }}>
       {timerBody(size)}
       {hasHowTo && !small(size) && !isRest ? (
-        // Same 56 pt height as the old pill, centred above the Next button (72 pt, 32 pt from the edge).
-        <View className="absolute top-0" style={{ right: -((paneW - size) / 2 - (32 + 36 - 28)) }}>
+        // Same 56 pt height as the old pill; its right edge lines up with the elapsed-time pill in the header (20 pt from the edge).
+        <View className="absolute top-0" style={{ right: -((paneW - size) / 2 - 20) }}>
           <RoundButton icon={Info} label="How to do it" tone="ghost" size={56} onPress={() => setHowTo(true)} />
         </View>
       ) : null}
