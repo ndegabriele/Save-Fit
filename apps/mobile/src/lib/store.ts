@@ -12,7 +12,14 @@ import { snapTime, type Plan } from './plan';
 export interface Settings {
   /** Seconds of "get ready" countdown before each timed exercise. */
   countdownSec: number;
-  sound: boolean;
+  /** Beeps and chimes. */
+  sfx: boolean;
+  /** 0–1. */
+  sfxVolume: number;
+  /** The coach's spoken countdown and cues. */
+  voice: boolean;
+  /** 0–1. */
+  voiceVolume: number;
   haptics: boolean;
   /** Show the coach's video clip in the player when available. */
   showVideo: boolean;
@@ -49,7 +56,10 @@ interface State {
 
 export const DEFAULT_SETTINGS: Settings = {
   countdownSec: 5,
-  sound: true,
+  sfx: true,
+  sfxVolume: 0.7,
+  voice: true,
+  voiceVolume: 1,
   haptics: true,
   showVideo: true,
   theme: 'system',
@@ -165,8 +175,22 @@ export const useStore = create<State>()(
     }),
     {
       name: 'save-fit',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => kv),
+      // v1 had a single `sound` switch: it now drives the sound effects.
+      migrate: (persisted, version) => {
+        const p = persisted as { settings?: Partial<Settings> & { sound?: boolean } };
+        if (version < 2 && p?.settings) {
+          const { sound, ...rest } = p.settings;
+          p.settings = { ...rest, sfx: sound ?? true };
+        }
+        return p as unknown as State;
+      },
+      // Fill in settings added after the user's data was saved.
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<State>;
+        return { ...current, ...p, settings: { ...DEFAULT_SETTINGS, ...p.settings } };
+      },
       partialize: ({ workouts, settings, seeded, inbox, plans }) => ({ workouts, settings, seeded, inbox, plans }),
       onRehydrateStorage: () => () => {
         useStore.setState({ hydrated: true });

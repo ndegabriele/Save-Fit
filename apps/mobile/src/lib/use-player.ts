@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { haptic, play } from './feedback';
+import { cue, haptic, preloadAudio } from './feedback';
 import { buildSequence, type Step } from './sequence';
 import type { Workout } from './types';
 
@@ -27,6 +27,8 @@ export interface PlayerState {
 }
 
 const TICK_MS = 100;
+/** Beep (and count aloud) on each of the last this-many seconds of a timer. */
+const COUNT_FROM = 5;
 
 /**
  * The workout clock.
@@ -75,11 +77,13 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
       if (s.kind === 'work' && s.mode === 'time' && withCountdown && countdownSec > 0) {
         setPhase('countdown');
         startTimer(countdownSec);
+        cue.ready();
       } else {
         setPhase('running');
         if (s.kind === 'rest' || s.mode === 'time') startTimer(s.durationSec);
+        if (s.kind === 'rest') cue.rest();
         if (s.kind === 'work') {
-          play('go');
+          cue.go();
           haptic.firm();
         }
       }
@@ -92,13 +96,14 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     setPaused(false);
     setPhase('intro');
     startTimer(Math.max(INTRO_MIN_SEC, countdownSec));
+    cue.ready();
   }, [countdownSec, startTimer]);
 
   const next = useCallback(() => {
     if (step?.kind === 'work') setWorkDone((n) => n + 1);
     if (index >= steps.length - 1) {
       setPhase('done');
-      play('done');
+      cue.done();
       haptic.success();
       return;
     }
@@ -142,7 +147,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
     pausedLeft.current = 0;
     setPhase('running');
     startTimer(step.durationSec);
-    play('go');
+    cue.go();
     haptic.firm();
   }, [phase, step, startTimer, enterStep]);
 
@@ -164,13 +169,16 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
   const remainingMs = paused ? pausedLeft.current : Math.max(0, endsAt.current - now);
   const remaining = timed ? remainingMs / 1000 : 0;
 
-  // Beeps for the last 3 seconds, transitions when the timer hits 0.
+  // Load the sounds when the player opens, so the first cue is on time.
+  useEffect(() => preloadAudio(), []);
+
+  // A beep (and the coach's count) on each of the last 5 seconds, transitions when the timer hits 0.
   useEffect(() => {
     if (!timed || paused) return;
     const whole = Math.ceil(remaining);
-    if (whole <= 3 && whole >= 1 && lastBeep.current !== whole) {
+    if (whole <= COUNT_FROM && whole >= 1 && lastBeep.current !== whole) {
       lastBeep.current = whole;
-      play('tick');
+      cue.count(whole);
       haptic.tap();
     }
     if (remainingMs <= 0) {
@@ -179,7 +187,7 @@ export function usePlayer(workout: Pick<Workout, 'blocks'> | undefined, countdow
       } else if (phase === 'countdown' && step) {
         setPhase('running');
         startTimer(step.durationSec);
-        play('go');
+        cue.go();
         haptic.firm();
       } else {
         next();

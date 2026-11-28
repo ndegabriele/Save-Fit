@@ -27,6 +27,7 @@ export {
   Key as KeyRound,
   Stack as Layers,
   Lightbulb,
+  Megaphone,
   Link as Link2,
   ListNumbers as ListOrdered,
   ArrowsOut as Maximize2,
@@ -54,6 +55,7 @@ export {
   SpeakerHigh as Volume2,
   X,
   Lightning as Zap,
+  UserSound,
 } from 'phosphor-react-native';
 
 import {

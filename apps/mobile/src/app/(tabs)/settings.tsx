@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
-import { Button, Input, ListGroup, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
-import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, Vibrate, Video, Volume2 } from '@/components/ui/icons';
-import { useState } from 'react';
+import { Button, Input, ListGroup, Slider, Switch, Tabs, TextField, Label, Description, useToast } from 'heroui-native';
+import { KeyRound, Moon, RefreshCw, Server, ShieldCheck, Timer, Trash2, UserSound, Vibrate, Video, Volume2 } from '@/components/ui/icons';
+import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { Screen } from '@/components/ui/screen';
@@ -9,6 +9,7 @@ import { Stepper } from '@/components/ui/stepper';
 import { AppText } from '@/components/ui/text';
 import { maskKey, setAiKey, useAiKey } from '@/lib/ai-key';
 import { apiUrl, checkAiKey, ping } from '@/lib/api';
+import { play, preloadAudio, say } from '@/lib/feedback';
 import { IS_EXPO_GO } from '@/lib/share-intent';
 import { useStore, type Settings } from '@/lib/store';
 
@@ -31,7 +32,7 @@ export default function SettingsScreen() {
     });
   };
 
-  const toggle = (key: keyof Pick<Settings, 'sound' | 'haptics' | 'showVideo'>, icon: typeof Volume2, title: string, description: string) => (
+  const toggle = (key: keyof Pick<Settings, 'haptics' | 'showVideo'>, icon: typeof Volume2, title: string, description: string) => (
     <ListGroup.Item onPress={() => setSettings({ [key]: !settings[key] })}>
       <ListGroup.ItemPrefix>
         <Icon icon={icon} size={20} />
@@ -61,8 +62,33 @@ export default function SettingsScreen() {
             </View>
             <Stepper label="seconds" value={settings.countdownSec} min={0} max={15} onChange={(v) => setSettings({ countdownSec: v })} />
           </View>
+          <AudioControl
+            icon={Volume2}
+            title="Sound effects"
+            description="Soft beeps for the last 5 seconds, a chime on each move"
+            enabled={settings.sfx}
+            volume={settings.sfxVolume}
+            onEnabled={(sfx) => {
+              setSettings({ sfx });
+              if (sfx) play('go');
+            }}
+            onVolume={(sfxVolume) => setSettings({ sfxVolume })}
+            preview={() => play('tick')}
+          />
+          <AudioControl
+            icon={UserSound}
+            title="Coach voice"
+            description="Counts you down and calls go and rest. Beeps soften under it."
+            enabled={settings.voice}
+            volume={settings.voiceVolume}
+            onEnabled={(voice) => {
+              setSettings({ voice });
+              if (voice) say('ready');
+            }}
+            onVolume={(voiceVolume) => setSettings({ voiceVolume })}
+            preview={() => say('go')}
+          />
           <ListGroup>
-            {toggle('sound', Volume2, 'Sounds', 'Beeps for the last 3 seconds and each new move')}
             {toggle('haptics', Vibrate, 'Haptics', 'Taps you feel on each transition')}
             {toggle('showVideo', Video, 'Coach video', 'Loop the coach’s clip for each move when available')}
           </ListGroup>
@@ -208,6 +234,73 @@ function AiAccount() {
         )}
       </View>
     </Section>
+  );
+}
+
+/** One audio layer: on/off plus a volume slider that previews the level when released. */
+function AudioControl({
+  icon,
+  title,
+  description,
+  enabled,
+  volume,
+  onEnabled,
+  onVolume,
+  preview,
+}: {
+  icon: typeof Volume2;
+  title: string;
+  description: string;
+  enabled: boolean;
+  volume: number;
+  onEnabled: (v: boolean) => void;
+  onVolume: (v: number) => void;
+  preview: () => void;
+}) {
+  const [draft, setDraft] = useState(Math.round(volume * 100));
+  useEffect(() => setDraft(Math.round(volume * 100)), [volume]);
+  useEffect(() => preloadAudio(), []);
+
+  return (
+    <ListGroup>
+      <ListGroup.Item onPress={() => onEnabled(!enabled)}>
+        <ListGroup.ItemPrefix>
+          <Icon icon={icon} size={20} />
+        </ListGroup.ItemPrefix>
+        <ListGroup.ItemContent>
+          <ListGroup.ItemTitle>{title}</ListGroup.ItemTitle>
+          <ListGroup.ItemDescription>{description}</ListGroup.ItemDescription>
+        </ListGroup.ItemContent>
+        <ListGroup.ItemSuffix>
+          <Switch isSelected={enabled} onSelectedChange={onEnabled} />
+        </ListGroup.ItemSuffix>
+      </ListGroup.Item>
+      {enabled ? (
+        <View className="flex-row items-center gap-3 pb-4 pl-12 pr-4">
+          <Slider
+            className="flex-1"
+            value={draft}
+            minValue={0}
+            maxValue={100}
+            step={5}
+            onChange={(v) => setDraft(v as number)}
+            onChangeEnd={(v) => {
+              onVolume((v as number) / 100);
+              preview();
+            }}
+            accessibilityLabel={`${title} volume`}
+          >
+            <Slider.Track>
+              <Slider.Fill />
+              <Slider.Thumb />
+            </Slider.Track>
+          </Slider>
+          <AppText variant="label" className="w-12 text-right text-muted">
+            {draft}%
+          </AppText>
+        </View>
+      ) : null}
+    </ListGroup>
   );
 }
 
