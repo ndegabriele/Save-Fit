@@ -86,10 +86,9 @@ export default function EditExercise() {
         ) : (
           <Stepper label="reps" value={ex.reps} min={1} max={200} onChange={(reps) => patch({ reps })} />
         )}
-        <View className="flex-row gap-3">
-          <Stepper className="flex-1" label="sets" value={ex.sets} min={1} max={20} onChange={(sets) => patch({ sets })} />
-          <Stepper className="flex-1" label="rest" value={ex.restSec} step={5} min={0} max={600} format={shortDuration} onChange={(restSec) => patch({ restSec })} />
-        </View>
+        {/* Full-width rows, like the edit screen: "1 min 30s" needs the room. */}
+        <Stepper label="sets" value={ex.sets} min={1} max={20} onChange={(sets) => patch({ sets })} />
+        <Stepper label="rest" value={ex.restSec} step={5} min={0} max={600} format={shortDuration} onChange={(restSec) => patch({ restSec })} />
 
         <ListGroup>
           <ListGroup.Item onPress={() => patch({ perSide: !ex.perSide })}>
